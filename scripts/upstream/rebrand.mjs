@@ -9,7 +9,9 @@ if (!root) throw new Error("usage: node rebrand.mjs <worktree-dir>");
 
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 if (pkg.name !== "rakazo") {
-  throw new Error(`refusing to run: ${root} is not an upstream checkout (package name "${pkg.name}")`);
+  throw new Error(
+    `refusing to run: ${root} is not an upstream checkout (package name "${pkg.name}")`,
+  );
 }
 
 const git = (...args) =>
@@ -92,8 +94,13 @@ git("add", "-A");
 let leftovers = "";
 try {
   leftovers = git(
-    "grep", "-nIiE", "rakazo|elie222|getinboxzero|Inbox Zero Inc|inbox-zero|u\\.expo\\.dev",
-    "--", ".", ":!CHANGELOG.md", ":!LICENSE",
+    "grep",
+    "-nIiE",
+    "rakazo|elie222|getinboxzero|Inbox Zero Inc|inbox-zero|u\\.expo\\.dev",
+    "--",
+    ".",
+    ":!CHANGELOG.md",
+    ":!LICENSE",
   ).trim();
 } catch (error) {
   if (error.status !== 1) throw error;
