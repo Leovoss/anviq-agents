@@ -1,0 +1,12 @@
+Anviq
+Copyright 2026 Anviq LLC
+
+Anviq is a fork of rakazo (https://github.com/elie222/rakazo),
+Copyright 2026 Rakazo contributors, licensed under the Apache License,
+Version 2.0. The license text is in the LICENSE file.
+
+Anviq LLC modified the original work: names, configuration and
+branding were changed, the upstream marketing site was removed, and
+further changes are made on top of upstream releases. All changes are
+recorded in the git history of this repository. Upstream commits keep
+their original authors.
