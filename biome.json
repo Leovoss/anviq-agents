@@ -20,8 +20,7 @@
       "!**/test-report",
       "!**/verify-report",
       "!**/data",
-      "!**/*.astro",
-      "!**/apps/www"
+      "!**/*.astro"
     ]
   },
   "formatter": {
