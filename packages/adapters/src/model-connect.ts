@@ -1,4 +1,3 @@
-import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
 import type { ModelConnectInput, ModelCredential, ThinkingLevel } from "@anviq/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE,
@@ -7,6 +6,7 @@ import {
   isCloudflareAiGatewayProvider,
   modelOutputLeavesInputRoom,
 } from "@anviq/contracts";
+import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
 import { modelIdSupportsImages, updateModelImageCapabilities } from "./model-vision.js";
 import { modelCredentialAuthKind } from "./pi-catalog-availability.js";
 import {

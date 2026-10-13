@@ -1,6 +1,6 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import { type Bot, GROUP_MEMBER_MAX, GROUP_MEMBER_MIN, type Group } from "@anviq/contracts";
 import { BotAvatar, Button, Input } from "@anviq/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Check, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { errorText } from "../lib/user-error";

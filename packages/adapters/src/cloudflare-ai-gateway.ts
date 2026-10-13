@@ -1,10 +1,10 @@
-import type { ModelsSimpleStreamOptions } from "@earendil-works/pi-ai";
 import type { AgentRunModel } from "@anviq/adapter-kit";
 import {
   CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE,
   cloudflareGatewayRouting,
   isCloudflareAiGatewayProvider,
 } from "@anviq/contracts";
+import type { ModelsSimpleStreamOptions } from "@earendil-works/pi-ai";
 
 const CLOUDFLARE_ACCOUNT_ID_ENV = "CLOUDFLARE_ACCOUNT_ID";
 const CLOUDFLARE_GATEWAY_ID_ENV = "CLOUDFLARE_GATEWAY_ID";

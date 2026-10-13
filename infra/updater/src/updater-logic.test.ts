@@ -132,9 +132,7 @@ describe("resolveUpdaterConfig", () => {
   });
 
   it("refuses an image name it would not be willing to hand to compose", () => {
-    expect(() => resolveUpdaterConfig({ ...base, ANVIQ_IMAGE: "Bad Name" })).toThrow(
-      /ANVIQ_IMAGE/,
-    );
+    expect(() => resolveUpdaterConfig({ ...base, ANVIQ_IMAGE: "Bad Name" })).toThrow(/ANVIQ_IMAGE/);
     expect(resolveUpdaterConfig({ ...base, ANVIQ_IMAGE: "ghcr.io/me/app" }).image).toBe(
       "ghcr.io/me/app",
     );

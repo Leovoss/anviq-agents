@@ -73,9 +73,7 @@ describe("SerenityMemoryProvider", () => {
   it("keeps bot and space entity namespaces inside the adapter", () => {
     expect(serenityBotEntity("bot-1")).toBe("anviq-bot/bot-1");
     expect(serenitySpaceEntity("workspace-1")).toBe("anviq-space/workspace-1");
-    expect(serenityBotEntity("bot-1", "Personal Brain")).toBe(
-      `anviq-bot/${PERSONAL_BRAIN}--bot-1`,
-    );
+    expect(serenityBotEntity("bot-1", "Personal Brain")).toBe(`anviq-bot/${PERSONAL_BRAIN}--bot-1`);
     expect(serenitySpaceEntity("workspace-1", "Personal Brain")).toBe(
       `anviq-space/${PERSONAL_BRAIN}--workspace-1`,
     );

@@ -1,6 +1,6 @@
-import { t } from "@lingui/core/macro";
 import { accountSecuritySchema, legacyAccountSecurity } from "@anviq/contracts";
 import { readBoundedJsonResponse } from "@anviq/core";
+import { t } from "@lingui/core/macro";
 import { authErrorText } from "./user-error";
 
 export async function fetchAccountSecurity() {

@@ -1,9 +1,9 @@
-import { ORPCError } from "@orpc/server";
 import type { SecretStore } from "@anviq/adapter-kit";
 import { persistPreparedSecret } from "@anviq/adapters";
 import type { Actor } from "@anviq/contracts";
 import type { PrismaClient } from "@anviq/db";
 import { Prisma, withTransactionRetry } from "@anviq/db";
+import { ORPCError } from "@orpc/server";
 
 type AgentSecretDeps = {
   prisma: PrismaClient;

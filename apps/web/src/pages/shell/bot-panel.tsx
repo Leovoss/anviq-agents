@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   AgentSkillCatalogEntry,
   Bot,
@@ -30,6 +29,7 @@ import {
   Textarea,
   Toggle,
 } from "@anviq/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
 import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
 import { ErrorBoundary, SectionLoadFailed } from "../../components/ErrorBoundary";

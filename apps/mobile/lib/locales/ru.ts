@@ -755,7 +755,7 @@ export const RU_MESSAGES: Record<string, string> = {
   "AI models": "Модели ИИ",
   Memory: "Память",
   "Privacy policies": "Политики конфиденциальности",
-  Anviq Agents: "Anviq Agents",
+  "Anviq Agents": "Anviq Agents",
   "Withdraw all permissions": "Отозвать все разрешения",
   "Withdraw all permissions?": "Отозвать все разрешения?",
   "New mobile actions won't send data to these services. Runs already in progress and routines keep going until you stop them.":

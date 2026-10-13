@@ -1,4 +1,3 @@
-import { t } from "@lingui/core/macro";
 import type { ThreadMessage, ThreadSnapshot } from "@anviq/contracts";
 import {
   callClientNonce,
@@ -12,6 +11,7 @@ import {
   spokenDecision,
   spokenMemory,
 } from "@anviq/core";
+import { t } from "@lingui/core/macro";
 import { useSyncExternalStore } from "react";
 import { dictation } from "./dictation.js";
 import { rpc } from "./rpc.js";

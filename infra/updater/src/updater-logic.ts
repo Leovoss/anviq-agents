@@ -48,8 +48,7 @@ export function resolveUpdaterConfig(env: NodeJS.ProcessEnv): UpdaterConfig {
     throw new Error("Set ANVIQ_DEPLOY_DIR to the absolute path of the deployment directory.");
   }
   const image = env.ANVIQ_IMAGE?.trim() || OFFICIAL_SERVER_IMAGE;
-  if (!isValidImageName(image))
-    throw new Error(`ANVIQ_IMAGE is not a usable image name: ${image}`);
+  if (!isValidImageName(image)) throw new Error(`ANVIQ_IMAGE is not a usable image name: ${image}`);
   // Compose itself takes a list here (COMPOSE_FILE with COMPOSE_PATH_SEPARATOR), and a deployment
   // that layers an overlay must be reconciled with the same list the operator runs by hand. Every
   // entry is validated separately: one bad path in a list is still a path escape.

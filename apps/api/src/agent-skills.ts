@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import { BUILTIN_AGENT_SKILLS } from "@anviq/adapters";
 import type { Actor, AgentSkill, AgentSkillSource } from "@anviq/contracts";
 import {
@@ -10,6 +9,7 @@ import {
   type SkillSource,
 } from "@anviq/core";
 import { IsolationError, type PrismaClient } from "@anviq/db";
+import { ORPCError } from "@orpc/server";
 
 type AgentSkillRow = {
   id: string;

@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui/react/macro";
 import type { Bot, BotSection } from "@anviq/contracts";
 import {
   DropdownMenu,
@@ -10,6 +9,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@anviq/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import {
   Archive,
   Bell,

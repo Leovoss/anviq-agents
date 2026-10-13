@@ -1,4 +1,3 @@
-import { expo } from "@better-auth/expo";
 import type { TransactionalEmail, TransactionalEmailProvider } from "@anviq/adapter-kit";
 import {
   allowlistedSignupAdmission,
@@ -10,6 +9,7 @@ import {
 } from "@anviq/core";
 import type { PrismaClient } from "@anviq/db";
 import { bootstrapUserSpace } from "@anviq/db";
+import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import {

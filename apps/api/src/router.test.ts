@@ -1,8 +1,6 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { createRouterClient } from "@orpc/server";
-import { RPCHandler } from "@orpc/server/fetch";
 import type { ManagedConnectorProvider } from "@anviq/adapter-kit";
 import { SecretStoreUnavailableError } from "@anviq/adapter-kit";
 import {
@@ -19,6 +17,8 @@ import { REPLY_QUOTE_MAX_LENGTH } from "@anviq/contracts";
 import { openScreenCapability } from "@anviq/core/node/screen-capability";
 import type { PrismaClient } from "@anviq/db";
 import { createLogger, createTestSink, installLogger } from "@anviq/logging";
+import { createRouterClient } from "@orpc/server";
+import { RPCHandler } from "@orpc/server/fetch";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { RouterDeps } from "./router.js";
 import { createRouter, enqueueBotIntroRun, HEARTBEAT_MS, SESSION_RECHECK_MS } from "./router.js";

@@ -1,7 +1,7 @@
-import { t } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { ActionApprovalRule, ActionAutoReviewSettings } from "@anviq/contracts";
 import { Button, Label, Switch } from "@anviq/ui-web";
+import { t } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useId, useState } from "react";
 import { rpc } from "../lib/rpc";
 import { errorText } from "../lib/user-error";

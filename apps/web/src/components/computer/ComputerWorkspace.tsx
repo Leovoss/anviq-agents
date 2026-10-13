@@ -1,6 +1,6 @@
-import { useLingui } from "@lingui/react/macro";
 import type { ComputerStatus } from "@anviq/contracts";
 import { Button, cn } from "@anviq/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import { Folder, Globe, SquareTerminal, X } from "lucide-react";
 import type { PointerEvent, ReactNode, RefObject } from "react";
 import { lazy, Suspense, useCallback, useRef, useState } from "react";

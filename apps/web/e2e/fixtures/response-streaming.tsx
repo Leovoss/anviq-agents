@@ -1,8 +1,8 @@
-import { I18nProvider } from "@lingui/react";
 import { ChatMarkdown } from "@anviq/chat-ui/web";
 import type { ProductEvent, ThreadMessage, ThreadSnapshot } from "@anviq/contracts";
 import { isToolActivityBlock, withLiveStreamingProgress } from "@anviq/core";
 import { DEFAULT_GROK_BOT_COLOR } from "@anviq/ui-web";
+import { I18nProvider } from "@lingui/react";
 import { createRoot } from "react-dom/client";
 import { ActiveBotGlyph } from "../../src/components/ai/CollaborationMarker";
 import { bootstrapI18n, i18n } from "../../src/lib/i18n";

@@ -601,11 +601,9 @@ function idleHarness(
 
 function probeBackgroundWork(markerId: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    const child = spawn(
-      "bash",
-      ["-c", BACKGROUND_WORK_PROBE, "anviq-background-probe", markerId],
-      { stdio: ["ignore", "pipe", "pipe"] },
-    );
+    const child = spawn("bash", ["-c", BACKGROUND_WORK_PROBE, "anviq-background-probe", markerId], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
     child.on("error", reject);
     child.on("close", (code) => resolve(code ?? 1));
   });

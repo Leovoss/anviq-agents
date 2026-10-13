@@ -1,12 +1,4 @@
 import path from "node:path";
-import {
-  Daytona,
-  type DaytonaConfig,
-  DaytonaNotFoundError,
-  DaytonaProcessExecutionTimeoutError,
-  type Sandbox,
-  SandboxState,
-} from "@daytona/sdk";
 import type {
   AdapterContext,
   CommandRequest,
@@ -24,6 +16,14 @@ import type {
   TerminalRequest,
 } from "@anviq/adapter-kit";
 import { boundedSandboxCommandTimeoutMs } from "@anviq/core";
+import {
+  Daytona,
+  type DaytonaConfig,
+  DaytonaNotFoundError,
+  DaytonaProcessExecutionTimeoutError,
+  type Sandbox,
+  SandboxState,
+} from "@daytona/sdk";
 import { screenSessionKey } from "./computer-screens.js";
 import { normalizeWorkspacePath, shellQuote, workspacePath } from "./computer-support.js";
 import {

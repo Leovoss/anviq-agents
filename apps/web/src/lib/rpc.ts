@@ -1,8 +1,8 @@
+import type { AppContract } from "@anviq/contracts";
+import { LOCAL_SETTINGS_PAGE, LOCAL_SETTINGS_RPC } from "@anviq/contracts";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { ContractRouterClient } from "@orpc/contract";
-import type { AppContract } from "@anviq/contracts";
-import { LOCAL_SETTINGS_PAGE, LOCAL_SETTINGS_RPC } from "@anviq/contracts";
 import { desktopBridge } from "./desktop";
 
 const SPACE_STORAGE_KEY = "anviq:space-id";

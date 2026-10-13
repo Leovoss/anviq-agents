@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import type { AdapterContext, SecretStore } from "@anviq/adapter-kit";
 import {
   createVoiceProvider,
@@ -23,6 +22,7 @@ import {
   selectSpaceVoicePreference,
 } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
+import { ORPCError } from "@orpc/server";
 import type { Context, Hono } from "hono";
 import { readBoundedBody } from "./http-body.js";
 import { withSerializableRetry } from "./serializable-retry.js";

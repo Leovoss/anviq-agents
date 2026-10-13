@@ -307,9 +307,7 @@ describe("computer loopback provision lifecycle", () => {
         enabled ? [{ HostIp: "127.0.0.1", HostPort: "0" }] : undefined,
       );
       expect(options.HostConfig.Binds).toEqual([`${homePath}:/home/anviq`]);
-      expect(options.Env).toContainEqual(
-        expect.stringMatching(/^ANVIQ_COMPUTER_CONTROL_TOKEN=.+/),
-      );
+      expect(options.Env).toContainEqual(expect.stringMatching(/^ANVIQ_COMPUTER_CONTROL_TOKEN=.+/));
     }
   });
 });

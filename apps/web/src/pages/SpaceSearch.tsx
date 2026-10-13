@@ -1,5 +1,5 @@
-import { Trans } from "@lingui/react/macro";
 import type { SearchHit } from "@anviq/contracts";
+import { Trans } from "@lingui/react/macro";
 
 export function SpaceSearchResults({
   hits,

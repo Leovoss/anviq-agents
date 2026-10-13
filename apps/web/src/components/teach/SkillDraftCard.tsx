@@ -1,7 +1,7 @@
-import { Trans } from "@lingui/react/macro";
 import type { SkillPlaybook } from "@anviq/contracts";
 import { formatSkillRunPrompt } from "@anviq/core";
 import { Button, Input, Label, Textarea } from "@anviq/ui-web";
+import { Trans } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import { rpc } from "../../lib/rpc";
 

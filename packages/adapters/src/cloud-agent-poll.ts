@@ -1,9 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type {
-  AdapterContext,
-  BackgroundJobPayloads,
-  CloudAgentSnapshot,
-} from "@anviq/adapter-kit";
+import type { AdapterContext, BackgroundJobPayloads, CloudAgentSnapshot } from "@anviq/adapter-kit";
 import { CloudAgentRequestRejected, runContinueJob } from "@anviq/adapter-kit";
 import type { MessageBlock } from "@anviq/contracts";
 import { cloudAgentHttpsUrl } from "@anviq/core";

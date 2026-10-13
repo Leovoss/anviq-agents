@@ -1,14 +1,6 @@
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import {
-  type Box,
-  BoxApi,
-  type Command200Response,
-  type CommandResponse,
-  Configuration,
-  ResponseError,
-} from "@asciidev/box-sdk";
 import type {
   AdapterContext,
   CommandRequest,
@@ -26,6 +18,14 @@ import type {
   TerminalRequest,
 } from "@anviq/adapter-kit";
 import { boundedSandboxCommandTimeoutMs } from "@anviq/core";
+import {
+  type Box,
+  BoxApi,
+  type Command200Response,
+  type CommandResponse,
+  Configuration,
+  ResponseError,
+} from "@asciidev/box-sdk";
 import { boxResponseError, wrapBoxCall } from "./box-errors.js";
 import { normalizeWorkspacePath, shellQuote, workspacePath } from "./computer-support.js";
 import {

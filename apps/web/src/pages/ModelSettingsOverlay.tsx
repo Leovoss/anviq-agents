@@ -1,5 +1,3 @@
-import { i18n } from "@lingui/core";
-import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import type { Me, ThinkingLevel } from "@anviq/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
@@ -44,6 +42,8 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@anviq/ui-web";
+import { i18n } from "@lingui/core";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { Check, ChevronDown, Copy, X } from "lucide-react";
 import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from "react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
@@ -1070,8 +1070,8 @@ export function ModelSettingsOverlay({
       {selected?.auth === "oauth" && !subscriptionSignIn ? (
         <p className="mt-5 text-sm leading-[1.5] text-muted-foreground first:mt-0">
           <Trans>
-            This subscription sign-in is not available in Anviq Agents yet. Use a deployment credential or
-            choose another provider.
+            This subscription sign-in is not available in Anviq Agents yet. Use a deployment
+            credential or choose another provider.
           </Trans>
         </p>
       ) : null}

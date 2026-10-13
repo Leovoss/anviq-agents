@@ -3,11 +3,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  type AnviqDesktop,
+  type AnviqDesktopOAuthCallback,
   desktopOAuthCode,
   oauthStateOf,
   onDesktopOAuthCallback,
-  type AnviqDesktop,
-  type AnviqDesktopOAuthCallback,
   windowChromeKind,
 } from "./desktop.js";
 

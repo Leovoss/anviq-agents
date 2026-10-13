@@ -1,7 +1,7 @@
-import { i18n } from "@lingui/core";
 import type { ModelCatalogEntry, ModelCredential, ThinkingLevel } from "@anviq/contracts";
 import type { ConnectedModelChoice } from "@anviq/core";
 import { connectedModelChoices } from "@anviq/core";
+import { i18n } from "@lingui/core";
 
 export { modelOptionKey, parseModelOptionKey } from "@anviq/core";
 

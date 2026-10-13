@@ -1,4 +1,3 @@
-import { type CommandResult, Sandbox, TimeoutError } from "@e2b/desktop";
 import type {
   AdapterContext,
   CommandRequest,
@@ -16,6 +15,7 @@ import type {
   TerminalRequest,
 } from "@anviq/adapter-kit";
 import { boundedSandboxCommandTimeoutMs } from "@anviq/core";
+import { type CommandResult, Sandbox, TimeoutError } from "@e2b/desktop";
 import { sandboxIdleMs } from "./computer-idle.js";
 import { normalizeWorkspacePath, shellQuote, workspacePath } from "./computer-support.js";
 import {

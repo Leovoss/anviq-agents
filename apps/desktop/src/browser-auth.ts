@@ -83,7 +83,9 @@ export async function openBrowserAuth(
             !code ||
             target.searchParams.has("error")
           ) {
-            response.writeHead(400).end("Sign-in callback rejected. Return to Anviq Agents to retry.");
+            response
+              .writeHead(400)
+              .end("Sign-in callback rejected. Return to Anviq Agents to retry.");
             return;
           }
           consumed = true;

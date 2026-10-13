@@ -1,12 +1,5 @@
 import { randomUUID } from "node:crypto";
 import type {
-  AuthInteraction,
-  Credential,
-  OAuthAuth,
-  OAuthCredential,
-} from "@earendil-works/pi-ai";
-import { builtinModels } from "@earendil-works/pi-ai/providers/all";
-import type {
   ModelCredentialFailedState,
   ModelCredentialRetireReason,
   SecretStore,
@@ -25,6 +18,13 @@ import {
 } from "@anviq/contracts";
 import type { PrismaClient } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
+import type {
+  AuthInteraction,
+  Credential,
+  OAuthAuth,
+  OAuthCredential,
+} from "@earendil-works/pi-ai";
+import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import { createManualAnthropicOAuthLogin } from "./pi-anthropic-oauth.js";
 
 export const CHATGPT_OAUTH_PROVIDER = "openai-codex";
@@ -52,13 +52,15 @@ export const SUBSCRIPTION_SIGN_IN_PROVIDERS: Record<
     mode: "device-code",
     loginLabel: "Sign in with GitHub Copilot",
     hint: "Copilot",
-    billing: "Sign in with GitHub Copilot. Uses your Copilot subscription. Anviq Agents does not pay.",
+    billing:
+      "Sign in with GitHub Copilot. Uses your Copilot subscription. Anviq Agents does not pay.",
   },
   [XAI_OAUTH_PROVIDER]: {
     mode: "device-code",
     loginLabel: "Sign in with SuperGrok or X Premium",
     hint: "SuperGrok / key",
-    billing: "Sign in with SuperGrok or X Premium, or paste an xAI API key. Anviq Agents does not pay.",
+    billing:
+      "Sign in with SuperGrok or X Premium, or paste an xAI API key. Anviq Agents does not pay.",
   },
   [ANTHROPIC_OAUTH_PROVIDER]: {
     mode: "auth-url",

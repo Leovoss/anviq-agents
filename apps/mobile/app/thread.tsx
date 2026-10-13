@@ -1,4 +1,3 @@
-import type { MenuAction } from "@expo/ui/community/menu";
 import { ChatMarkdown } from "@anviq/chat-ui/native";
 import type {
   AgentSkillCatalogEntry,
@@ -39,6 +38,7 @@ import {
   userVisibleMessages,
   withLiveStreamingProgress,
 } from "@anviq/core";
+import type { MenuAction } from "@expo/ui/community/menu";
 import * as Clipboard from "expo-clipboard";
 import {
   useFocusEffect,

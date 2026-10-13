@@ -271,10 +271,7 @@ describe("production backup deployment and archive behavior", () => {
   });
 
   it("provides optional systemd configuration for installed copies", () => {
-    const service = readFileSync(
-      path.join(repoRoot, "infra/systemd/anviq-backup.service"),
-      "utf8",
-    );
+    const service = readFileSync(path.join(repoRoot, "infra/systemd/anviq-backup.service"), "utf8");
     expect(service).toContain("EnvironmentFile=-/etc/anviq/backup.env");
   });
 

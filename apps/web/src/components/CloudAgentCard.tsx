@@ -1,8 +1,8 @@
-import { Trans } from "@lingui/react/macro";
 import type { MessageBlock } from "@anviq/contracts";
 import { cloudAgentHttpsUrl } from "@anviq/core";
 import { Badge } from "@anviq/ui-web/components/ui/badge";
 import { Card, CardContent } from "@anviq/ui-web/components/ui/card";
+import { Trans } from "@lingui/react/macro";
 
 export function CloudAgentCard({
   block,
