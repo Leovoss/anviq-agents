@@ -4,7 +4,7 @@ import type { AnviqDesktop } from "@anviq/contracts";
 
 const fixture = `<!doctype html>
 <html lang="en">
-  <head><meta charset="utf-8"><title>Anviq desktop smoke</title></head>
+  <head><meta charset="utf-8"><title>Anviq Agents desktop smoke</title></head>
   <body><main>Desktop fixture ready</main></body>
 </html>`;
 
@@ -21,7 +21,7 @@ test("launches with a narrow preload bridge and an isolated renderer", async () 
   try {
     const page = await app.firstWindow();
     await expect(page.getByText("Desktop fixture ready")).toBeVisible();
-    await expect(page).toHaveTitle("Anviq desktop smoke");
+    await expect(page).toHaveTitle("Anviq Agents desktop smoke");
 
     const renderer = await page.evaluate(async () => {
       const desktop = (window as typeof window & { anviqDesktop?: AnviqDesktop }).anviqDesktop;

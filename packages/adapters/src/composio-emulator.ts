@@ -183,11 +183,11 @@ function seedMailbox(): Mailbox {
       {
         messageId: "18c5f5d1a2b3c4d5",
         threadId: "18c5f5d1a2b3c4d5",
-        subject: "Welcome to Anviq",
+        subject: "Welcome to Anviq Agents",
         sender: "hello@anviq.test",
         to: "me@example.test",
         snippet: "Your inbox is ready for agent workflows.",
-        messageText: "Your inbox is ready for agent workflows.\n\n— Anviq",
+        messageText: "Your inbox is ready for agent workflows.\n\n— Anviq Agents",
         labelIds: ["INBOX", "UNREAD"],
         internalDate: String(base),
       },

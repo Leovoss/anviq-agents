@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Anviq",
+    "name": "Anviq Agents",
     "slug": "anviq",
     "scheme": "anviq",
     "version": "1.0.5",
@@ -22,14 +22,14 @@
         "expo-audio",
         {
           "enableBackgroundPlayback": false,
-          "microphonePermission": "Anviq uses the microphone for voice calls with your bots."
+          "microphonePermission": "Anviq Agents uses the microphone for voice calls with your bots."
         }
       ],
       [
         "expo-speech-recognition",
         {
-          "speechRecognitionPermission": "Anviq turns your speech into messages during voice calls.",
-          "microphonePermission": "Anviq uses the microphone for voice calls with your bots."
+          "speechRecognitionPermission": "Anviq Agents turns your speech into messages during voice calls.",
+          "microphonePermission": "Anviq Agents uses the microphone for voice calls with your bots."
         }
       ],
       "expo-localization",
@@ -45,9 +45,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Anviq uses your photo library so you can attach images to a bot message.",
-          "cameraPermission": "Anviq uses the camera so you can attach photos to a bot message.",
-          "microphonePermission": "Anviq uses the microphone for voice calls with your bots."
+          "photosPermission": "Anviq Agents uses your photo library so you can attach images to a bot message.",
+          "cameraPermission": "Anviq Agents uses the camera so you can attach photos to a bot message.",
+          "microphonePermission": "Anviq Agents uses the microphone for voice calls with your bots."
         }
       ],
       "expo-sharing",
@@ -63,9 +63,9 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "NSCameraUsageDescription": "Anviq uses the camera so you can attach photos to a bot message.",
-        "NSPhotoLibraryUsageDescription": "Anviq uses your photo library so you can attach images to a bot message.",
-        "NSLocalNetworkUsageDescription": "Anviq connects to a self-hosted Anviq server on your local network.",
+        "NSCameraUsageDescription": "Anviq Agents uses the camera so you can attach photos to a bot message.",
+        "NSPhotoLibraryUsageDescription": "Anviq Agents uses your photo library so you can attach images to a bot message.",
+        "NSLocalNetworkUsageDescription": "Anviq Agents connects to a self-hosted Anviq Agents server on your local network.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         }

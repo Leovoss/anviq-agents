@@ -116,7 +116,7 @@ describe("passwordResetEmail", () => {
 
     expect(message).toMatchObject({
       to: "ada@example.test",
-      subject: "Reset your Anviq password",
+      subject: "Reset your Anviq Agents password",
     });
     expect(message.text).toContain("https://anviq.test/reset-password?token=secret&next=1");
     expect(message.html).toContain("&lt;Ada &amp; &quot;team&quot;&gt;");

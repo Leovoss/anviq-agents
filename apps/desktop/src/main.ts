@@ -675,7 +675,7 @@ function installApplicationMenu() {
   };
   const changeServer: Electron.MenuItemConstructorOptions = {
     id: "change-anviq-server",
-    label: "Change Anviq Server…",
+    label: "Change Anviq Agents Server…",
     accelerator: "CmdOrCtrl+Shift+K",
     click: () => showSetupWindow(),
   };
@@ -726,7 +726,7 @@ function installApplicationMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-/** Setup IPC must only answer the setup window, never a connected Anviq server. */
+/** Setup IPC must only answer the setup window, never a connected Anviq Agents server. */
 function fromSetupWindow(event: Electron.IpcMainInvokeEvent) {
   return (
     setupWindow !== null && !setupWindow.isDestroyed() && event.sender === setupWindow.webContents
@@ -753,7 +753,7 @@ async function probeServer(rawUrl: string, signal?: AbortSignal): Promise<Deskto
         ok: false,
         status: response.status,
         url,
-        error: "That address redirects elsewhere. Enter the final Anviq server address.",
+        error: "That address redirects elsewhere. Enter the final Anviq Agents server address.",
       };
     }
     if (!response.ok) {
@@ -770,7 +770,7 @@ async function probeServer(rawUrl: string, signal?: AbortSignal): Promise<Deskto
         ok: false,
         status: response.status,
         url,
-        error: "That address did not respond like a Anviq server.",
+        error: "That address did not respond like a Anviq Agents server.",
       };
     }
     return {
@@ -1178,7 +1178,7 @@ app.whenReady().then(async () => {
         if (managedUrl === null || !(await localStack.matchesDesiredStack())) {
           return {
             ok: false,
-            error: "The app-managed Anviq services are not ready. Retry setup.",
+            error: "The app-managed Anviq Agents services are not ready. Retry setup.",
           };
         }
         openSetup = { mode: "new", serverUrl: managedUrl };

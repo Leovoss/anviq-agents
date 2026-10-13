@@ -249,7 +249,7 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
     throw new Error("Password auth requires OIDC when disabled");
   const discovery = env.oidc ? oidcDiscovery(env.oidc) : undefined;
   const auth = betterAuth({
-    appName: "Anviq",
+    appName: "Anviq Agents",
     secret: env.secret,
     baseURL: env.baseURL,
     trustedOrigins: [...buildTrustedOrigins(env), "anviq://"],
@@ -558,9 +558,9 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
 export function verificationEmail(email: string, url: string): TransactionalEmail {
   return {
     to: email,
-    subject: "Verify your Anviq email",
-    text: `Verify your email, then return to Anviq to sign in:\n\n${url}\n\nThis link expires in one hour. If you did not register, ignore this email.`,
-    html: `<p><a href="${escapeHtml(url)}">Verify email</a>, then return to Anviq to sign in.</p><p>This link expires in one hour. If you did not register, ignore this email.</p>`,
+    subject: "Verify your Anviq Agents email",
+    text: `Verify your email, then return to Anviq Agents to sign in:\n\n${url}\n\nThis link expires in one hour. If you did not register, ignore this email.`,
+    html: `<p><a href="${escapeHtml(url)}">Verify email</a>, then return to Anviq Agents to sign in.</p><p>This link expires in one hour. If you did not register, ignore this email.</p>`,
   };
 }
 
@@ -573,16 +573,16 @@ export function passwordResetEmail(
   const safeUrl = escapeHtml(resetUrl);
   return {
     to: user.email,
-    subject: "Reset your Anviq password",
+    subject: "Reset your Anviq Agents password",
     text: [
       `Hi ${name},`,
       "",
-      "Reset your Anviq password using this link:",
+      "Reset your Anviq Agents password using this link:",
       resetUrl,
       "",
       "This link expires in one hour. If you did not request this, you can ignore this email.",
     ].join("\n"),
-    html: `<p>Hi ${safeName},</p><p>Reset your Anviq password:</p><p><a href="${safeUrl}">Reset password</a></p><p>This link expires in one hour. If you did not request this, you can ignore this email.</p>`,
+    html: `<p>Hi ${safeName},</p><p>Reset your Anviq Agents password:</p><p><a href="${safeUrl}">Reset password</a></p><p>This link expires in one hour. If you did not request this, you can ignore this email.</p>`,
   };
 }
 

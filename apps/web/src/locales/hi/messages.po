@@ -924,8 +924,8 @@ msgid "Choose file"
 msgstr "फ़ाइल चुनें"
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "Choose which connected model Anviq uses."
-msgstr "चुनें कि Anviq किस कनेक्टेड मॉडल का उपयोग करे।"
+msgid "Choose which connected model Anviq Agents uses."
+msgstr "चुनें कि Anviq Agents किस कनेक्टेड मॉडल का उपयोग करे।"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Clear"
@@ -1751,8 +1751,8 @@ msgid "Create space"
 msgstr ""
 
 #: src/pages/Auth.tsx
-msgid "Create your Anviq"
-msgstr "अपना Anviq बनाएं"
+msgid "Create your Anviq Agents"
+msgstr "अपना Anviq Agents बनाएं"
 
 #: src/components/AskCard.tsx
 msgid "Created"
@@ -3325,8 +3325,8 @@ msgid "Paste a replacement key"
 msgstr "बदलने के लिए नई कुंजी पेस्ट करें"
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "Paste the OpenAI-compatible address from your server. Anviq adds /v1 if needed."
-msgstr "अपने सर्वर से OpenAI-संगत पता पेस्ट करें। ज़रूरत होने पर Anviq /v1 जोड़ देता है।"
+msgid "Paste the OpenAI-compatible address from your server. Anviq Agents adds /v1 if needed."
+msgstr "अपने सर्वर से OpenAI-संगत पता पेस्ट करें। ज़रूरत होने पर Anviq Agents /v1 जोड़ देता है।"
 
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste your API key"
@@ -3720,8 +3720,8 @@ msgid "Retry screen"
 msgstr ""
 
 #: src/pages/McpOAuthCallback.tsx
-msgid "Return to Anviq"
-msgstr "Anviq पर लौटें"
+msgid "Return to Anviq Agents"
+msgstr "Anviq Agents पर लौटें"
 
 #. placeholder {0}: doc.revision
 #: src/pages/KnowledgeSection.tsx
@@ -4075,8 +4075,8 @@ msgid "Sign in again"
 msgstr ""
 
 #: src/pages/Auth.tsx
-msgid "Sign in to Anviq"
-msgstr "Anviq में साइन इन करें"
+msgid "Sign in to Anviq Agents"
+msgstr "Anviq Agents में साइन इन करें"
 
 #: src/lib/user-error.ts
 msgid "Sign in to your existing account to link SSO"
@@ -4424,8 +4424,8 @@ msgid "This server is already connected. Disconnect it first to authorize again.
 msgstr "यह सर्वर पहले से कनेक्टेड है। पुनः ऑथराइज़ करने के लिए पहले इसे डिस्कनेक्ट करें।"
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "This subscription sign-in is not available in Anviq yet. Use a deployment credential or choose another provider."
-msgstr "यह सब्सक्रिप्शन साइन-इन अभी Anviq में उपलब्ध नहीं है। किसी डिप्लॉयमेंट क्रेडेंशियल का उपयोग करें या दूसरा प्रोवाइडर चुनें।"
+msgid "This subscription sign-in is not available in Anviq Agents yet. Use a deployment credential or choose another provider."
+msgstr "यह सब्सक्रिप्शन साइन-इन अभी Anviq Agents में उपलब्ध नहीं है। किसी डिप्लॉयमेंट क्रेडेंशियल का उपयोग करें या दूसरा प्रोवाइडर चुनें।"
 
 #: src/pages/Artifacts.tsx
 msgid "This week"

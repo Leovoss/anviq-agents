@@ -924,8 +924,8 @@ msgid "Choose file"
 msgstr "Datei wählen"
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "Choose which connected model Anviq uses."
-msgstr "Wähle das verbundene Modell aus, das Anviq verwendet."
+msgid "Choose which connected model Anviq Agents uses."
+msgstr "Wähle das verbundene Modell aus, das Anviq Agents verwendet."
 
 #: src/pages/shell/dialogs.tsx
 msgid "Clear"
@@ -1751,8 +1751,8 @@ msgid "Create space"
 msgstr ""
 
 #: src/pages/Auth.tsx
-msgid "Create your Anviq"
-msgstr "Dein Anviq erstellen"
+msgid "Create your Anviq Agents"
+msgstr "Dein Anviq Agents erstellen"
 
 #: src/components/AskCard.tsx
 msgid "Created"
@@ -3325,8 +3325,8 @@ msgid "Paste a replacement key"
 msgstr "Ersatzschlüssel einfügen"
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "Paste the OpenAI-compatible address from your server. Anviq adds /v1 if needed."
-msgstr "Füge die OpenAI-kompatible Adresse deines Servers ein. Anviq ergänzt /v1 bei Bedarf."
+msgid "Paste the OpenAI-compatible address from your server. Anviq Agents adds /v1 if needed."
+msgstr "Füge die OpenAI-kompatible Adresse deines Servers ein. Anviq Agents ergänzt /v1 bei Bedarf."
 
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste your API key"
@@ -3720,8 +3720,8 @@ msgid "Retry screen"
 msgstr ""
 
 #: src/pages/McpOAuthCallback.tsx
-msgid "Return to Anviq"
-msgstr "Zurück zu Anviq"
+msgid "Return to Anviq Agents"
+msgstr "Zurück zu Anviq Agents"
 
 #. placeholder {0}: doc.revision
 #: src/pages/KnowledgeSection.tsx
@@ -4075,8 +4075,8 @@ msgid "Sign in again"
 msgstr ""
 
 #: src/pages/Auth.tsx
-msgid "Sign in to Anviq"
-msgstr "Bei Anviq anmelden"
+msgid "Sign in to Anviq Agents"
+msgstr "Bei Anviq Agents anmelden"
 
 #: src/lib/user-error.ts
 msgid "Sign in to your existing account to link SSO"
@@ -4424,8 +4424,8 @@ msgid "This server is already connected. Disconnect it first to authorize again.
 msgstr "Dieser Server ist bereits verbunden. Trenne zuerst die Verbindung, um ihn erneut zu autorisieren."
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "This subscription sign-in is not available in Anviq yet. Use a deployment credential or choose another provider."
-msgstr "Diese Abonnementanmeldung ist in Anviq noch nicht verfügbar. Verwende Zugangsdaten der Bereitstellung oder wähle einen anderen Anbieter."
+msgid "This subscription sign-in is not available in Anviq Agents yet. Use a deployment credential or choose another provider."
+msgstr "Diese Abonnementanmeldung ist in Anviq Agents noch nicht verfügbar. Verwende Zugangsdaten der Bereitstellung oder wähle einen anderen Anbieter."
 
 #: src/pages/Artifacts.tsx
 msgid "This week"

@@ -17,7 +17,7 @@ const SCHEME = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
 /**
  * Accepts what a person would actually type ("localhost:5173", "anviq.example.com")
  * and returns a canonical http(s) origin, or null when the input can never
- * securely address a Anviq server.
+ * securely address a Anviq Agents server.
  */
 export function normalizeServerUrl(input: string): string | null {
   const trimmed = input.trim();
@@ -42,7 +42,7 @@ export function normalizeServerUrl(input: string): string | null {
   // Public login cookies and API traffic must never cross a cleartext connection.
   if (url.protocol === "http:" && !isLocalNetworkHost(url.hostname)) return null;
 
-  // Anviq serves its renderer, RPC, and auth routes from one origin. Keeping a
+  // Anviq Agents serves its renderer, RPC, and auth routes from one origin. Keeping a
   // user-supplied path would make the setup probe and the loaded app disagree.
   return url.origin;
 }
@@ -154,7 +154,7 @@ export function servesBundledRenderer(targetUrl: string, managedLocalStack: bool
   }
 }
 
-/** Each Anviq origin gets its own persistent cookie and storage partition. */
+/** Each Anviq Agents origin gets its own persistent cookie and storage partition. */
 export function sessionPartitionForServerUrl(targetUrl: string): string | null {
   try {
     const url = new URL(targetUrl);
@@ -266,7 +266,7 @@ export function isLoopbackHost(hostname: string) {
 
 /**
  * Link-local addresses (IPv4 169.254/16, IPv6 fe80::/10) often host cloud
- * metadata endpoints. Cleartext HTTP to them is never a legitimate Anviq
+ * metadata endpoints. Cleartext HTTP to them is never a legitimate Anviq Agents
  * deploy target, so they stay out of the private-network HTTP allowlist.
  */
 function isLinkLocalHost(hostname: string) {
