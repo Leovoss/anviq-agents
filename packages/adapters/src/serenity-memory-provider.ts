@@ -222,7 +222,7 @@ export class SerenityMemoryProvider implements SemanticMemoryProvider {
     request: SemanticMemoryRecallRequest,
     context: AdapterContext,
   ): Promise<SemanticMemoryResponse<SemanticMemoryResult[]>> {
-    // History compaction stays in Anviq; Serenity is the durable brain only.
+    // History compaction stays in Anviq Agents; Serenity is the durable brain only.
     const entities = recallEntities(
       request.scope,
       request.botId,

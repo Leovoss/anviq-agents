@@ -1,5 +1,5 @@
 appId: com.anviq.app
-name: Anviq mobile screenshots
+name: Anviq Agents mobile screenshots
 tags:
   - screenshots
 ---
@@ -10,7 +10,7 @@ tags:
 
 # A cold API 34 emulator can show a launcher ANR over the healthy app.
 - extendedWaitUntil:
-    visible: "Sign up for Anviq|Pixel Launcher isn't responding"
+    visible: "Sign up for Anviq Agents|Pixel Launcher isn't responding"
     timeout: 30000
 - runFlow:
     when:
@@ -18,11 +18,11 @@ tags:
     commands:
       - tapOn: "Close app"
 - extendedWaitUntil:
-    visible: "Sign up for Anviq"
+    visible: "Sign up for Anviq Agents"
     timeout: 30000
 - takeScreenshot: "02-sign-up"
 - tapOn: "Sign in"
-- assertVisible: "Sign in to Anviq"
+- assertVisible: "Sign in to Anviq Agents"
 - takeScreenshot: "01-sign-in"
 
 - tapOn: "Use a custom server"

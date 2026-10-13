@@ -1,21 +1,21 @@
 appId: com.anviq.app
-name: Anviq mobile smoke
+name: Anviq Agents mobile smoke
 ---
 - launchApp:
     clearState: true
 
-- assertVisible: "Sign in to Anviq"
+- assertVisible: "Sign in to Anviq Agents"
 - assertVisible: "Sign up"
 - tapOn: "Sign up"
-- assertVisible: "Sign up for Anviq"
+- assertVisible: "Sign up for Anviq Agents"
 - assertVisible: "Name"
 - tapOn: "Sign in"
-- assertVisible: "Sign in to Anviq"
+- assertVisible: "Sign in to Anviq Agents"
 - tapOn: "Email"
 - inputText: ${ANVIQ_E2E_EMAIL}
 - tapOn: "Password"
 - inputText: ${ANVIQ_E2E_PASSWORD}
-- tapOn: "Sign in to Anviq"
+- tapOn: "Sign in to Anviq Agents"
 - tapOn: "Sign in"
 
 - extendedWaitUntil:

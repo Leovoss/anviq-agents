@@ -191,9 +191,9 @@ export default function SignIn() {
                 {resetSent
                   ? t("Check your email")
                   : mode === "in"
-                    ? t("Sign in to Anviq")
+                    ? t("Sign in to Anviq Agents")
                     : mode === "up"
-                      ? t("Sign up for Anviq")
+                      ? t("Sign up for Anviq Agents")
                       : t("Reset your password")}
               </Text>
               {resetSent ? (

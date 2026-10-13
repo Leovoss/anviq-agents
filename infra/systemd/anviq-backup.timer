@@ -1,5 +1,5 @@
 [Unit]
-Description=Run the Anviq production backup nightly
+Description=Run the Anviq Agents production backup nightly
 
 [Timer]
 OnCalendar=*-*-* 02:15:00 UTC

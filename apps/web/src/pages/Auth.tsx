@@ -40,9 +40,9 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
   const title = sent ? (
     <Trans>Check your email</Trans>
   ) : mode === "in" ? (
-    <Trans>Sign in to Anviq</Trans>
+    <Trans>Sign in to Anviq Agents</Trans>
   ) : mode === "up" ? (
-    <Trans>Create your Anviq</Trans>
+    <Trans>Create your Anviq Agents</Trans>
   ) : (
     <Trans>Reset your password</Trans>
   );

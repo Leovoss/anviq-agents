@@ -4,7 +4,7 @@ appId: com.anviq.app
 - launchApp:
     stopApp: true
 - extendedWaitUntil:
-    visible: "Account|Sign up for Anviq|Sign in to Anviq"
+    visible: "Account|Sign up for Anviq Agents|Sign in to Anviq Agents"
     timeout: 40000
 - runFlow:
     when:
@@ -17,5 +17,5 @@ appId: com.anviq.app
           timeout: 15000
       - tapOn: "Sign out"
 - extendedWaitUntil:
-    visible: "Sign up for Anviq|Sign in to Anviq"
+    visible: "Sign up for Anviq Agents|Sign in to Anviq Agents"
     timeout: 20000

@@ -1,6 +1,6 @@
 {
-  "name": "Anviq",
-  "short_name": "Anviq",
+  "name": "Anviq Agents",
+  "short_name": "Anviq Agents",
   "description": "Your team of always-on agents.",
   "start_url": "/",
   "display": "standalone",

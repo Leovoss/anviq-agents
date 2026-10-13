@@ -23,10 +23,10 @@
   const PHASE_LABELS = {
     "checking-docker": "Getting ready…",
     preparing: "Getting ready…",
-    pulling: "Downloading Anviq…",
-    starting: "Starting Anviq…",
+    pulling: "Downloading Anviq Agents…",
+    starting: "Starting Anviq Agents…",
     "waiting-healthy": "Almost ready…",
-    ready: "Anviq is ready.",
+    ready: "Anviq Agents is ready.",
   };
   const TERMINAL_PHASES = new Set([
     "idle",
@@ -266,7 +266,7 @@
       const result = await bridge.test(value);
       if (result.ok) {
         serverUrl.value = result.url;
-        setStatus(`Anviq answered at ${result.url}.`, "ok");
+        setStatus(`Anviq Agents answered at ${result.url}.`, "ok");
       } else {
         setStatus(result.error ?? "Could not reach that address.", "error");
       }
@@ -362,7 +362,7 @@
         continueButton.focus();
       }
     } catch {
-      setStatus("Setup could not start. Quit Anviq and try again.", "error");
+      setStatus("Setup could not start. Quit Anviq Agents and try again.", "error");
       setBusy(true);
     }
   }

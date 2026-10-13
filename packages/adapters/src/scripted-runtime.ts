@@ -490,7 +490,7 @@ code-b
         toolCalls: [
           {
             name: "destination.write",
-            args: { collection: "notes", title: "Anviq result", body: prompt },
+            args: { collection: "notes", title: "Anviq Agents result", body: prompt },
           },
         ],
         complete: true,

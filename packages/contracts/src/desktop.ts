@@ -65,7 +65,7 @@ export interface AnviqDesktop {
 }
 
 /**
- * How the desktop app was pointed at a Anviq server during first-run setup.
+ * How the desktop app was pointed at a Anviq Agents server during first-run setup.
  * `new` is the Docker Compose stack this app installs and runs on the same computer.
  */
 export type DesktopInstanceMode = "new" | "existing";
