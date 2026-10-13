@@ -25,12 +25,12 @@ vi.mock("@lingui/react/macro", () => {
     parts.reduce((text, part, index) => text + part + String(values[index] ?? ""), "");
   return { useLingui: () => ({ t }), Trans: ({ children }: { children: ReactNode }) => children };
 });
-vi.mock("@rakazo/chat-ui/web", () => ({
+vi.mock("@anviq/chat-ui/web", () => ({
   ChatMarkdown: ({ children }: { children?: ReactNode }) => (
     <div data-testid="chat-markdown">{children}</div>
   ),
 }));
-vi.mock("@rakazo/ui-web", () => {
+vi.mock("@anviq/ui-web", () => {
   const Container = ({ children }: { children?: ReactNode }) => <div>{children}</div>;
   return {
     Button: (props: ComponentProps<"button">) => <button {...props} />,

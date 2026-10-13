@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
-import type { AvatarStyle, SpaceMemoryConfig } from "@rakazo/contracts";
-import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@rakazo/ui-web";
+import type { AvatarStyle, SpaceMemoryConfig } from "@anviq/contracts";
+import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@anviq/ui-web";
 import {
   Brain,
   CloudDownload,

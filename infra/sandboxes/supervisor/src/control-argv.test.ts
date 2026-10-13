@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
-import { browserProfilePathForScreen } from "@rakazo/core/node/desktop-runtime";
+import { browserProfilePathForScreen } from "@anviq/core/node/desktop-runtime";
 import { describe, expect, it } from "vitest";
 import { containerActionStep } from "./supervisor-logic.js";
 
@@ -60,7 +60,7 @@ describe.each([undefined, profile])(
           ((action.kind === "launch" || action.kind === "focus") &&
             action.application === "chromium"))
       ) {
-        expect(step.argv[2]).toBe(`RAKAZO_BROWSER_PROFILE=${browserProfile}`);
+        expect(step.argv[2]).toBe(`ANVIQ_BROWSER_PROFILE=${browserProfile}`);
       }
       expect(check(step.argv)).toEqual({
         allowed: true,
@@ -78,58 +78,58 @@ describe.each([undefined, profile])(
 
 describe("controller argv restrictions", () => {
   it.each([
-    ["env", `DISPLAY=${display}`, `RAKAZO_BROWSER_PROFILE=${profile}`],
-    ["env", `DISPLAY=${display}`, "RAKAZO_BROWSER_PROFILE=", "rakazo-browser"],
-    ["env", `DISPLAY=${display}`, `RAKAZO_BROWSER_PROFILE=${profile}a`, "rakazo-browser"],
+    ["env", `DISPLAY=${display}`, `ANVIQ_BROWSER_PROFILE=${profile}`],
+    ["env", `DISPLAY=${display}`, "ANVIQ_BROWSER_PROFILE=", "anviq-browser"],
+    ["env", `DISPLAY=${display}`, `ANVIQ_BROWSER_PROFILE=${profile}a`, "anviq-browser"],
     [
       "env",
       `DISPLAY=${display}`,
-      `RAKAZO_BROWSER_PROFILE=${profile.toUpperCase()}`,
-      "rakazo-browser",
+      `ANVIQ_BROWSER_PROFILE=${profile.toUpperCase()}`,
+      "anviq-browser",
     ],
-    ["env", `DISPLAY=${display}`, `RAKAZO_BROWSER_PROFILE=${profile}`, "xterm"],
+    ["env", `DISPLAY=${display}`, `ANVIQ_BROWSER_PROFILE=${profile}`, "xterm"],
     [
       "env",
       `DISPLAY=${display}`,
-      `RAKAZO_BROWSER_PROFILE=${profile}`,
+      `ANVIQ_BROWSER_PROFILE=${profile}`,
       "/usr/bin/xdg-open",
       "https://example.com",
     ],
-    ["env", `DISPLAY=${display}`, `RAKAZO_BROWSER_PROFILE=${profile}`, "xdg-open"],
+    ["env", `DISPLAY=${display}`, `ANVIQ_BROWSER_PROFILE=${profile}`, "xdg-open"],
     [
       "env",
       `DISPLAY=${display}`,
-      `RAKAZO_BROWSER_PROFILE=${profile}`,
-      "rakazo-browser",
+      `ANVIQ_BROWSER_PROFILE=${profile}`,
+      "anviq-browser",
       "one",
       "two",
     ],
-    ["env", "DISPLAY=:8", `RAKAZO_BROWSER_PROFILE=${profile}`, "rakazo-browser"],
+    ["env", "DISPLAY=:8", `ANVIQ_BROWSER_PROFILE=${profile}`, "anviq-browser"],
     ["env", "DISPLAY=:8", "xdg-open", "https://example.com"],
-    ["env", `DISPLAY=${display}`, "rakazo-focus-or-launch"],
-    ["env", `DISPLAY=${display}`, "rakazo-focus-or-launch", "sh"],
-    ["env", `DISPLAY=${display}`, "rakazo-focus-or-launch", "rakazo-focus-or-launch"],
-    ["env", `DISPLAY=${display}`, "rakazo-focus-or-launch", "/usr/bin/xterm"],
-    ["env", `DISPLAY=${display}`, "rakazo-focus-or-launch", "xterm", "one", "two"],
+    ["env", `DISPLAY=${display}`, "anviq-focus-or-launch"],
+    ["env", `DISPLAY=${display}`, "anviq-focus-or-launch", "sh"],
+    ["env", `DISPLAY=${display}`, "anviq-focus-or-launch", "anviq-focus-or-launch"],
+    ["env", `DISPLAY=${display}`, "anviq-focus-or-launch", "/usr/bin/xterm"],
+    ["env", `DISPLAY=${display}`, "anviq-focus-or-launch", "xterm", "one", "two"],
     [
       "env",
       `DISPLAY=${display}`,
-      `RAKAZO_BROWSER_PROFILE=${profile}`,
-      "rakazo-focus-or-launch",
+      `ANVIQ_BROWSER_PROFILE=${profile}`,
+      "anviq-focus-or-launch",
       "xterm",
     ],
-    ["env", "DISPLAY=:8", "rakazo-focus-or-launch", "xterm"],
+    ["env", "DISPLAY=:8", "anviq-focus-or-launch", "xterm"],
     ["env", `DISPLAY=${display}`, "LD_PRELOAD=/tmp/unsafe", "xdg-open", "https://example.com"],
-    ["env", `DISPLAY=${display}`, "RAKAZO_BROWSER_PROFILE=/tmp/unsafe", "rakazo-browser"],
-    ["env", `DISPLAY=${display}`, `RAKAZO_BROWSER_PROFILE=${profile}/../other`, "rakazo-browser"],
-    ["env", `DISPLAY=${display}`, `RAKAZO_BROWSER_PROFILE=${profile}`, "sh", "-c", "true"],
-    ["env", `DISPLAY=${display}`, `RAKAZO_BROWSER_PROFILE=${profile}`, "xdotool", "key", "Return"],
+    ["env", `DISPLAY=${display}`, "ANVIQ_BROWSER_PROFILE=/tmp/unsafe", "anviq-browser"],
+    ["env", `DISPLAY=${display}`, `ANVIQ_BROWSER_PROFILE=${profile}/../other`, "anviq-browser"],
+    ["env", `DISPLAY=${display}`, `ANVIQ_BROWSER_PROFILE=${profile}`, "sh", "-c", "true"],
+    ["env", `DISPLAY=${display}`, `ANVIQ_BROWSER_PROFILE=${profile}`, "xdotool", "key", "Return"],
     [
       "env",
       `DISPLAY=${display}`,
-      `RAKAZO_BROWSER_PROFILE=${profile}`,
-      `RAKAZO_BROWSER_PROFILE=${profile}`,
-      "rakazo-browser",
+      `ANVIQ_BROWSER_PROFILE=${profile}`,
+      `ANVIQ_BROWSER_PROFILE=${profile}`,
+      "anviq-browser",
     ],
   ])("rejects malformed or unauthorized argv %j", (...argv) => {
     expect(check(argv).allowed).toBe(false);

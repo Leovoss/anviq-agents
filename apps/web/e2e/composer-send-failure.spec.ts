@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type { Routine, ThreadMessage } from "@rakazo/contracts";
+import type { Routine, ThreadMessage } from "@anviq/contracts";
 import {
   activeBotId,
   captureScreenshot,
@@ -11,7 +11,7 @@ import {
 } from "./helpers";
 
 async function openComposer(page: Page, prefix: string) {
-  await signup(page, `${prefix}-${Date.now()}@rakazo.test`, "password12", "Draft Keeper");
+  await signup(page, `${prefix}-${Date.now()}@anviq.test`, "password12", "Draft Keeper");
   await completeOnboarding(page);
   const composer = page.getByRole("combobox", { name: /Message/ });
   await expect(composer).toBeVisible();

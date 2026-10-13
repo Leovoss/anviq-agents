@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
-import type { SecretStore } from "@rakazo/adapter-kit";
-import type { BotSecretDestination } from "@rakazo/contracts";
+import type { SecretStore } from "@anviq/adapter-kit";
+import type { BotSecretDestination } from "@anviq/contracts";
 import {
   BotSecretAuth,
   BotSecretName,
@@ -10,9 +10,9 @@ import {
   decodeLoginSecret,
   isPrivateNetworkHost,
   SecretHttpRequest,
-} from "@rakazo/contracts";
-import type { Prisma, PrismaClient } from "@rakazo/db";
-import { withTransactionRetry } from "@rakazo/db";
+} from "@anviq/contracts";
+import type { Prisma, PrismaClient } from "@anviq/db";
+import { withTransactionRetry } from "@anviq/db";
 import { combineSignals, redactConnectorPayload } from "./connector-safety.js";
 import type { RemoteTransportDependencies } from "./remote-mcp.js";
 import { createPrivateNetworkFetch, createSafeRemoteFetch } from "./remote-mcp.js";
@@ -71,7 +71,7 @@ function credentialHeader(destination: BotSecretDestination, plaintext: string) 
 
 /** Owner escape enabling plain-HTTP origins on private LAN hosts (see #907). */
 export function allowPrivateHttpSecretOrigins(): boolean {
-  return process.env.RAKAZO_SECRETS_ALLOW_PRIVATE_HTTP === "1";
+  return process.env.ANVIQ_SECRETS_ALLOW_PRIVATE_HTTP === "1";
 }
 
 export function normalizeSecretDestination(value: unknown): BotSecretDestination {

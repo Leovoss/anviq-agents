@@ -1,6 +1,6 @@
-import type { JobPublisher, JobWorkerHost } from "@rakazo/adapter-kit";
-import { ComposioConnector, IntegrationProviderSettings } from "@rakazo/adapters";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
+import type { JobPublisher, JobWorkerHost } from "@anviq/adapter-kit";
+import { ComposioConnector, IntegrationProviderSettings } from "@anviq/adapters";
+import { loadRootEnv } from "@anviq/core/node/load-root-env";
 import { createWorkerSecretStore } from "./secret-store.js";
 
 loadRootEnv();
@@ -47,8 +47,8 @@ import {
   SpaceMemoryProviderResolver,
   sandboxProviderOptionsFromEnv,
   withSecretPersistence,
-} from "@rakazo/adapters";
-import { resolveEncryptionKey, resolveSupervisorToken } from "@rakazo/core";
+} from "@anviq/adapters";
+import { resolveEncryptionKey, resolveSupervisorToken } from "@anviq/core";
 import {
   createBoardEvents,
   createDb,
@@ -56,10 +56,10 @@ import {
   isTooManyDatabaseConnections,
   parsePositiveInteger,
   pushSessionExpiresAt,
-} from "@rakazo/db";
-import { SERVICE_NAMES } from "@rakazo/logging";
-import { createRootLogger } from "@rakazo/logging/axiom";
-import { MarkdownMemoryStore } from "@rakazo/memory";
+} from "@anviq/db";
+import { SERVICE_NAMES } from "@anviq/logging";
+import { createRootLogger } from "@anviq/logging/axiom";
+import { MarkdownMemoryStore } from "@anviq/memory";
 
 const logger = createRootLogger(SERVICE_NAMES.worker);
 
@@ -73,7 +73,7 @@ async function main() {
   // larger max just competes for Postgres max_connections (53300).
   const created = createDb(databaseUrl, {
     poolMax: parsePositiveInteger(process.env.DB_POOL_MAX, 8),
-    applicationName: "rakazo-worker",
+    applicationName: "anviq-worker",
   });
   const { pool } = created;
   let { prisma } = created;

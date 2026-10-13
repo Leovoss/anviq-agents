@@ -1,7 +1,7 @@
 import {
   CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE,
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildModelConnectPlaintext, modelCredentialDto } from "./model-connect.js";
 import { parseModelSecret, serializeModelSecret } from "./pi-oauth.js";
@@ -666,7 +666,7 @@ describe("compatible connection updates", () => {
     });
   });
   it("revalidates inherited keys against the public-HTTPS policy", () => {
-    vi.stubEnv("RAKAZO_OPENAI_COMPAT_ALLOW_PUBLIC", "1");
+    vi.stubEnv("ANVIQ_OPENAI_COMPAT_ALLOW_PUBLIC", "1");
     const baseUrl = "http://example.invalid/v1";
     const legacy = serializeModelSecret({ kind: "openai_compatible", baseUrl, apiKey: "fake-key" });
     expect(() => buildModelConnectPlaintext({ ...input, baseUrl }, legacy)).toThrow(/HTTPS/);

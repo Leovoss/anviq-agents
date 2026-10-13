@@ -1,4 +1,4 @@
-import { InfisicalSecretStore } from "@rakazo/adapters";
+import { InfisicalSecretStore } from "@anviq/adapters";
 import { describe, expect, it } from "vitest";
 import { infisicalFake } from "../../../packages/adapters/src/secret-store-fake.js";
 import { healthRoutes } from "./health.js";

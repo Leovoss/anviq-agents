@@ -1,8 +1,8 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { LinkFavicons } from "@rakazo/chat-ui/web";
-import { LinkFaviconsContext, RemoteImagesContext } from "@rakazo/chat-ui/web";
-import { LOCAL_SETTINGS_PAGE } from "@rakazo/contracts";
-import { Button, Skeleton } from "@rakazo/ui-web";
+import type { LinkFavicons } from "@anviq/chat-ui/web";
+import { LinkFaviconsContext, RemoteImagesContext } from "@anviq/chat-ui/web";
+import { LOCAL_SETTINGS_PAGE } from "@anviq/contracts";
+import { Button, Skeleton } from "@anviq/ui-web";
 import {
   lazy,
   Suspense,
@@ -117,7 +117,7 @@ function SessionApp() {
     ) : (
       <div
         className="grid h-full place-items-center text-muted-foreground/80"
-        data-rakazo-app-state="session-pending"
+        data-anviq-app-state="session-pending"
       >
         <Trans>Loading…</Trans>
       </div>
@@ -126,7 +126,7 @@ function SessionApp() {
 
   const user = session.data?.user;
   return (
-    <div className="h-full" data-rakazo-app-state="ready">
+    <div className="h-full" data-anviq-app-state="ready">
       <Suspense fallback={<div className="h-full bg-background" />}>
         <Routes>
           <Route path="/" element={user ? <Navigate to="/app" replace /> : <WelcomePage />} />
@@ -244,7 +244,7 @@ function AppFailed() {
   return (
     <div
       className="grid h-full place-items-center bg-background px-6 text-center"
-      data-rakazo-app-state="failed"
+      data-anviq-app-state="failed"
     >
       <div className="flex flex-col items-center">
         <p className="text-[13.5px] text-muted-foreground/80">
@@ -276,7 +276,7 @@ function ShellSkeleton() {
   return (
     <div
       className="flex h-full overflow-hidden bg-background"
-      data-rakazo-app-state="session-pending"
+      data-anviq-app-state="session-pending"
     >
       <aside className="hidden w-[316px] shrink-0 border-e border-sidebar-border bg-sidebar px-3.5 pt-16 md:block">
         <Skeleton className="h-10 rounded-xl" />

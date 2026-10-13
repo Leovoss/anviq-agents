@@ -4,7 +4,7 @@ import { captureScreenshot, completeOnboarding, openUserSettings, signup } from 
 
 const fixture = "/e2e/fixtures/tool-activity.html";
 const REPLY_TEXT = "Tuesday at 2 pm is free.";
-const STORAGE_KEY = "rakazo.showToolActivity";
+const STORAGE_KEY = "anviq.showToolActivity";
 
 const viewports = [
   { name: "desktop-1440x900", width: 1440, height: 900 },
@@ -129,7 +129,7 @@ test("the chat transcript shows tool activity when turned on and hides it when t
   await page.setViewportSize({ width: 1440, height: 900 });
   await seedToolActivityOn(page);
   const stamp = Date.now();
-  await signup(page, `tool-activity-${stamp}@rakazo.test`, "password12", "Tool Activity");
+  await signup(page, `tool-activity-${stamp}@anviq.test`, "password12", "Tool Activity");
   await completeOnboarding(page);
 
   // The scripted runtime answers this with one write_file call, then a short reply.

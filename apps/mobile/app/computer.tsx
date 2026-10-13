@@ -1,4 +1,4 @@
-import type { ComputerMode, ComputerReleaseReason } from "@rakazo/contracts";
+import type { ComputerMode, ComputerReleaseReason } from "@anviq/contracts";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
 import type { RefObject } from "react";

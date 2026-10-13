@@ -1,4 +1,4 @@
-import type { ProcessEvent } from "@rakazo/adapter-kit";
+import type { ProcessEvent } from "@anviq/adapter-kit";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DockerSandboxProvider,
@@ -46,7 +46,7 @@ describe("Docker sandbox", () => {
 
     expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
       argv: ["env", "-u", "FAILED", "--", "sleep", "10"],
-      cwd: "/home/rakazo",
+      cwd: "/home/anviq",
       timeoutMs: 75,
     });
     expect(events).toEqual([
@@ -55,8 +55,8 @@ describe("Docker sandbox", () => {
       { type: "exit", code: 124 },
     ]);
     expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
-      "x-rakazo-bot-id": "bot",
-      "x-rakazo-screen-id": "bot",
+      "x-anviq-bot-id": "bot",
+      "x-anviq-screen-id": "bot",
     });
     expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
       "x-request-id": expect.any(String),
@@ -243,10 +243,10 @@ describe("Docker sandbox", () => {
         method: "DELETE",
         headers: expect.objectContaining({
           authorization: "Bearer test-token",
-          "x-rakazo-bot-id": "home-bot",
-          "x-rakazo-screen-id": "bot",
-          "x-rakazo-screen-lease-id": "run-1:1",
-          "x-rakazo-space-id": "workspace",
+          "x-anviq-bot-id": "home-bot",
+          "x-anviq-screen-id": "bot",
+          "x-anviq-screen-lease-id": "run-1:1",
+          "x-anviq-space-id": "workspace",
         }),
       }),
     );
@@ -417,7 +417,7 @@ describe("Docker sandbox", () => {
       "http://supervisor.test/computers/computer-1/screen",
       expect.objectContaining({
         method: "DELETE",
-        headers: expect.objectContaining({ "x-rakazo-cancel-run-work": "1" }),
+        headers: expect.objectContaining({ "x-anviq-cancel-run-work": "1" }),
       }),
     );
   });
@@ -444,8 +444,8 @@ describe("Docker page browser", () => {
         signal: context.signal,
         body: JSON.stringify({ command: "snapshot" }),
         headers: expect.objectContaining({
-          "x-rakazo-bot-id": "team-home",
-          "x-rakazo-screen-lease-id": "run-1:1",
+          "x-anviq-bot-id": "team-home",
+          "x-anviq-screen-lease-id": "run-1:1",
         }),
       }),
     );

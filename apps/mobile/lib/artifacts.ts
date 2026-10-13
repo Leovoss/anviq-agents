@@ -1,4 +1,4 @@
-import type { Artifact, ArtifactVersion } from "@rakazo/contracts";
+import type { Artifact, ArtifactVersion } from "@anviq/contracts";
 import { rpc } from "./api";
 import type { MobileArtifactTarget } from "./artifact-open";
 

@@ -44,7 +44,7 @@ vi.mock("@lingui/react/macro", () => {
       value === 1 ? one : other,
   };
 });
-vi.mock("@rakazo/ui-web", () => {
+vi.mock("@anviq/ui-web", () => {
   const Pass = ({ children }: { children?: ReactNode }) => <div>{children}</div>;
   return {
     AlertDialog: ({ open, children }: { open?: boolean; children?: ReactNode }) =>

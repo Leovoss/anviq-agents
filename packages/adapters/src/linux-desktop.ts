@@ -8,7 +8,7 @@ import type {
   ScreenRequest,
   ScreenSession,
   TerminalRequest,
-} from "@rakazo/adapter-kit";
+} from "@anviq/adapter-kit";
 import {
   BROWSER_APPLICATIONS,
   browserLauncherPath,
@@ -22,7 +22,7 @@ import {
   screenPorts,
   shellQuote,
   stopAllDesktopBrowsersCommand,
-} from "@rakazo/core/node/desktop-runtime";
+} from "@anviq/core/node/desktop-runtime";
 import {
   BrowserStoppedReleaseError,
   ComputerScreenUnavailableError,
@@ -71,7 +71,7 @@ export class LinuxDesktop {
       managedDesktopCommand(key, context.screenLeaseId, env, randomUUID()),
       context,
     );
-    const match = output.match(/RAKAZO_DESKTOP=(\d+):([a-zA-Z0-9_-]+)/);
+    const match = output.match(/ANVIQ_DESKTOP=(\d+):([a-zA-Z0-9_-]+)/);
     if (!match) throw new ComputerScreenUnavailableError();
     const index = Number(match[1]);
     const ports = screenPorts(index, env);
@@ -213,7 +213,7 @@ export class LinuxDesktop {
       releaseDesktopCommand(screenSessionKey(context), context.screenLeaseId, env),
       context,
     );
-    if (result.stdout.includes("RAKAZO_DESKTOP_RELEASED=")) {
+    if (result.stdout.includes("ANVIQ_DESKTOP_RELEASED=")) {
       if (result.code !== 0 && result.code !== 75) throw new BrowserStoppedReleaseError();
       return;
     }
@@ -241,7 +241,7 @@ function browserActionCommand(
         ? (action.uri ?? "about:blank")
         : undefined;
   if (browser !== undefined) {
-    return `nohup ${browserLauncherPath(layout.displayNumber)} ${shellQuote(browser)} </dev/null >/tmp/rakazo/browser-open-${layout.displayNumber}.log 2>&1 &`;
+    return `nohup ${browserLauncherPath(layout.displayNumber)} ${shellQuote(browser)} </dev/null >/tmp/anviq/browser-open-${layout.displayNumber}.log 2>&1 &`;
   }
   const workspace = env.workspaceDir;
   return `cd ${shellQuote(workspace)}\n${extraDisplayActionCommand(layout, action.kind === "open" ? { ...action, path: workspacePath(workspace, action.path) } : action)}`;
@@ -256,7 +256,7 @@ function isChromiumBrowser(application: string) {
   return BROWSER_APPLICATIONS.has(application.toLowerCase());
 }
 
-// Same 0.2s quick-failure window as rakazo-focus-or-launch. A GUI that stays
+// Same 0.2s quick-failure window as anviq-focus-or-launch. A GUI that stays
 // up is success; an immediate non-zero exit fails the focus before the old
 // window is raised.
 const FOCUS_URI_PROBE = [
@@ -270,7 +270,7 @@ const FOCUS_URI_PROBE = [
 
 /**
  * Raise an app's existing window by WM_CLASS, else spawn it — the focus primitive
- * rakazo-focus-or-launch provides inside the computer image, inline for provider desktops.
+ * anviq-focus-or-launch provides inside the computer image, inline for provider desktops.
  * A URI still starts the launcher (Chrome forwards URLs into its live window) without
  * waiting for that process to exit before the match is raised.
  */
@@ -283,7 +283,7 @@ function focusOrLaunchActionCommand(
   const quotedApp = shellQuote(action.application);
   const quotedArg = action.uri === undefined ? "" : ` ${shellQuote(action.uri)}`;
   const foreground = browser
-    ? `nohup ${browserLauncherPath(layout.displayNumber)} ${shellQuote(action.uri ?? "about:blank")} </dev/null >/tmp/rakazo/browser-open-${layout.displayNumber}.log 2>&1 &`
+    ? `nohup ${browserLauncherPath(layout.displayNumber)} ${shellQuote(action.uri ?? "about:blank")} </dev/null >/tmp/anviq/browser-open-${layout.displayNumber}.log 2>&1 &`
     : `DISPLAY=${layout.display} ${quotedApp}${quotedArg}`;
   // A GUI that stays in the foreground must not delay wmctrl -ia. A non-browser
   // URI still has to surface a launcher that exits immediately.
@@ -327,9 +327,9 @@ function focusOrLaunchActionCommand(
           "  fi",
         ]
       : ["  wid=$id", "  break"]),
-    "done <<RAKAZO_WINDOWS",
+    "done <<ANVIQ_WINDOWS",
     `$(DISPLAY=${layout.display} wmctrl -lxp 2>/dev/null || true)`,
-    "RAKAZO_WINDOWS",
+    "ANVIQ_WINDOWS",
     'if [ -z "$wid" ] && [ "$saw_profile" -eq 0 ]; then wid=$fallback; fi',
     'if [ -n "$wid" ]; then',
     ...(action.uri !== undefined ? [`  ${background}`] : []),

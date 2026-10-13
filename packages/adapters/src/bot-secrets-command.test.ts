@@ -1,9 +1,9 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { BotSecretDestination } from "@rakazo/contracts";
-import { redactSecrets } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
+import type { BotSecretDestination } from "@anviq/contracts";
+import { redactSecrets } from "@anviq/core";
+import type { PrismaClient } from "@anviq/db";
 import { describe, expect, it, vi } from "vitest";
 import { redactAgentCommandResult } from "./agent-environment.js";
 import {
@@ -400,7 +400,7 @@ describe("shell command environment", () => {
       spaceEnvironment: { CLI_TOKEN: "fake-space-token" },
       registerRedactions: vi.fn(),
     });
-    const root = mkdtempSync(path.join(tmpdir(), "rakazo-command-env-"));
+    const root = mkdtempSync(path.join(tmpdir(), "anviq-command-env-"));
     const desktop = new DesktopSandboxProvider({ root });
     const context = {
       operationId: "test",

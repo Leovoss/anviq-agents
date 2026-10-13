@@ -1,4 +1,4 @@
-import type { AdapterContext, ConnectorCall } from "@rakazo/adapter-kit";
+import type { AdapterContext, ConnectorCall } from "@anviq/adapter-kit";
 import { describe, expect, it } from "vitest";
 import type { Evidence } from "./cases.js";
 import { EVAL_CASES, HISTORY_EVAL_CASES } from "./cases.js";

@@ -1,39 +1,39 @@
-# Rakazo
+# Anviq
 
-[![GitHub stars](https://img.shields.io/github/stars/elie222/rakazo?labelColor=black&style=for-the-badge&color=2563EB)](https://github.com/elie222/rakazo/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/leovoss/anviq-agents?labelColor=black&style=for-the-badge&color=2563EB)](https://github.com/leovoss/anviq-agents/stargazers)
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?labelColor=black&style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/RWwKa2Sn7h)
-[![Download on the App Store](https://img.shields.io/badge/App%20Store-Download%20for%20iPhone-black?labelColor=black&style=for-the-badge&logo=apple&logoColor=white)](https://apps.apple.com/app/rakazo/id6801531099)
-[![Download the Android APK](https://img.shields.io/badge/Android-Download%20APK-black?labelColor=black&style=for-the-badge&logo=android&logoColor=white)](https://github.com/elie222/rakazo/releases/download/android/rakazo.apk)
+[![Download on the App Store](https://img.shields.io/badge/App%20Store-Download%20for%20iPhone-black?labelColor=black&style=for-the-badge&logo=apple&logoColor=white)](https://apps.apple.com/app/anviq/id6801531099)
+[![Download the Android APK](https://img.shields.io/badge/Android-Download%20APK-black?labelColor=black&style=for-the-badge&logo=android&logoColor=white)](https://github.com/leovoss/anviq-agents/releases/download/android/anviq.apk)
 
-![Rakazo — AI teammates you actually own](./docs/readme-hero.png)
+![Anviq — AI teammates you actually own](./docs/readme-hero.png)
 
-Rakazo is an open source AI agent for persistent teammates, and a self-hosted AI assistant you
+Anviq is an open source AI agent for persistent teammates, and a self-hosted AI assistant you
 can run on your own machine. It is available on the web, as an Electron desktop app, and on
-[iPhone](https://apps.apple.com/app/rakazo/id6801531099) and [Android](https://github.com/elie222/rakazo/releases/download/android/rakazo.apk). Bring your own model
+[iPhone](https://apps.apple.com/app/anviq/id6801531099) and [Android](https://github.com/leovoss/anviq-agents/releases/download/android/anviq.apk). Bring your own model
 and computer provider, or run the complete stack locally.
 
 It is an open source, self-hosted alternative to Grok Bot, Meta Muse, OpenAI Dots, Instinct,
 OpenClaw, Hermes Agent, and Hark Pro.
 
-Rakazo is in beta. Learn more at [rakazo.com](https://rakazo.com).
+Anviq is in beta. Learn more at [anviq.net](https://anviq.net).
 
-## How Rakazo compares
+## How Anviq compares
 
-Once Rakazo is running, it is just chat, like Grok Bot: you set up a bot and manage it from that
+Once Anviq is running, it is just chat, like Grok Bot: you set up a bot and manage it from that
 chat. Muse, Dots, Instinct, and Hark Pro are hosted assistants. OpenClaw
 and Hermes Agent are also open source agents you can run yourself. Their docs describe installers,
 config files, and a gateway. Hermes Desktop can reach a first chat without the CLI; a messaging
 gateway is a separate process.
 
-- [Grok Bot](https://rakazo.com/grok-bot-alternative/)
-- [Muse](https://rakazo.com/muse-alternative/)
-- [Dots](https://rakazo.com/dots-alternative/)
-- [Instinct](https://rakazo.com/instinct-alternative/), the personal assistant you text or call
-- [OpenClaw](https://rakazo.com/openclaw-alternative/)
-- [Hermes Agent](https://rakazo.com/hermes-alternative/), Nous Research's open source agent
-- [Hark Pro](https://rakazo.com/hark-alternative/), the personal agent at hark.com
-- [All comparisons](https://rakazo.com/alternatives/)
-- [Self-hosting guide](https://rakazo.com/self-hosted-ai-agent/)
+- [Grok Bot](https://anviq.net/grok-bot-alternative/)
+- [Muse](https://anviq.net/muse-alternative/)
+- [Dots](https://anviq.net/dots-alternative/)
+- [Instinct](https://anviq.net/instinct-alternative/), the personal assistant you text or call
+- [OpenClaw](https://anviq.net/openclaw-alternative/)
+- [Hermes Agent](https://anviq.net/hermes-alternative/), Nous Research's open source agent
+- [Hark Pro](https://anviq.net/hark-alternative/), the personal agent at hark.com
+- [All comparisons](https://anviq.net/alternatives/)
+- [Self-hosting guide](https://anviq.net/self-hosted-ai-agent/)
 
 ## Features
 
@@ -68,12 +68,12 @@ https://github.com/user-attachments/assets/dccdeddb-2134-4a56-8eed-b2e591736b1c
 You need Docker Engine, the Compose plugin, curl, and OpenSSL. No clone or Node install.
 
 ```bash
-mkdir -p rakazo && cd rakazo &&
-curl -fsSLO https://raw.githubusercontent.com/elie222/rakazo/main/infra/compose/install-images.sh &&
+mkdir -p anviq && cd anviq &&
+curl -fsSLO https://raw.githubusercontent.com/leovoss/anviq-agents/main/infra/compose/install-images.sh &&
 bash install-images.sh
 ```
 
-The installer downloads the Compose files, creates `.env` with random secrets, and starts Rakazo.
+The installer downloads the Compose files, creates `.env` with random secrets, and starts Anviq.
 It preserves an existing `.env` when rerun.
 
 Open [http://127.0.0.1:5173](http://127.0.0.1:5173), create an account, and connect a model.
@@ -83,8 +83,8 @@ with the matching API key.
 Default image tag is `edge` (main builds, `linux/amd64` + `linux/arm64`). Details and tags:
 [self-hosting guide](./docs/self-host.md#published-images-no-checkout).
 
-On restricted networks, override the installer download base (`RAKAZO_DOWNLOAD_BASE`), skip
-existing Compose files (`--local` / `RAKAZO_DOWNLOAD_SKIP_EXISTING`), or mirror the bootstrap
+On restricted networks, override the installer download base (`ANVIQ_DOWNLOAD_BASE`), skip
+existing Compose files (`--local` / `ANVIQ_DOWNLOAD_SKIP_EXISTING`), or mirror the bootstrap
 script URL — see
 [Restricted networks / mirror downloads](./docs/self-host.md#restricted-networks--mirror-downloads).
 
@@ -97,7 +97,7 @@ the desktop app, the mobile app, or a browser.
 
 ```bash
 bash install-images.sh --prepare-only
-# edit .env: SANDBOX_PROVIDER=box (or e2b / daytona / createos) with its API key, RAKAZO_HOST=your.domain
+# edit .env: SANDBOX_PROVIDER=box (or e2b / daytona / createos) with its API key, ANVIQ_HOST=your.domain
 bash install-images.sh
 ```
 
@@ -111,8 +111,8 @@ You need Node.js 22.22.2 or newer in the 22.x line, Node.js 24.x, or Node.js 26+
 pnpm 9; and Docker. Node.js 23.x and 25.x are not supported.
 
 ```bash
-git clone https://github.com/elie222/rakazo.git
-cd rakazo
+git clone https://github.com/leovoss/anviq-agents.git
+cd anviq
 cp .env.example .env
 ```
 
@@ -171,28 +171,28 @@ and `desktop:1`.
 
 ## Desktop and mobile
 
-The Electron and Expo apps are clients of the same Rakazo API used by the web app.
+The Electron and Expo apps are clients of the same Anviq API used by the web app.
 
 With the development stack running, launch Electron with:
 
 ```bash
-pnpm --filter @rakazo/desktop dev
+pnpm --filter @anviq/desktop dev
 ```
 
-On first run the desktop app asks whether to run Rakazo on this computer or connect to an existing
+On first run the desktop app asks whether to run Anviq on this computer or connect to an existing
 server. **This computer** installs and starts the published images with Docker Compose (the same
 files as `infra/compose/install-images.sh`) under the app's data directory, so Docker Desktop,
 OrbStack, or Docker Engine must be installed; the app links to them when it is not. Installed
 builds pin the image tag to their own version; unpackaged builds pull `edge`. Developers running
 `pnpm dev` should pick **Existing instance** with `http://127.0.0.1:5173` instead. Public servers
 must use HTTPS; HTTP is accepted only for loopback and private LAN addresses (not link-local). The
-app verifies Rakazo's health endpoint before saving, and later launches go straight to that
+app verifies Anviq's health endpoint before saving, and later launches go straight to that
 instance. The stack keeps running after the app quits; **Stop Local Stack** in the application
 menu turns it off.
 
-Use **Change Rakazo Server…** in the application menu to reconnect. Closing that window without
-saving returns to the previous instance. For development automation, set `RAKAZO_WEB_URL` to point
-the shell somewhere else without changing the saved instance, or `RAKAZO_FORCE_SETUP=1` to run
+Use **Change Anviq Server…** in the application menu to reconnect. Closing that window without
+saving returns to the previous instance. For development automation, set `ANVIQ_WEB_URL` to point
+the shell somewhere else without changing the saved instance, or `ANVIQ_FORCE_SETUP=1` to run
 setup again.
 
 Mobile build and release instructions live in [docs/mobile-release.md](./docs/mobile-release.md).
@@ -244,6 +244,6 @@ Contributions are welcome. Please read [CONTRIBUTING.md](./CONTRIBUTING.md) befo
 request. For security vulnerabilities, follow [SECURITY.md](./SECURITY.md) instead of filing a public
 issue.
 
-Rakazo is licensed under the [Apache License 2.0](./LICENSE).
+Anviq is licensed under the [Apache License 2.0](./LICENSE).
 
-Questions and ideas are welcome in the [Rakazo Discord community](https://discord.gg/RWwKa2Sn7h).
+Questions and ideas are welcome in the [Anviq Discord community](https://discord.gg/RWwKa2Sn7h).

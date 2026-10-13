@@ -1,7 +1,7 @@
 import { existsSync, mkdtempSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { ProcessEvent } from "@rakazo/adapter-kit";
+import type { ProcessEvent } from "@anviq/adapter-kit";
 import { afterEach, describe, expect, it } from "vitest";
 import { DesktopSandboxProvider } from "./desktop-sandbox.js";
 
@@ -21,7 +21,7 @@ describe("desktop command execution", () => {
   });
 
   it("does not pass the program or its arguments through a shell", async () => {
-    const root = mkdtempSync(path.join(tmpdir(), "rakazo-desktop-command-"));
+    const root = mkdtempSync(path.join(tmpdir(), "anviq-desktop-command-"));
     roots.push(root);
     const desktop = new DesktopSandboxProvider({ root });
     const computer = await desktop.provision({ botId: "cmd", homePath: "/unused" }, ctx);
@@ -67,7 +67,7 @@ describe("desktop command execution", () => {
   it.skipIf(process.platform === "win32")(
     "runs executable paths containing punctuation and .com",
     async () => {
-      const root = mkdtempSync(path.join(tmpdir(), "rakazo-desktop-command-"));
+      const root = mkdtempSync(path.join(tmpdir(), "anviq-desktop-command-"));
       roots.push(root);
       const binary = path.join(root, "node$&';.com");
       symlinkSync(process.execPath, binary);

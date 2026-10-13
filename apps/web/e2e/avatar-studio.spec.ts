@@ -3,7 +3,7 @@ import { captureScreenshot, completeOnboarding, signup } from "./helpers";
 
 test("bot settings open Avatar Studio on the Bot tab", async ({ page }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `avatar-studio-${stamp}@rakazo.test`, "password12", "Avatar Studio");
+  await signup(page, `avatar-studio-${stamp}@anviq.test`, "password12", "Avatar Studio");
   await completeOnboarding(page);
   await page.goto("/app");
   await page.waitForURL(/\/app\/[^/]+$/);
@@ -31,13 +31,13 @@ test("bot settings open Avatar Studio on the Bot tab", async ({ page }, testInfo
   await wedge.click();
   await expect(wedge).toHaveAttribute("aria-pressed", "true");
   await expect(defaultLook).toHaveAttribute("aria-pressed", "false");
-  await expect(studio.locator(".rakazo-bot-avatar-visor")).toHaveCount(0);
+  await expect(studio.locator(".anviq-bot-avatar-visor")).toHaveCount(0);
 
   await defaultLook.click();
   await expect(defaultLook).toHaveAttribute("aria-pressed", "true");
   await expect(wedge).toHaveAttribute("aria-pressed", "false");
-  await expect(studio.locator(".rakazo-bot-avatar-visor")).toHaveCount(1);
-  await expect(studio.locator(".rakazo-bot-avatar-eyes").first()).toBeVisible();
+  await expect(studio.locator(".anviq-bot-avatar-visor")).toHaveCount(1);
+  await expect(studio.locator(".anviq-bot-avatar-eyes").first()).toBeVisible();
 
   await studio.getByRole("button", { name: "Color #EAB308" }).click();
   await expect(defaultLook).toHaveAttribute("aria-pressed", "true");
@@ -47,7 +47,7 @@ test("bot settings open Avatar Studio on the Bot tab", async ({ page }, testInfo
   await studio.getByRole("button", { name: "Reset", exact: true }).click();
   await expect(defaultLook).toHaveAttribute("aria-pressed", "true");
   await expect(wedge).toHaveAttribute("aria-pressed", "false");
-  await expect(studio.locator(".rakazo-bot-avatar-visor")).toHaveCount(1);
+  await expect(studio.locator(".anviq-bot-avatar-visor")).toHaveCount(1);
 
   await captureScreenshot(page, testInfo, "avatar-studio-bot-tab");
 });

@@ -4,8 +4,8 @@ import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { ModelConnectInputSchema } from "@rakazo/contracts";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
+import { ModelConnectInputSchema } from "@anviq/contracts";
+import { loadRootEnv } from "@anviq/core/node/load-root-env";
 import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import { EVAL_CASES, HISTORY_EVAL_CASES } from "../evals/cases.js";
@@ -282,7 +282,7 @@ async function main() {
     return;
   }
   // This CLI owns a disposable database. Never migrate or evaluate against an inherited database.
-  const dataDir = mkdtempSync(path.join(tmpdir(), "rakazo-evals-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "anviq-evals-"));
   let postgres: StartedPostgreSqlContainer | undefined;
   let stopRequested = false;
   const requestStop = () => {
@@ -325,18 +325,18 @@ async function main() {
       CLOUD_AGENT_PROVIDER: "",
       MODEL_API_KEY: "",
     });
-    execFileSync("pnpm", ["--filter", "@rakazo/db", "generate"], {
+    execFileSync("pnpm", ["--filter", "@anviq/db", "generate"], {
       stdio: "pipe",
       timeout: 120_000,
     });
-    execFileSync("pnpm", ["--filter", "@rakazo/db", "exec", "prisma", "migrate", "deploy"], {
+    execFileSync("pnpm", ["--filter", "@anviq/db", "exec", "prisma", "migrate", "deploy"], {
       stdio: "pipe",
       timeout: 120_000,
     });
     // Import runtime modules only after generation; their barrel exports load Prisma.
     const { createApp } = await import("../../../../apps/api/src/app.ts");
     const { runTrial } = await import("../evals/runner.js");
-    const { PiAgentRuntime } = await import("@rakazo/adapters");
+    const { PiAgentRuntime } = await import("@anviq/adapters");
     const { EvalSandboxProvider } = await import("../evals/sandbox.js");
     for (let i = 0; i < trials.length; i++) {
       if (stopRequested) {

@@ -1,9 +1,9 @@
-import type { ResponseStreamingPreference } from "@rakazo/core";
+import type { ResponseStreamingPreference } from "@anviq/core";
 import {
   normalizeResponseStreamingPreference,
   RESPONSE_STREAMING_STORAGE_KEY,
   responseStreamingEnabled,
-} from "@rakazo/core";
+} from "@anviq/core";
 import * as SecureStore from "expo-secure-store";
 
 export type { ResponseStreamingPreference };

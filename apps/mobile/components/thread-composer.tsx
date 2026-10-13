@@ -1,13 +1,13 @@
 import type { MenuAction } from "@expo/ui/community/menu";
 import { MenuView } from "@expo/ui/community/menu";
-import type { AgentSkillCatalogEntry } from "@rakazo/contracts";
-import type { buildComposerMentionOptions, ComposerMention, SlashActionId } from "@rakazo/core";
+import type { AgentSkillCatalogEntry } from "@anviq/contracts";
+import type { buildComposerMentionOptions, ComposerMention, SlashActionId } from "@anviq/core";
 import {
   mentionChipKey,
   SLASH_ACTIONS,
   serializeComposerPrompt,
   truncateSlashDescription,
-} from "@rakazo/core";
+} from "@anviq/core";
 import type { Ref } from "react";
 import { useImperativeHandle, useMemo, useState } from "react";
 import type { ViewStyle } from "react-native";

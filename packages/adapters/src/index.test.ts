@@ -1,5 +1,5 @@
 import { createCipheriv, createHash } from "node:crypto";
-import { BUILTIN_TOOL_NAMES } from "@rakazo/contracts";
+import { BUILTIN_TOOL_NAMES } from "@anviq/contracts";
 import { describe, expect, it } from "vitest";
 import { agentConnectionTools, builtinAgentTools } from "./builtin-tools.js";
 import { selectBuiltinToolsForRun } from "./executor.js";

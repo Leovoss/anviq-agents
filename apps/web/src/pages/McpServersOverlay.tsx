@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { Bot, BotMcpServer, McpServer, McpTransport } from "@rakazo/contracts";
-import { deriveMcpSlug } from "@rakazo/core";
+import type { Bot, BotMcpServer, McpServer, McpTransport } from "@anviq/contracts";
+import { deriveMcpSlug } from "@anviq/core";
 import {
   Badge,
   Button,
@@ -22,7 +22,7 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-} from "@rakazo/ui-web";
+} from "@anviq/ui-web";
 import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { connectMcpOauth, MCP_OAUTH_CHANNEL } from "../lib/mcp-connect";

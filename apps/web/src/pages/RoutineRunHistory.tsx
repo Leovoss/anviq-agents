@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { RoutineHistory } from "@rakazo/contracts";
-import { Button } from "@rakazo/ui-web";
+import type { RoutineHistory } from "@anviq/contracts";
+import { Button } from "@anviq/ui-web";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";

@@ -1,9 +1,9 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { JobPublisher, NotificationProvider } from "@rakazo/adapter-kit";
-import { STUCK_WORK_NOTICE, stuckWorkStatusMessage } from "@rakazo/core";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
+import type { JobPublisher, NotificationProvider } from "@anviq/adapter-kit";
+import { STUCK_WORK_NOTICE, stuckWorkStatusMessage } from "@anviq/core";
+import type { PrismaClient, ThreadEvents } from "@anviq/db";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { deletePushToken, ExpoPushProvider, savePushToken } from "./expo-push.js";
 import { createJobReconciler } from "./job-reconciler.js";
@@ -156,7 +156,7 @@ describe("reconcileStuckWork", () => {
   });
 
   it("does not stamp a reminder until Expo has a token to deliver it", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-stuck-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-stuck-push-"));
     dirs.push(dataDir);
     const run = candidate("waiting_takeover", 5);
     const stamps: Array<{ runId: string | null; payload: unknown }> = [];
@@ -188,7 +188,7 @@ describe("reconcileStuckWork", () => {
   });
 
   it("drops the claim when the token is removed before Expo accepts the push", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-stuck-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-stuck-push-"));
     dirs.push(dataDir);
     const run = candidate("waiting_takeover", 5);
     const stamps: Array<{ id?: string; runId: string | null; payload: unknown }> = [];

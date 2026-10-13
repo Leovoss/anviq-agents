@@ -1,4 +1,4 @@
-import { ensureAiDataConsent, readBoundedResponseBytes, toUtterances } from "@rakazo/core";
+import { ensureAiDataConsent, readBoundedResponseBytes, toUtterances } from "@anviq/core";
 import { File, Paths } from "expo-file-system";
 import type * as ExpoSpeech from "expo-speech";
 import { Platform } from "react-native";
@@ -372,7 +372,7 @@ async function renderUtterance(
         method: "POST",
         headers: {
           "content-type": "application/json",
-          origin: "rakazo://",
+          origin: "anviq://",
           ...requestContext.headers,
         },
         body: JSON.stringify({ text, voiceId: opts.voiceId, botId: opts.botId }),
@@ -513,7 +513,7 @@ async function playWithNativeAudio(bytes: Uint8Array, session?: HostedSession): 
     interruptionMode: "mixWithOthers",
     shouldPlayInBackground: false,
   });
-  const file = new File(Paths.cache, `rakazo-voice-${Date.now()}.mp3`);
+  const file = new File(Paths.cache, `anviq-voice-${Date.now()}.mp3`);
   file.create({ overwrite: true });
   file.write(bytesToBase64(bytes), { encoding: "base64" });
   const player = createAudioPlayer({ uri: file.uri });

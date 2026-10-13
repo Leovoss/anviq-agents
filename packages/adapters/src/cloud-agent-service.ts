@@ -1,14 +1,14 @@
-import type { AdapterContext, JobPublisher } from "@rakazo/adapter-kit";
-import { cloudAgentPollJob } from "@rakazo/adapter-kit";
-import { cloudAgentBlockFromPayload } from "@rakazo/core";
+import type { AdapterContext, JobPublisher } from "@anviq/adapter-kit";
+import { cloudAgentPollJob } from "@anviq/adapter-kit";
+import { cloudAgentBlockFromPayload } from "@anviq/core";
 import {
   appendEventInTransaction,
   type CloudAgent,
   createThreadMessageInTransaction,
   type PrismaClient,
   type ThreadEvents,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import { type CloudAgentConnection, cloudAgentsEnabled } from "./cloud-agent-factory.js";
 import { cloudAgentLaunchSchema, cloudAgentReplySchema } from "./cloud-agent-tools.js";
 

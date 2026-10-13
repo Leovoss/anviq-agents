@@ -20,7 +20,7 @@ async function serveFakeImages(page: Page) {
 }
 
 async function sendImageReply(page: Page, name: string) {
-  await signup(page, `${name}-${Date.now()}@rakazo.test`, "password12", "Markdown Image");
+  await signup(page, `${name}-${Date.now()}@anviq.test`, "password12", "Markdown Image");
   await completeOnboarding(page);
   const composer = page.getByRole("combobox", { name: /^Message/ });
   await expect(composer).toBeVisible();
@@ -53,7 +53,7 @@ test("remote markdown images in bot replies load only after the reader asks", as
 });
 
 test("remote markdown images load at once when the reader turned that on", async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("rakazo.loadRemoteImages", "on"));
+  await page.addInitScript(() => localStorage.setItem("anviq.loadRemoteImages", "on"));
   const requests = await serveFakeImages(page);
   const bubble = await sendImageReply(page, "markdown-image-auto");
 

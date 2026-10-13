@@ -5,13 +5,13 @@ import type {
   SecretPutOptions,
   SecretRecord,
   SecretStore,
-} from "@rakazo/adapter-kit";
-import { SecretNotFoundError, SecretStoreUnavailableError } from "@rakazo/adapter-kit";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/adapter-kit";
+import { SecretNotFoundError, SecretStoreUnavailableError } from "@anviq/adapter-kit";
+import { getLogger } from "@anviq/logging";
 import { credentialDigest } from "./credential-digest.js";
 import { SecretChanges } from "./secret-changes.js";
 
-export { SecretNotFoundError, SecretStoreUnavailableError } from "@rakazo/adapter-kit";
+export { SecretNotFoundError, SecretStoreUnavailableError } from "@anviq/adapter-kit";
 
 export const INFISICAL_REF_PREFIX = "infisical:v1:";
 export interface InfisicalSecretStoreOptions {
@@ -126,12 +126,12 @@ export class InfisicalSecretStore extends SecretChanges implements SecretStore {
   }
   private key(ref: string, context: SecretContext): string {
     const recordId = typeof context === "string" ? context : context.recordId;
-    const prefix = `rakazo_${credentialDigest(recordId).slice(0, 24)}_`;
+    const prefix = `anviq_${credentialDigest(recordId).slice(0, 24)}_`;
     const key = ref.slice(INFISICAL_REF_PREFIX.length);
     if (
       !ref.startsWith(INFISICAL_REF_PREFIX) ||
       !key.startsWith(prefix) ||
-      !/^rakazo_[a-f0-9]{24}_[a-f0-9-]{36}$/.test(key)
+      !/^anviq_[a-f0-9]{24}_[a-f0-9-]{36}$/.test(key)
     )
       throw new SecretNotFoundError();
     return key;
@@ -152,7 +152,7 @@ export class InfisicalSecretStore extends SecretChanges implements SecretStore {
     context.signal.throwIfAborted();
     if (options.ephemeral) throw new Error("Ephemeral secrets require local encrypted storage");
     const recordId = options.recordId ?? randomUUID();
-    const key = `rakazo_${credentialDigest(recordId).slice(0, 24)}_${randomUUID()}`;
+    const key = `anviq_${credentialDigest(recordId).slice(0, 24)}_${randomUUID()}`;
     const ref = INFISICAL_REF_PREFIX + key;
     try {
       await this.request(

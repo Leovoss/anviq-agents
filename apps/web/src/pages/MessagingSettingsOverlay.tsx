@@ -5,7 +5,7 @@ import type {
   MessagingAgentConnection,
   MessagingChannelMembership,
   MessagingStatus,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 import {
   Button,
   Dialog,
@@ -14,7 +14,7 @@ import {
   DialogTitle,
   NativeSelect,
   NativeSelectOption,
-} from "@rakazo/ui-web";
+} from "@anviq/ui-web";
 import { XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 

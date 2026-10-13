@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 
-const KEY = "rakazo.artifact-cache-session";
+const KEY = "anviq.artifact-cache-session";
 let revision = 0;
 let writes: Promise<unknown> = Promise.resolve();
 let active: { token: string; namespace: string; persisted: boolean } | undefined;

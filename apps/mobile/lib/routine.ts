@@ -1,5 +1,5 @@
-import type { Routine } from "@rakazo/contracts";
-import { formatCron } from "@rakazo/core";
+import type { Routine } from "@anviq/contracts";
+import { formatCron } from "@anviq/core";
 import { t } from "./i18n";
 
 export function routineStatusLine(routine: Routine): string {

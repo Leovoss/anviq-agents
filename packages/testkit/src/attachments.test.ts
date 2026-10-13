@@ -1,7 +1,7 @@
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { ThreadSnapshot } from "@rakazo/contracts";
+import type { ThreadSnapshot } from "@anviq/contracts";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { BotIntroHarness } from "./discard-bot-intro.js";
 import { discardBotIntroFromCreate } from "./discard-bot-intro.js";
@@ -21,7 +21,7 @@ describeAttachments("chat attachments", () => {
   let app: App;
   let stop: () => Promise<void>;
   const stamp = Date.now();
-  const dataDir = mkdtempSync(path.join(tmpdir(), "rakazo-attachments-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "anviq-attachments-"));
   const tinyPng = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
     "base64",
@@ -45,7 +45,7 @@ describeAttachments("chat attachments", () => {
   });
 
   it("uploads, sends with image/file, and rejects invalid attachments", async () => {
-    const cookie = await signup(app, `attachments-${stamp}@rakazo.test`, "Attachment User");
+    const cookie = await signup(app, `attachments-${stamp}@anviq.test`, "Attachment User");
     const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Attacher",
       title: "Attacher",
@@ -152,7 +152,7 @@ describeAttachments("chat attachments", () => {
   });
 
   it("attaches a workspace file into the thread", async () => {
-    const cookie = await signup(app, `attach-thread-${stamp}@rakazo.test`, "Attach Thread User");
+    const cookie = await signup(app, `attach-thread-${stamp}@anviq.test`, "Attach Thread User");
     const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Attacher",
       title: "Attacher",
@@ -179,8 +179,8 @@ describeAttachments("chat attachments", () => {
     );
   });
   it("persists server-owned reply previews, isolates threads, and handles deletion", async () => {
-    const cookie = await signup(app, `replies-${stamp}@rakazo.test`, "Reply User");
-    const otherCookie = await signup(app, `replies-other-${stamp}@rakazo.test`, "Other User");
+    const cookie = await signup(app, `replies-${stamp}@anviq.test`, "Reply User");
+    const otherCookie = await signup(app, `replies-other-${stamp}@anviq.test`, "Other User");
     const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Helper",
       title: "Helper",

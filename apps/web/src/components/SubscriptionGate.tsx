@@ -1,4 +1,4 @@
-import type { BillingStatus, Me } from "@rakazo/contracts";
+import type { BillingStatus, Me } from "@anviq/contracts";
 import type { ReactNode } from "react";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { fetchAuthCapabilities } from "../lib/auth-capabilities";

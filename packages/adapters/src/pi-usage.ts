@@ -14,7 +14,7 @@ import type {
   AgentUsage,
   ModelCallObserver,
   UsageOperationKind,
-} from "@rakazo/adapter-kit";
+} from "@anviq/adapter-kit";
 import type { ContextBudget } from "./context-selection.js";
 import { estimateModelContextTokens } from "./model-context.js";
 import { requestedPiCacheWriteRetention, resolvePiCacheRetention } from "./pi-cache-retention.js";

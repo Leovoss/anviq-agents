@@ -1,4 +1,4 @@
-import { readBoundedResponseBytes } from "@rakazo/core";
+import { readBoundedResponseBytes } from "@anviq/core";
 import { selectedSpaceId, withSpaceHeaders } from "./rpc.js";
 import { errorText } from "./user-error.js";
 
@@ -50,8 +50,8 @@ export function webSpeechAvailable(): boolean {
  */
 function electronSpeechHost(): boolean {
   if (typeof window !== "undefined") {
-    const host = window as Window & { rakazoDesktop?: unknown };
-    if (host.rakazoDesktop) return true;
+    const host = window as Window & { anviqDesktop?: unknown };
+    if (host.anviqDesktop) return true;
   }
   if (typeof navigator === "undefined") return false;
   const agent = navigator.userAgent;

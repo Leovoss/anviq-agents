@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
-import type { JobPublisher, SecretStore } from "@rakazo/adapter-kit";
-import { runContinueJob, SecretStoreUnavailableError } from "@rakazo/adapter-kit";
-import { inboundRoutineModelPin } from "@rakazo/adapters";
-import type { PrismaClient } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { JobPublisher, SecretStore } from "@anviq/adapter-kit";
+import { runContinueJob, SecretStoreUnavailableError } from "@anviq/adapter-kit";
+import { inboundRoutineModelPin } from "@anviq/adapters";
+import type { PrismaClient } from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 
 export const WEBHOOK_MAX_BODY_BYTES = 64 * 1024;
 export const WEBHOOK_SECRET_KIND = "webhook";

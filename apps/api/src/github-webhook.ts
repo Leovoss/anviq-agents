@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { SecretStoreUnavailableError } from "@rakazo/adapter-kit";
+import { SecretStoreUnavailableError } from "@anviq/adapter-kit";
 import type { Hono } from "hono";
 import { readBoundedBody } from "./http-body.js";
 import {

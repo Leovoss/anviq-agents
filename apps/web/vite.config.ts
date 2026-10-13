@@ -6,11 +6,11 @@ import net from "node:net";
 import path from "node:path";
 import tls from "node:tls";
 import { lingui } from "@lingui/vite-plugin";
-import type { DesktopStackProbeResponse } from "@rakazo/contracts";
+import type { DesktopStackProbeResponse } from "@anviq/contracts";
 import {
   safeScreenProxyResponseHeaders,
   stripSensitiveHandshakeHeaders,
-} from "@rakazo/core/node/screen-proxy-response";
+} from "@anviq/core/node/screen-proxy-response";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
@@ -26,9 +26,9 @@ import {
 } from "./src/screen-proxy.js";
 
 const webPort = Number(process.env.WEB_PORT ?? 5173);
-const DESKTOP_STACK_PROBE_PATH = "/.well-known/rakazo-desktop-stack";
-const DESKTOP_STACK_TOKEN_HEADER = "x-rakazo-desktop-stack-token";
-const screenLog = createServiceLogger({ service: "rakazo-web" });
+const DESKTOP_STACK_PROBE_PATH = "/.well-known/anviq-desktop-stack";
+const DESKTOP_STACK_TOKEN_HEADER = "x-anviq-desktop-stack-token";
+const screenLog = createServiceLogger({ service: "anviq-web" });
 
 function screenPolicy(url: string | undefined) {
   return url?.startsWith("/novnc/session/control/") ? "control" : "view";
@@ -400,7 +400,7 @@ Object.defineProperty(window, "localStorage", {
 export default defineConfig(({ mode }) => {
   const rootEnv = loadEnv(mode, path.resolve(import.meta.dirname, "../.."), "");
   const api = process.env.API_PROXY_TARGET ?? rootEnv.API_PROXY_TARGET ?? "http://127.0.0.1:3100";
-  const previewHost = process.env.RAKAZO_HOST ?? rootEnv.RAKAZO_HOST ?? "localhost";
+  const previewHost = process.env.ANVIQ_HOST ?? rootEnv.ANVIQ_HOST ?? "localhost";
   const screenProxySecret = () =>
     resolveScreenProxySecret({
       ...process.env,
@@ -409,10 +409,10 @@ export default defineConfig(({ mode }) => {
         process.env.SANDBOX_SUPERVISOR_TOKEN ?? rootEnv.SANDBOX_SUPERVISOR_TOKEN,
       BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET ?? rootEnv.BETTER_AUTH_SECRET,
     });
-  const performanceAssetDelayMs = Number(process.env.RAKAZO_PERFORMANCE_ASSET_DELAY_MS ?? 0);
+  const performanceAssetDelayMs = Number(process.env.ANVIQ_PERFORMANCE_ASSET_DELAY_MS ?? 0);
   const desktopStackToken =
-    process.env.RAKAZO_DESKTOP_STACK_TOKEN ?? rootEnv.RAKAZO_DESKTOP_STACK_TOKEN ?? "";
-  const imageTag = process.env.RAKAZO_IMAGE_TAG ?? rootEnv.RAKAZO_IMAGE_TAG ?? "edge";
+    process.env.ANVIQ_DESKTOP_STACK_TOKEN ?? rootEnv.ANVIQ_DESKTOP_STACK_TOKEN ?? "";
+  const imageTag = process.env.ANVIQ_IMAGE_TAG ?? rootEnv.ANVIQ_IMAGE_TAG ?? "edge";
   return {
     plugins: [
       react(),
@@ -420,13 +420,13 @@ export default defineConfig(({ mode }) => {
       lingui(),
       tailwindcss(),
       {
-        name: "rakazo-desktop-stack-probe",
+        name: "anviq-desktop-stack-probe",
         configureServer: (server) => attachDesktopStackProbe(server, desktopStackToken, imageTag),
         configurePreviewServer: (server) =>
           attachDesktopStackProbe(server, desktopStackToken, imageTag),
       },
       {
-        name: "rakazo-performance-asset-delay",
+        name: "anviq-performance-asset-delay",
         configurePreviewServer(server) {
           if (!Number.isFinite(performanceAssetDelayMs) || performanceAssetDelayMs <= 0) return;
           server.middlewares.use((req, _res, next) => {
@@ -440,7 +440,7 @@ export default defineConfig(({ mode }) => {
         },
       },
       {
-        name: "rakazo-novnc-proxy",
+        name: "anviq-novnc-proxy",
         configureServer: (server) => attachNovncProxy(server, screenProxySecret(), api),
         configurePreviewServer: (server) => attachNovncProxy(server, screenProxySecret(), api),
       },

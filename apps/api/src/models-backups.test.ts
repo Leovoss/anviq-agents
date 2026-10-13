@@ -1,7 +1,7 @@
 import { RPCHandler } from "@orpc/server/fetch";
-import { listPiCatalog } from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
+import { listPiCatalog } from "@anviq/adapters";
+import type { Actor } from "@anviq/contracts";
+import type { PrismaClient } from "@anviq/db";
 import { describe, expect, it, vi } from "vitest";
 import type { RouterDeps } from "./router.js";
 import { createRouter } from "./router.js";
@@ -9,7 +9,7 @@ import { createRouter } from "./router.js";
 const owner: Actor = {
   userId: "user-one",
   spaceId: "space-one",
-  email: "one@rakazo.test",
+  email: "one@anviq.test",
   isDeploymentOwner: true,
 };
 
@@ -76,7 +76,7 @@ function setup(options: { actor?: Actor; existing?: Array<Record<string, unknown
       screenProxySecret: "fixture-secret",
       sandboxProvider: "fake",
     },
-    dataDir: "C:/scratch/rakazo-model-backups",
+    dataDir: "C:/scratch/anviq-model-backups",
   } as unknown as RouterDeps;
   const actor = options.actor ?? owner;
   const handler = new RPCHandler(createRouter(deps));
@@ -221,7 +221,7 @@ describe("model backup settings API", () => {
       ...owner,
       userId: "user-two",
       spaceId: "space-two",
-      email: "two@rakazo.test",
+      email: "two@anviq.test",
     };
     const { rows, call, spaceBackupModel } = setup({
       actor,

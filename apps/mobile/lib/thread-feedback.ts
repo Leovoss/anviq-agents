@@ -1,5 +1,5 @@
-import type { AgentSkillCatalogEntry } from "@rakazo/contracts";
-import type { ComposerMention, resolveComposerSendPlan } from "@rakazo/core";
+import type { AgentSkillCatalogEntry } from "@anviq/contracts";
+import type { ComposerMention, resolveComposerSendPlan } from "@anviq/core";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { rpc } from "./api";
 import type { PickedAttachment } from "./pick-attachments";

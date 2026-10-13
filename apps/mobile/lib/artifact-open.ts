@@ -1,4 +1,4 @@
-import type { Me } from "@rakazo/contracts";
+import type { Me } from "@anviq/contracts";
 import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Image } from "react-native";

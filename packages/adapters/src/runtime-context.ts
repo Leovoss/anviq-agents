@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { Api, Context, Message, Model } from "@earendil-works/pi-ai";
-import type { AdapterContext, AgentRunRequest, AgentUsage } from "@rakazo/adapter-kit";
-import { DEFAULT_CONTEXT_STRATEGY } from "@rakazo/adapter-kit";
+import type { AdapterContext, AgentRunRequest, AgentUsage } from "@anviq/adapter-kit";
+import { DEFAULT_CONTEXT_STRATEGY } from "@anviq/adapter-kit";
 import type { CacheRequest, ContextBudget } from "./context-selection.js";
 import {
   ContextCacheTracker,
@@ -23,9 +23,9 @@ const messageHash = (message: Message) =>
     .update(JSON.stringify(providerContextPrefix("", [], [message])))
     .digest("hex");
 interface OriginalMetadata {
-  rakazoHistory?: boolean;
-  rakazoMessageId?: string;
-  rakazoCreatedAt?: string;
+  anviqHistory?: boolean;
+  anviqMessageId?: string;
+  anviqCreatedAt?: string;
 }
 function text(message: Message): string {
   if (typeof message.content === "string") return message.content;
@@ -94,8 +94,8 @@ export function createRuntimeContextPolicy(
   );
   function original(message: Message) {
     const metadata = message as Message & OriginalMetadata;
-    if (metadata.rakazoMessageId) return historyById.get(metadata.rakazoMessageId);
-    if (metadataPresent && !metadata.rakazoHistory) return undefined;
+    if (metadata.anviqMessageId) return historyById.get(metadata.anviqMessageId);
+    if (metadataPresent && !metadata.anviqHistory) return undefined;
     const content = text(message);
     return request.history.find(
       (stored) =>
@@ -156,7 +156,7 @@ export function createRuntimeContextPolicy(
             request.tools.some((tool) => tool.name === name),
           ));
       metadataPresent = ctx.messages.some((message) =>
-        Boolean((message as Message & OriginalMetadata).rakazoHistory),
+        Boolean((message as Message & OriginalMetadata).anviqHistory),
       );
       const fullPrefix = providerContextPrefix(
         ctx.systemPrompt ?? "",
@@ -311,9 +311,9 @@ export function createRuntimeContextPolicy(
       }
       const summaries = ctx.messages.filter(
         (message) =>
-          (message as Message & OriginalMetadata).rakazoHistory &&
-          !(message as Message & OriginalMetadata).rakazoMessageId &&
-          (text(message).startsWith("Rakazo-owned compacted context through message sequence ") ||
+          (message as Message & OriginalMetadata).anviqHistory &&
+          !(message as Message & OriginalMetadata).anviqMessageId &&
+          (text(message).startsWith("Anviq-owned compacted context through message sequence ") ||
             text(message).startsWith(
               "Memory recalled from earlier conversations that fell outside the visible history.",
             )),

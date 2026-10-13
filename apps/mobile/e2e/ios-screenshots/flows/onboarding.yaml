@@ -1,20 +1,20 @@
-appId: com.rakazo.app
+appId: com.anviq.app
 name: Onboarding
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMPTY_EMAIL}
+      ANVIQ_ACTIVE_EMAIL: ${ANVIQ_SCREENSHOT_EMPTY_EMAIL}
 - extendedWaitUntil:
     visible: "Personal|Tap \\+ to create a bot"
     timeout: 20000
 - takeScreenshot: 01-empty-inbox
-- openLink: "rakazo:///artifacts"
+- openLink: "anviq:///artifacts"
 - extendedWaitUntil:
     visible: "No artifacts yet|Artifacts"
     timeout: 15000
 - takeScreenshot: 02-empty-artifacts
-- openLink: "rakazo:///new"
+- openLink: "anviq:///new"
 - extendedWaitUntil:
     visible: "Name this bot"
     timeout: 15000

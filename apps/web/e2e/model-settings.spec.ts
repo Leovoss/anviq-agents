@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 import { expect, test } from "@playwright/test";
 import { captureScreenshot, completeOnboarding, openUserSettings, rpc, signup } from "./helpers";
 
-const LOCAL_MODEL_ID = "rakazo-e2e-local";
+const LOCAL_MODEL_ID = "anviq-e2e-local";
 const LOCAL_MODEL_REPLY = "OpenAI-compatible endpoint verified end to end.";
 
 test("custom connections persist reasoning support and bot thinking", async ({
@@ -11,7 +11,7 @@ test("custom connections persist reasoning support and bot thinking", async ({
 }, testInfo) => {
   const stamp = Date.now();
   const userName = `Reasoning ${stamp}`;
-  await signup(page, `reasoning-model-${stamp}@rakazo.test`, "password12", userName);
+  await signup(page, `reasoning-model-${stamp}@anviq.test`, "password12", userName);
   await completeOnboarding(page);
   await openUserSettings(page, "models");
   await page.getByPlaceholder("Search providers").fill("openai-compatible");
@@ -128,7 +128,7 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
       const created = Math.floor(Date.now() / 1_000);
       response.write(
         `data: ${JSON.stringify({
-          id: "chatcmpl-rakazo-e2e",
+          id: "chatcmpl-anviq-e2e",
           object: "chat.completion.chunk",
           created,
           model: LOCAL_MODEL_ID,
@@ -143,7 +143,7 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
       );
       response.write(
         `data: ${JSON.stringify({
-          id: "chatcmpl-rakazo-e2e",
+          id: "chatcmpl-anviq-e2e",
           object: "chat.completion.chunk",
           created,
           model: LOCAL_MODEL_ID,
@@ -167,7 +167,7 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
     const baseUrl = `http://127.0.0.1:${address.port}/v1`;
     const stamp = Date.now();
     const userName = `Local model ${stamp}`;
-    await signup(page, `local-model-${stamp}@rakazo.test`, "password12", userName);
+    await signup(page, `local-model-${stamp}@anviq.test`, "password12", userName);
     await completeOnboarding(page);
 
     await openUserSettings(page, "models");
@@ -234,7 +234,7 @@ test("model settings connect, replace, and cancel provider authentication", asyn
 }, testInfo) => {
   const stamp = Date.now();
   const userName = `Models ${stamp}`;
-  await signup(page, `models-${stamp}@rakazo.test`, "password12", userName);
+  await signup(page, `models-${stamp}@anviq.test`, "password12", userName);
   await completeOnboarding(page);
 
   await openUserSettings(page, "models");
@@ -425,7 +425,7 @@ test("a deployment default on server credentials says so and keeps an own key op
   page,
 }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `server-credentials-${stamp}@rakazo.test`, "password12", `Server ${stamp}`);
+  await signup(page, `server-credentials-${stamp}@anviq.test`, "password12", `Server ${stamp}`);
   await completeOnboarding(page);
   // The E2E deployment runs on a scripted model, so present the active default as one that
   // authenticates from the host, the way an Amazon Bedrock deployment on an AWS role does.
@@ -468,13 +468,13 @@ test("a key connected in another space can replace server credentials for the sa
   page,
 }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `shared-model-${stamp}@rakazo.test`, "password12", "Model Owner");
+  await signup(page, `shared-model-${stamp}@anviq.test`, "password12", "Model Owner");
   await completeOnboarding(page);
   const otherSpace = await rpc<{ id: string }>(page, "spaces/create", { name: "Other space" });
   const provider = "amazon-bedrock";
   const modelId = "eu.anthropic.claude-haiku-4-5-20251001-v1:0";
   const connected = await page.request.post("/rpc/models/connect", {
-    headers: { "x-rakazo-space-id": otherSpace.id },
+    headers: { "x-anviq-space-id": otherSpace.id },
     data: { json: { provider, modelId, apiKey: "fake-bedrock-key" } },
   });
   expect(connected.ok()).toBe(true);
@@ -502,7 +502,7 @@ test("a key connected in another space can replace server credentials for the sa
   const useModel = page.getByRole("button", { name: "Use this model", exact: true });
   await expect(useModel).toBeVisible();
   const personalBillingNote = page.getByText(
-    "Uses your Amazon Bedrock API key. Rakazo does not pay for model usage.",
+    "Uses your Amazon Bedrock API key. Anviq does not pay for model usage.",
   );
   await expect(personalBillingNote).toBeHidden();
   await captureScreenshot(page, testInfo, "model-settings-server-credentials-connected-key");
@@ -510,7 +510,7 @@ test("a key connected in another space can replace server credentials for the sa
   await useModel.click();
   const request = await saved;
   expect(request.postDataJSON().json).toMatchObject({ provider, modelId });
-  expect(request.headers()["x-rakazo-space-id"]).not.toBe(otherSpace.id);
+  expect(request.headers()["x-anviq-space-id"]).not.toBe(otherSpace.id);
   await expect(page.getByText(/Now using/)).toBeVisible();
   await expect(useModel).toBeHidden();
   await expect(personalBillingNote).toBeVisible();
@@ -528,7 +528,7 @@ test("catalog models keep a space default thinking level per saved model", async
   page,
 }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `catalog-thinking-${stamp}@rakazo.test`, "password12", `Thinking ${stamp}`);
+  await signup(page, `catalog-thinking-${stamp}@anviq.test`, "password12", `Thinking ${stamp}`);
   await completeOnboarding(page);
 
   await openUserSettings(page, "models");
@@ -588,7 +588,7 @@ test("saves and reloads an ordered backup model list for connected models", asyn
   page,
 }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `backup-models-${stamp}@rakazo.test`, "password12", `Backups ${stamp}`);
+  await signup(page, `backup-models-${stamp}@anviq.test`, "password12", `Backups ${stamp}`);
   await completeOnboarding(page);
 
   const catalog = await rpc<

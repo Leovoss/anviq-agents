@@ -1,6 +1,6 @@
-import type { BotSecretDestination } from "@rakazo/contracts";
-import { encodeLoginSecret } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
+import type { BotSecretDestination } from "@anviq/contracts";
+import { encodeLoginSecret } from "@anviq/contracts";
+import type { PrismaClient } from "@anviq/db";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   credentialArgument,
@@ -198,7 +198,7 @@ describe("authenticated secret requests", () => {
   });
 
   it("delivers plain-HTTP private destination requests directly when the owner opts in", async () => {
-    vi.stubEnv("RAKAZO_SECRETS_ALLOW_PRIVATE_HTTP", "1");
+    vi.stubEnv("ANVIQ_SECRETS_ALLOW_PRIVATE_HTTP", "1");
     const encrypted = await secretStore.put(
       secret,
       { ...scope, operationId: "test", traceId: "test", signal: new AbortController().signal },
@@ -242,7 +242,7 @@ describe("authenticated secret requests", () => {
   });
 
   it("refuses an opted-in private destination that resolves publicly", async () => {
-    vi.stubEnv("RAKAZO_SECRETS_ALLOW_PRIVATE_HTTP", "1");
+    vi.stubEnv("ANVIQ_SECRETS_ALLOW_PRIVATE_HTTP", "1");
     const encrypted = await secretStore.put(
       secret,
       { ...scope, operationId: "test", traceId: "test", signal: new AbortController().signal },
@@ -664,7 +664,7 @@ describe("normalizeSecretDestination", () => {
   });
 
   it("accepts plain-HTTP private origins when the owner opts in", () => {
-    vi.stubEnv("RAKAZO_SECRETS_ALLOW_PRIVATE_HTTP", "1");
+    vi.stubEnv("ANVIQ_SECRETS_ALLOW_PRIVATE_HTTP", "1");
     expect(normalizeSecretDestination(lanDestination)).toMatchObject({
       name: "hive_api_token",
       origin: "http://192.168.2.10:8080",
@@ -672,14 +672,14 @@ describe("normalizeSecretDestination", () => {
   });
 
   it("still rejects public HTTP origins when the owner opts in", () => {
-    vi.stubEnv("RAKAZO_SECRETS_ALLOW_PRIVATE_HTTP", "1");
+    vi.stubEnv("ANVIQ_SECRETS_ALLOW_PRIVATE_HTTP", "1");
     expect(() =>
       normalizeSecretDestination({ ...lanDestination, origin: "http://api.example.test" }),
     ).toThrow();
   });
 
   it("names the failing field instead of a generic instruction", () => {
-    vi.stubEnv("RAKAZO_SECRETS_ALLOW_PRIVATE_HTTP", "1");
+    vi.stubEnv("ANVIQ_SECRETS_ALLOW_PRIVATE_HTTP", "1");
     expect(() =>
       normalizeSecretDestination({
         name: "Feishu Creds",
@@ -690,7 +690,7 @@ describe("normalizeSecretDestination", () => {
   });
 
   it("reports login-over-plain-HTTP as an origin problem", () => {
-    vi.stubEnv("RAKAZO_SECRETS_ALLOW_PRIVATE_HTTP", "1");
+    vi.stubEnv("ANVIQ_SECRETS_ALLOW_PRIVATE_HTTP", "1");
     expect(() =>
       normalizeSecretDestination({
         name: "feishu_app_credentials",
@@ -766,7 +766,7 @@ describe("saved website logins", () => {
   });
 
   it("refuses to fill a login saved on plain HTTP, including a private LAN origin", async () => {
-    vi.stubEnv("RAKAZO_SECRETS_ALLOW_PRIVATE_HTTP", "1");
+    vi.stubEnv("ANVIQ_SECRETS_ALLOW_PRIVATE_HTTP", "1");
     const { prisma } = await loginFixture(
       "fake-user@example.test",
       login.auth,

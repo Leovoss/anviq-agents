@@ -1,4 +1,4 @@
-import { ACTIVE_RUN_STATUSES } from "@rakazo/core";
+import { ACTIVE_RUN_STATUSES } from "@anviq/core";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { AvatarStyleProvider } from "./avatar-style.js";
@@ -70,9 +70,9 @@ describe("BotAvatar", () => {
     const html = renderToString(
       <BotAvatar color={DEFAULT_GROK_BOT_COLOR} identity="maya" size={28} status="running" />,
     );
-    expect(html).toContain("rakazo-bot-avatar-visor");
-    expect(html).toContain("rakazo-bot-avatar-eyes");
-    expect(html).toContain("rakazo-eyes-idle-");
+    expect(html).toContain("anviq-bot-avatar-visor");
+    expect(html).toContain("anviq-bot-avatar-eyes");
+    expect(html).toContain("anviq-eyes-idle-");
     expect(html).not.toContain("<ellipse");
     expect(html).toContain('data-working="true"');
   });
@@ -161,10 +161,10 @@ describe("BotAvatar", () => {
     const shaped = renderToString(
       <BotAvatar color={`${DEFAULT_GROK_BOT_COLOR}::shape_4`} identity="maya" />,
     );
-    expect(restored).toContain("rakazo-bot-avatar-visor");
+    expect(restored).toContain("anviq-bot-avatar-visor");
     expect(restored).not.toContain("grok-character-eyes");
     expect(shaped).toContain("grok-character-eyes");
-    expect(shaped).not.toContain("rakazo-bot-avatar-visor");
+    expect(shaped).not.toContain("anviq-bot-avatar-visor");
   });
 
   it("exposes shape picker name and pressed state", () => {
@@ -188,10 +188,10 @@ describe("BotAvatar", () => {
       />,
     );
     expect(robot).not.toEqual(organic);
-    expect(robot).toContain("rakazo-bot-avatar-eyes");
+    expect(robot).toContain("anviq-bot-avatar-eyes");
     expect(robot).not.toContain("grok-character-eyes");
-    expect(organic).toContain("rakazo-organic-avatar");
-    expect(organic).not.toContain("rakazo-bot-avatar-eyes");
+    expect(organic).toContain("anviq-organic-avatar");
+    expect(organic).not.toContain("anviq-bot-avatar-eyes");
   });
 
   it("uses the preferred avatar style when variant is omitted", () => {
@@ -200,7 +200,7 @@ describe("BotAvatar", () => {
         <BotAvatar color={DEFAULT_GROK_BOT_COLOR} identity="maya" />
       </AvatarStyleProvider>,
     );
-    expect(html).toContain("rakazo-organic-avatar");
+    expect(html).toContain("anviq-organic-avatar");
     expect(html).not.toContain("grok-character-eyes");
   });
 
@@ -209,7 +209,7 @@ describe("BotAvatar", () => {
       <BotAvatar color="data:image/png;base64,abc" identity="maya" variant="organic" />,
     );
     expect(html).toContain("<img");
-    expect(html).not.toContain("rakazo-organic-avatar");
+    expect(html).not.toContain("anviq-organic-avatar");
   });
 
   it("keeps an encoded studio shape when the organic style is preferred", () => {
@@ -217,13 +217,13 @@ describe("BotAvatar", () => {
       <BotAvatar color={`${DEFAULT_GROK_BOT_COLOR}::shape_3`} identity="maya" variant="organic" />,
     );
     expect(html).toContain("grok-character-eyes");
-    expect(html).not.toContain("rakazo-organic-avatar");
+    expect(html).not.toContain("anviq-organic-avatar");
   });
 
   it("fills the organic body with the resolved palette hex when the custom color is invalid", () => {
     const fallback = resolvePersonaColorDef("maya", "#zzzzzz");
     const html = renderToString(<BotAvatar color="#zzzzzz" identity="maya" variant="organic" />);
-    expect(html).toContain("rakazo-organic-avatar");
+    expect(html).toContain("anviq-organic-avatar");
     expect(html).toContain(`fill="${fallback.hex}"`);
     expect(html).not.toContain("#zzzzzz");
   });
@@ -244,12 +244,12 @@ function px(style: string, property: string): number {
 }
 
 function robotFaceFromHtml(html: string) {
-  const visor = html.match(/class="[^"]*rakazo-bot-avatar-visor[^"]*" style="([^"]*)"/);
+  const visor = html.match(/class="[^"]*anviq-bot-avatar-visor[^"]*" style="([^"]*)"/);
   const visorStyle = visor?.[1];
   if (!visorStyle) throw new Error("missing visor");
   const border = styleValue(visorStyle, "border").match(/^(\d+)px/);
   const borderPx = Number(border?.[1] ?? "0");
-  const eyeRows = [...html.matchAll(/class="[^"]*rakazo-bot-avatar-eyes[^"]*" style="([^"]*)"/g)];
+  const eyeRows = [...html.matchAll(/class="[^"]*anviq-bot-avatar-eyes[^"]*" style="([^"]*)"/g)];
   const eyeSpans = [...html.matchAll(/<span class="block" style="([^"]*background-color:[^"]*)"/g)];
   if (eyeRows.length === 0 || eyeSpans.length === 0) throw new Error("missing eyes");
   const gaps = eyeRows.map((row) => px(row[1] ?? "", "gap"));

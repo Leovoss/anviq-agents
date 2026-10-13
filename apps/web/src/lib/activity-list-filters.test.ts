@@ -1,4 +1,4 @@
-import type { RunActivityRow } from "@rakazo/contracts";
+import type { RunActivityRow } from "@anviq/contracts";
 import { describe, expect, it } from "vitest";
 import {
   activityFiltersActive,

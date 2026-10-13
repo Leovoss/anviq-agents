@@ -5,22 +5,22 @@ import type {
   ModelCredentialFailedState,
   ModelCredentialRetireReason,
   SecretStore,
-} from "@rakazo/adapter-kit";
+} from "@anviq/adapter-kit";
 import {
   formatCurrentTimeInstruction,
   matchesFailedOAuthSecret,
   resolveModelAuth,
   serializeModelSecret,
   toOAuthCredential,
-} from "@rakazo/adapters";
-import type { PrismaClient } from "@rakazo/db";
+} from "@anviq/adapters";
+import type { PrismaClient } from "@anviq/db";
 import {
   findDefaultModelCredential,
   findModelCredential,
   recordUsage,
   retireModelCredential,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 
 const MAX_RULES_CHARS = 4_000;
 const MAX_MESSAGES = 20;

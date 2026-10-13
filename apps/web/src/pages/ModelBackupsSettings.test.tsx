@@ -26,7 +26,7 @@ vi.mock("@lingui/react/macro", () => ({
   useLingui: () => ({ t: backupApi.translate }),
   Trans: ({ children }: { children?: ReactNode }) => children,
 }));
-vi.mock("@rakazo/ui-web", () => {
+vi.mock("@anviq/ui-web", () => {
   const Button = ({
     variant: _variant,
     size: _size,

@@ -2,8 +2,8 @@ import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { DesktopReachability, DesktopSetup } from "@rakazo/contracts";
-import { LOCAL_SETTINGS_PAGE } from "@rakazo/contracts/local-settings";
+import type { DesktopReachability, DesktopSetup } from "@anviq/contracts";
+import { LOCAL_SETTINGS_PAGE } from "@anviq/contracts/local-settings";
 import {
   app,
   BrowserWindow,
@@ -46,7 +46,7 @@ import { installSessionPermissions } from "./session-permissions.js";
 import {
   DEFAULT_LOCAL_WEB_URL,
   desktopStackImageTag,
-  isRakazoHealth,
+  isAnviqHealth,
   managedLocalOpenUrl,
   maySendDesktopStackToken,
   normalizeServerUrl,
@@ -67,12 +67,12 @@ import {
   warmWindowTtlMs,
 } from "./window-options.js";
 
-const PERFORMANCE_USER_DATA = process.env.RAKAZO_PERFORMANCE_USER_DATA;
+const PERFORMANCE_USER_DATA = process.env.ANVIQ_PERFORMANCE_USER_DATA;
 /** Test hook: where the app-managed stack answers. Mode `new` still requires loopback. */
-const LOCAL_WEB_URL = process.env.RAKAZO_LOCAL_WEB_URL?.trim() || DEFAULT_LOCAL_WEB_URL;
+const LOCAL_WEB_URL = process.env.ANVIQ_LOCAL_WEB_URL?.trim() || DEFAULT_LOCAL_WEB_URL;
 const PROBE_TIMEOUT_MS = 8_000;
-const DESKTOP_STACK_PROBE_PATH = "/.well-known/rakazo-desktop-stack";
-const DESKTOP_STACK_TOKEN_HEADER = "x-rakazo-desktop-stack-token";
+const DESKTOP_STACK_PROBE_PATH = "/.well-known/anviq-desktop-stack";
+const DESKTOP_STACK_TOKEN_HEADER = "x-anviq-desktop-stack-token";
 let mainWindow: BrowserWindow | null = null;
 const appWindowTargets = new WeakMap<BrowserWindow, string>();
 let setupWindow: BrowserWindow | null = null;
@@ -94,12 +94,12 @@ let warmWindowTimer: NodeJS.Timeout | undefined;
 // destroying the last window fires "window-all-closed" -> app.quit(); a probe
 // that runs before the first real window exists must not count as "all closed".
 let liveProbeWindows = 0;
-const WARM_WINDOW_TTL_MS = warmWindowTtlMs(process.env.RAKAZO_WARM_WINDOW_TTL_MS);
+const WARM_WINDOW_TTL_MS = warmWindowTtlMs(process.env.ANVIQ_WARM_WINDOW_TTL_MS);
 
 const updaterEnvironment = {
   packaged: app.isPackaged,
   version: app.getVersion(),
-  disabled: process.env.RAKAZO_DISABLE_AUTO_UPDATE === "1",
+  disabled: process.env.ANVIQ_DISABLE_AUTO_UPDATE === "1",
 };
 const desktopUpdater = new DesktopUpdateController(
   updaterEnvironment,
@@ -315,7 +315,7 @@ function createWindow(url: string, partition: string | null) {
     if (
       process.platform === "darwin" &&
       !quitting &&
-      process.env.RAKAZO_DISABLE_WARM_WINDOW !== "1"
+      process.env.ANVIQ_DISABLE_WARM_WINDOW !== "1"
     ) {
       event.preventDefault();
       win.hide();
@@ -478,7 +478,7 @@ async function installBundledRenderer(
   partition: string | null,
   managedLocalStack: boolean,
 ) {
-  if (!app.isPackaged || process.env.RAKAZO_DISABLE_BUNDLED_RENDERER === "1") return;
+  if (!app.isPackaged || process.env.ANVIQ_DISABLE_BUNDLED_RENDERER === "1") return;
   if (!servesBundledRenderer(targetUrl, managedLocalStack)) return;
   const webUrl = new URL(targetUrl);
   const installationKey = `${partition ?? "default"}:${webUrl.protocol}`;
@@ -674,8 +674,8 @@ function installApplicationMenu() {
     },
   };
   const changeServer: Electron.MenuItemConstructorOptions = {
-    id: "change-rakazo-server",
-    label: "Change Rakazo Server…",
+    id: "change-anviq-server",
+    label: "Change Anviq Server…",
     accelerator: "CmdOrCtrl+Shift+K",
     click: () => showSetupWindow(),
   };
@@ -726,7 +726,7 @@ function installApplicationMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-/** Setup IPC must only answer the setup window, never a connected Rakazo server. */
+/** Setup IPC must only answer the setup window, never a connected Anviq server. */
 function fromSetupWindow(event: Electron.IpcMainInvokeEvent) {
   return (
     setupWindow !== null && !setupWindow.isDestroyed() && event.sender === setupWindow.webContents
@@ -753,7 +753,7 @@ async function probeServer(rawUrl: string, signal?: AbortSignal): Promise<Deskto
         ok: false,
         status: response.status,
         url,
-        error: "That address redirects elsewhere. Enter the final Rakazo server address.",
+        error: "That address redirects elsewhere. Enter the final Anviq server address.",
       };
     }
     if (!response.ok) {
@@ -765,12 +765,12 @@ async function probeServer(rawUrl: string, signal?: AbortSignal): Promise<Deskto
       };
     }
     const health = await readProbeJson(response);
-    if (!isRakazoHealth(health)) {
+    if (!isAnviqHealth(health)) {
       return {
         ok: false,
         status: response.status,
         url,
-        error: "That address did not respond like a Rakazo server.",
+        error: "That address did not respond like a Anviq server.",
       };
     }
     return {
@@ -981,12 +981,12 @@ app.whenReady().then(async () => {
       appPath: app.getAppPath(),
     }),
     localWebUrl:
-      process.env.RAKAZO_LOCAL_WEB_URL?.trim() ||
+      process.env.ANVIQ_LOCAL_WEB_URL?.trim() ||
       (await readStackWebUrl(stackDir(userDataDir), LOCAL_WEB_URL)),
     imageTag: resolveImageTag({
       version: app.getVersion(),
       packaged: app.isPackaged,
-      override: process.env.RAKAZO_IMAGE_TAG,
+      override: process.env.ANVIQ_IMAGE_TAG,
     }),
     probe: (url, signal, token) => probeManagedStack(url, token, signal),
     randomHex: (bytes) => randomBytes(bytes).toString("hex"),
@@ -998,11 +998,11 @@ app.whenReady().then(async () => {
   });
   currentSetup = await readSetup(userDataDir);
   const target = resolveStartupTarget({
-    envUrl: process.env.RAKAZO_WEB_URL,
+    envUrl: process.env.ANVIQ_WEB_URL,
     saved: currentSetup,
-    forceSetup: process.env.RAKAZO_FORCE_SETUP === "1",
+    forceSetup: process.env.ANVIQ_FORCE_SETUP === "1",
   });
-  if (process.env.RAKAZO_PERFORMANCE_CLEAR_CACHE === "1") {
+  if (process.env.ANVIQ_PERFORMANCE_CLEAR_CACHE === "1") {
     const cacheSessions = new Set<Session>([session.defaultSession]);
     if (target.kind === "app") {
       cacheSessions.add((await resolveSessionForTarget(target.url)).value);
@@ -1178,7 +1178,7 @@ app.whenReady().then(async () => {
         if (managedUrl === null || !(await localStack.matchesDesiredStack())) {
           return {
             ok: false,
-            error: "The app-managed Rakazo services are not ready. Retry setup.",
+            error: "The app-managed Anviq services are not ready. Retry setup.",
           };
         }
         openSetup = { mode: "new", serverUrl: managedUrl };

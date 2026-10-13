@@ -1,10 +1,10 @@
-appId: com.rakazo.app
+appId: com.anviq.app
 name: Search
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
+      ANVIQ_ACTIVE_EMAIL: ${ANVIQ_SCREENSHOT_EMAIL}
 - tapOn: "Search"
 - takeScreenshot: 01-search-empty
 - inputText: "zzzz-no-such-fixture"

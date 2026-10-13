@@ -1,4 +1,4 @@
-import type { RakazoDesktopOAuthCallback } from "@rakazo/contracts";
+import type { AnviqDesktopOAuthCallback } from "@anviq/contracts";
 
 export type OAuthCallbackFromOptions = {
   /** SSO callbacks must reach the API, including a loopback API on a separate port. */
@@ -12,7 +12,7 @@ export const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 /**
  * Providers that sign in through a loopback redirect — Anthropic sends the
  * browser to `http://localhost:53692/callback` — return the authorization code
- * in the redirect URL. Rakazo runs no listener on that port and asks for the
+ * in the redirect URL. Anviq runs no listener on that port and asks for the
  * code to be pasted instead, which the sign-in popup cannot show because an
  * Electron window has no address bar. The main process still sees the
  * navigation, so it reads the code from there.
@@ -20,8 +20,8 @@ export const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 export function oauthCallbackFrom(
   url: string,
   options: OAuthCallbackFromOptions = {},
-): RakazoDesktopOAuthCallback | undefined {
-  if (options.frameName === "rakazo-sso-oauth") return undefined;
+): AnviqDesktopOAuthCallback | undefined {
+  if (options.frameName === "anviq-sso-oauth") return undefined;
   let target: URL;
   try {
     target = new URL(url);

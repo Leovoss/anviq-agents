@@ -1,4 +1,4 @@
-name: rakazo-prod
+name: anviq-prod
 
 # Bounded container logs even on hosts without infra/compose/docker-daemon.json;
 # same driver and limits it installs, so both layers agree.
@@ -18,15 +18,15 @@ services:
     pids_limit: 200
     mem_limit: 2g
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-rakazo}
+      POSTGRES_USER: ${POSTGRES_USER:-anviq}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: ${POSTGRES_DB:-rakazo}
+      POSTGRES_DB: ${POSTGRES_DB:-anviq}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rakazo} -d ${POSTGRES_DB:-rakazo}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-anviq} -d ${POSTGRES_DB:-anviq}"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -37,8 +37,8 @@ services:
     #
     # The default tag is `local`, which no registry serves, so a fresh install builds from the
     # checkout via `up -d --build` instead of failing on a `pull` of an image that does not exist
-    # yet. Once a release is published, pin RAKAZO_IMAGE_TAG to it and the pull path takes over.
-    image: ${RAKAZO_IMAGE:-ghcr.io/elie222/rakazo/app}:${RAKAZO_IMAGE_TAG:-local}
+    # yet. Once a release is published, pin ANVIQ_IMAGE_TAG to it and the pull path takes over.
+    image: ${ANVIQ_IMAGE:-ghcr.io/leovoss/anviq-agents/app}:${ANVIQ_IMAGE_TAG:-local}
     build:
       context: ../..
       dockerfile: infra/compose/Dockerfile
@@ -48,7 +48,7 @@ services:
     command:
       - bash
       - -lc
-      - pnpm --filter @rakazo/db exec prisma migrate deploy && pnpm --filter @rakazo/api start
+      - pnpm --filter @anviq/db exec prisma migrate deploy && pnpm --filter @anviq/api start
     init: true
     logging: *logging
     security_opt:
@@ -77,7 +77,7 @@ services:
       OIDC_SCOPES: ${OIDC_SCOPES:-openid email profile}
       OIDC_ALLOW_SIGNUP_BYPASS: ${OIDC_ALLOW_SIGNUP_BYPASS:-false}
       AUTH_PASSWORD_ENABLED: ${AUTH_PASSWORD_ENABLED:-true}
-      DATABASE_URL: postgres://${POSTGRES_USER:-rakazo}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-rakazo}
+      DATABASE_URL: postgres://${POSTGRES_USER:-anviq}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-anviq}
       DATA_DIR: /data
       SANDBOX_PROVIDER: ${SANDBOX_PROVIDER:-e2b}
       CLOUD_AGENT_PROVIDER: ${CLOUD_AGENT_PROVIDER:-none}
@@ -92,7 +92,7 @@ services:
       http_proxy: ${http_proxy:-${HTTP_PROXY:-}}
       https_proxy: ${https_proxy:-${HTTPS_PROXY:-}}
       no_proxy: ${no_proxy:-${NO_PROXY:-}}
-      RAKAZO_UPDATER_URL: http://updater:7092
+      ANVIQ_UPDATER_URL: http://updater:7092
     expose:
       - "3100"
     volumes:
@@ -115,14 +115,14 @@ services:
       retries: 20
 
   worker:
-    image: ${RAKAZO_IMAGE:-ghcr.io/elie222/rakazo/app}:${RAKAZO_IMAGE_TAG:-local}
+    image: ${ANVIQ_IMAGE:-ghcr.io/leovoss/anviq-agents/app}:${ANVIQ_IMAGE_TAG:-local}
     build:
       context: ../..
       dockerfile: infra/compose/Dockerfile
       args:
         GIT_SHA: ${GIT_SHA:-}
     restart: unless-stopped
-    command: ["pnpm", "--filter", "@rakazo/worker", "start"]
+    command: ["pnpm", "--filter", "@anviq/worker", "start"]
     init: true
     logging: *logging
     security_opt:
@@ -148,7 +148,7 @@ services:
       OIDC_CLIENT_SECRET: ""
       AUTH_PASSWORD_ENABLED: "true"
       NODE_ENV: production
-      DATABASE_URL: postgres://${POSTGRES_USER:-rakazo}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-rakazo}
+      DATABASE_URL: postgres://${POSTGRES_USER:-anviq}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-anviq}
       DATA_DIR: /data
       SANDBOX_PROVIDER: ${SANDBOX_PROVIDER:-e2b}
       CLOUD_AGENT_PROVIDER: ${CLOUD_AGENT_PROVIDER:-none}
@@ -176,14 +176,14 @@ services:
         condition: service_healthy
 
   web:
-    image: ${RAKAZO_IMAGE:-ghcr.io/elie222/rakazo/app}:${RAKAZO_IMAGE_TAG:-local}
+    image: ${ANVIQ_IMAGE:-ghcr.io/leovoss/anviq-agents/app}:${ANVIQ_IMAGE_TAG:-local}
     build:
       context: ../..
       dockerfile: infra/compose/Dockerfile
       args:
         GIT_SHA: ${GIT_SHA:-}
     restart: unless-stopped
-    command: ["pnpm", "--filter", "@rakazo/web", "preview", "--host", "0.0.0.0", "--port", "5173"]
+    command: ["pnpm", "--filter", "@anviq/web", "preview", "--host", "0.0.0.0", "--port", "5173"]
     init: true
     logging: *logging
     security_opt:
@@ -195,7 +195,7 @@ services:
     environment:
       NODE_ENV: production
       API_PROXY_TARGET: http://api:3100
-      RAKAZO_HOST: ${RAKAZO_HOST:-app.example.com}
+      ANVIQ_HOST: ${ANVIQ_HOST:-app.example.com}
       SCREEN_PROXY_SECRET: ${SCREEN_PROXY_SECRET:?Set SCREEN_PROXY_SECRET in .env}
     expose:
       - "5173"
@@ -216,7 +216,7 @@ services:
     profiles: [updater]
     # Pinned separately from the application image: the updater does not recreate itself, so moving
     # its own version is an operator action, not something an update can do underneath itself.
-    image: ${RAKAZO_UPDATER_IMAGE:-ghcr.io/elie222/rakazo/updater}:${RAKAZO_UPDATER_IMAGE_TAG:-local}
+    image: ${ANVIQ_UPDATER_IMAGE:-ghcr.io/leovoss/anviq-agents/updater}:${ANVIQ_UPDATER_IMAGE_TAG:-local}
     build:
       context: ../..
       dockerfile: infra/updater/Dockerfile
@@ -234,21 +234,21 @@ services:
       NODE_ENV: production
       # Keep interpolation optional so deployments that do not enable this profile need no token.
       # resolveUpdaterConfig still refuses to start the sidecar without a dedicated secure value.
-      RAKAZO_UPDATER_TOKEN: ${RAKAZO_UPDATER_TOKEN:-}
-      RAKAZO_UPDATER_HOST: "0.0.0.0"
-      RAKAZO_UPDATER_PORT: "7092"
-      RAKAZO_IMAGE: ${RAKAZO_IMAGE:-ghcr.io/elie222/rakazo/app}
+      ANVIQ_UPDATER_TOKEN: ${ANVIQ_UPDATER_TOKEN:-}
+      ANVIQ_UPDATER_HOST: "0.0.0.0"
+      ANVIQ_UPDATER_PORT: "7092"
+      ANVIQ_IMAGE: ${ANVIQ_IMAGE:-ghcr.io/leovoss/anviq-agents/app}
       # `-p` is available to Compose interpolation but is not injected into containers unless it is
       # declared here. The sidecar must target the project the operator actually started.
-      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-rakazo-prod}
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-anviq-prod}
       # Must equal the host path it is mounted from, or every relative bind mount in this file would
-      # resolve somewhere else. /srv/rakazo is the supported Linux production layout.
-      RAKAZO_DEPLOY_DIR: ${RAKAZO_DEPLOY_DIR:-/srv/rakazo}
+      # resolve somewhere else. /srv/anviq is the supported Linux production layout.
+      ANVIQ_DEPLOY_DIR: ${ANVIQ_DEPLOY_DIR:-/srv/anviq}
       # A deployment that layers an overlay has to be reconciled with the same file list and the
       # same services the operator runs by hand, so these are read from the environment rather
       # than pinned to the base stack. Defaults reproduce the previous behaviour exactly.
-      RAKAZO_COMPOSE_FILE: ${RAKAZO_COMPOSE_FILE:-infra/compose/docker-compose.prod.yml}
-      RAKAZO_UPDATE_SERVICES: ${RAKAZO_UPDATE_SERVICES:-}
+      ANVIQ_COMPOSE_FILE: ${ANVIQ_COMPOSE_FILE:-infra/compose/docker-compose.prod.yml}
+      ANVIQ_UPDATE_SERVICES: ${ANVIQ_UPDATE_SERVICES:-}
       COMPOSE_PATH_SEPARATOR: ${COMPOSE_PATH_SEPARATOR:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_FORMAT: ${LOG_FORMAT:-}
@@ -258,7 +258,7 @@ services:
       AXIOM_EDGE_URL: ${AXIOM_EDGE_URL:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${RAKAZO_DEPLOY_DIR:-/srv/rakazo}:${RAKAZO_DEPLOY_DIR:-/srv/rakazo}
+      - ${ANVIQ_DEPLOY_DIR:-/srv/anviq}:${ANVIQ_DEPLOY_DIR:-/srv/anviq}
     networks:
       - control
     healthcheck:
@@ -285,7 +285,7 @@ services:
     pids_limit: 128
     mem_limit: 256m
     environment:
-      RAKAZO_HOST: ${RAKAZO_HOST:-app.example.com}
+      ANVIQ_HOST: ${ANVIQ_HOST:-app.example.com}
     ports:
       - "80:80"
       - "443:443"

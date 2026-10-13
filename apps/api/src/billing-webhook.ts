@@ -1,6 +1,6 @@
-import type { BillingProvider } from "@rakazo/adapter-kit";
-import type { Actor } from "@rakazo/contracts";
-import { getLogger } from "@rakazo/logging";
+import type { BillingProvider } from "@anviq/adapter-kit";
+import type { Actor } from "@anviq/contracts";
+import { getLogger } from "@anviq/logging";
 import type { Hono } from "hono";
 import type { BillingService } from "./billing.js";
 import { BILLING_RETURN_PATH } from "./billing.js";

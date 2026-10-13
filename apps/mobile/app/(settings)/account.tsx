@@ -1,4 +1,4 @@
-import type { AccountSecurity, AvatarStyle } from "@rakazo/contracts";
+import type { AccountSecurity, AvatarStyle } from "@anviq/contracts";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {

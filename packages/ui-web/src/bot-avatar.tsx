@@ -1,4 +1,4 @@
-import type { GrokColorDef } from "@rakazo/core";
+import type { GrokColorDef } from "@anviq/core";
 import {
   ACTIVE_RUN_STATUSES,
   avatarIdentitySeed,
@@ -13,8 +13,8 @@ import {
   SHIPPED_BOT_AVATAR_VIEWBOX,
   shippedBotAvatarShapePath,
   shippedHash,
-} from "@rakazo/core";
-import { tokens } from "@rakazo/ui-tokens";
+} from "@anviq/core";
+import { tokens } from "@anviq/ui-tokens";
 import type { CSSProperties } from "react";
 import { memo, useId, useMemo, useSyncExternalStore } from "react";
 import type { AvatarStyle } from "./avatar-style.js";
@@ -126,7 +126,7 @@ export const BotAvatar = memo(function BotAvatar({
     return (
       <div
         className={cn(
-          "rakazo-bot-avatar relative overflow-hidden rounded-full flex items-center justify-center select-none bg-secondary shrink-0 border border-border",
+          "anviq-bot-avatar relative overflow-hidden rounded-full flex items-center justify-center select-none bg-secondary shrink-0 border border-border",
           className,
         )}
         data-working={isWorking}
@@ -140,7 +140,7 @@ export const BotAvatar = memo(function BotAvatar({
       >
         {isWorking ? (
           <svg
-            className="rakazo-bot-avatar-ring absolute pointer-events-none"
+            className="anviq-bot-avatar-ring absolute pointer-events-none"
             style={{
               inset: -4,
               width: size + 8,
@@ -194,7 +194,7 @@ export const BotAvatar = memo(function BotAvatar({
   return (
     <div
       className={cn(
-        "rakazo-bot-avatar grok-avatar-container relative inline-flex items-center justify-center shrink-0 select-none",
+        "anviq-bot-avatar grok-avatar-container relative inline-flex items-center justify-center shrink-0 select-none",
         className,
       )}
       style={{
@@ -204,7 +204,7 @@ export const BotAvatar = memo(function BotAvatar({
       data-working={isWorking}
     >
       <svg
-        className="rakazo-bot-avatar-ring absolute pointer-events-none"
+        className="anviq-bot-avatar-ring absolute pointer-events-none"
         style={{
           inset: -4,
           width: size + 8,
@@ -309,22 +309,22 @@ function RobotAvatar({
   const { visorW, visorH, eyeW, eyeH, eyeGap, eyeRadius } = robotFaceLayout(size);
   const eyeGlow = `0 0 4px #fff, 0 0 8px #fff, 0 0 14px ${colorDef.light}`;
   const idleEyeAnimation = {
-    "--rakazo-eye-animation-name": `rakazo-eyes-idle-${eyeVariant}`,
-    "--rakazo-eye-animation-duration": `${idleDuration}s`,
-    "--rakazo-eye-animation-easing": "cubic-bezier(0.4, 0, 0.2, 1)",
-    "--rakazo-eye-animation-delay": `${idleDelay}s`,
+    "--anviq-eye-animation-name": `anviq-eyes-idle-${eyeVariant}`,
+    "--anviq-eye-animation-duration": `${idleDuration}s`,
+    "--anviq-eye-animation-easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "--anviq-eye-animation-delay": `${idleDelay}s`,
   } as CSSProperties;
   const workingEyeAnimation = {
-    "--rakazo-eye-animation-name": "rakazo-eyes-working",
-    "--rakazo-eye-animation-duration": "1.4s",
-    "--rakazo-eye-animation-easing": "ease-in-out",
-    "--rakazo-eye-animation-delay": "0s",
+    "--anviq-eye-animation-name": "anviq-eyes-working",
+    "--anviq-eye-animation-duration": "1.4s",
+    "--anviq-eye-animation-easing": "ease-in-out",
+    "--anviq-eye-animation-delay": "0s",
   } as CSSProperties;
 
   return (
     <div
       className={cn(
-        "rakazo-bot-avatar relative inline-flex shrink-0 items-center justify-center rounded-full select-none",
+        "anviq-bot-avatar relative inline-flex shrink-0 items-center justify-center rounded-full select-none",
         className,
       )}
       data-working={isWorking}
@@ -338,7 +338,7 @@ function RobotAvatar({
       }}
     >
       <svg
-        className="rakazo-bot-avatar-ring pointer-events-none absolute"
+        className="anviq-bot-avatar-ring pointer-events-none absolute"
         style={{
           inset: -4,
           width: size + 8,
@@ -368,7 +368,7 @@ function RobotAvatar({
         </defs>
       </svg>
       <div
-        className="rakazo-bot-avatar-visor relative flex items-center justify-center overflow-hidden"
+        className="anviq-bot-avatar-visor relative flex items-center justify-center overflow-hidden"
         style={{
           width: visorW,
           height: visorH,
@@ -382,7 +382,7 @@ function RobotAvatar({
         {(["idle", "working"] as const).map((mode) => (
           <div
             key={mode}
-            className={`rakazo-bot-avatar-eyes rakazo-bot-avatar-eyes-${mode} absolute inset-0 z-10 flex items-center justify-center`}
+            className={`anviq-bot-avatar-eyes anviq-bot-avatar-eyes-${mode} absolute inset-0 z-10 flex items-center justify-center`}
             style={{
               gap: eyeGap,
               ...(mode === "idle" ? idleEyeAnimation : workingEyeAnimation),
@@ -435,7 +435,7 @@ function OrganicAvatar({
     <svg
       viewBox="-60 -60 120 120"
       aria-hidden="true"
-      className={cn("rakazo-organic-avatar overflow-visible select-none", className)}
+      className={cn("anviq-organic-avatar overflow-visible select-none", className)}
       data-working={isWorking}
       data-shape-family={seed % 10}
       data-eye-pattern={seed % 4}
@@ -448,12 +448,12 @@ function OrganicAvatar({
       {(["idle", "working"] as const).map((mode) => (
         <path
           key={mode}
-          className={`rakazo-organic-avatar-body rakazo-organic-avatar-body-${mode}`}
+          className={`anviq-organic-avatar-body anviq-organic-avatar-body-${mode}`}
           d={shapeA}
           fill={color}
           style={
             {
-              "--rakazo-organic-path": `path("${shapeA}")`,
+              "--anviq-organic-path": `path("${shapeA}")`,
               filter:
                 mode === "working"
                   ? `drop-shadow(0 0 ${Math.round(size * 0.16)}px ${color})`
@@ -475,7 +475,7 @@ function OrganicAvatar({
         {(["idle", "working"] as const).map((mode) => (
           <g
             key={mode}
-            className={`rakazo-organic-avatar-eyes rakazo-organic-avatar-eyes-${mode}`}
+            className={`anviq-organic-avatar-eyes anviq-organic-avatar-eyes-${mode}`}
             fill={tokens.background}
           >
             <rect x="-14" y="-12" width="7" height="24" rx="3.5" />
@@ -546,7 +546,7 @@ export function Wordmark({ className }: { className?: string }) {
         <span className="h-4 w-[7px] rounded-full bg-primary" />
       </div>
       <span className="font-[Aeonik,ui-sans-serif] text-[28px] tracking-tight text-foreground">
-        Rakazo
+        Anviq
       </span>
     </div>
   );

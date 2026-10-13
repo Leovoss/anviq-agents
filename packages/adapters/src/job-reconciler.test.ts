@@ -1,6 +1,6 @@
-import type { BackgroundJob, JobPublisher } from "@rakazo/adapter-kit";
-import { stuckWorkStatusMessages } from "@rakazo/core";
-import type { Pool, PrismaClient, ThreadEvents } from "@rakazo/db";
+import type { BackgroundJob, JobPublisher } from "@anviq/adapter-kit";
+import { stuckWorkStatusMessages } from "@anviq/core";
+import type { Pool, PrismaClient, ThreadEvents } from "@anviq/db";
 import { describe, expect, it, vi } from "vitest";
 import { returnBotMessageOutcome } from "./bot-messages.js";
 import {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { tokensForAppearance } from "@rakazo/ui-tokens";
+import { tokensForAppearance } from "@anviq/ui-tokens";
 import type { CSSProperties, ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";

@@ -1,4 +1,4 @@
-import type { IntegrationSetupState } from "@rakazo/contracts";
+import type { IntegrationSetupState } from "@anviq/contracts";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, TextInput } from "react-native";

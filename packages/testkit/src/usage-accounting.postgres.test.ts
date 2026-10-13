@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { ComposioEmulator } from "@rakazo/adapters";
-import { recordUsage } from "@rakazo/db";
+import { ComposioEmulator } from "@anviq/adapters";
+import { recordUsage } from "@anviq/db";
 import { describe, expect, it } from "vitest";
 import { runAutoReviewJudge } from "../../adapters/src/auto-review.js";
 import { compactHistory } from "../../adapters/src/history-compaction.js";
@@ -79,7 +79,7 @@ describe.skipIf(!enabled)("persisted Pi usage accounting", () => {
         },
       ],
     });
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-usage-fixture-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-usage-fixture-"));
     let stop: (() => Promise<void>) | undefined;
     try {
       const { createApp } = await import("../../../apps/api/src/app.ts");
@@ -102,7 +102,7 @@ describe.skipIf(!enabled)("persisted Pi usage accounting", () => {
         method: "POST",
         headers: { "content-type": "application/json", origin },
         body: JSON.stringify({
-          email: `usage-${randomUUID()}@rakazo.test`,
+          email: `usage-${randomUUID()}@anviq.test`,
           password: "password12",
           name: "Usage fixture",
         }),

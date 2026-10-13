@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { ModelCatalogEntry, ModelCredential, Routine } from "@rakazo/contracts";
+import type { ModelCatalogEntry, ModelCredential, Routine } from "@anviq/contracts";
 import {
   type CronFreq,
   type CronPreset,
@@ -9,7 +9,7 @@ import {
   formatCron,
   isOneShotRoutineCrons,
   presetFromCron,
-} from "@rakazo/core";
+} from "@anviq/core";
 import {
   Button,
   DropdownMenu,
@@ -26,7 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
   Textarea,
-} from "@rakazo/ui-web";
+} from "@anviq/ui-web";
 import {
   ChevronLeft,
   Clock,

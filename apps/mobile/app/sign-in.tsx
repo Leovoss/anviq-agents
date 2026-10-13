@@ -1,5 +1,5 @@
-import type { IntegrationSetupState } from "@rakazo/contracts";
-import { credentialIssue } from "@rakazo/core";
+import type { IntegrationSetupState } from "@anviq/contracts";
+import { credentialIssue } from "@anviq/core";
 import { Redirect, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -191,9 +191,9 @@ export default function SignIn() {
                 {resetSent
                   ? t("Check your email")
                   : mode === "in"
-                    ? t("Sign in to Rakazo")
+                    ? t("Sign in to Anviq")
                     : mode === "up"
-                      ? t("Sign up for Rakazo")
+                      ? t("Sign up for Anviq")
                       : t("Reset your password")}
               </Text>
               {resetSent ? (

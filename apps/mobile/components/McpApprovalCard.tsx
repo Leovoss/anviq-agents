@@ -1,4 +1,4 @@
-import type { MessageBlock } from "@rakazo/contracts";
+import type { MessageBlock } from "@anviq/contracts";
 import { useEffect, useState } from "react";
 import type { ViewProps } from "react-native";
 import { Alert, StyleSheet, Text, View } from "react-native";

@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/auth",
+  "name": "@anviq/auth",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
@@ -16,9 +16,9 @@
   },
   "dependencies": {
     "@better-auth/expo": "1.7.7",
-    "@rakazo/adapter-kit": "workspace:*",
-    "@rakazo/core": "workspace:*",
-    "@rakazo/db": "workspace:*",
+    "@anviq/adapter-kit": "workspace:*",
+    "@anviq/core": "workspace:*",
+    "@anviq/db": "workspace:*",
     "better-auth": "1.7.7"
   },
   "devDependencies": {

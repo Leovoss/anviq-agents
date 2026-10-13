@@ -1,9 +1,9 @@
 import { i18n } from "@lingui/core";
 import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { RunActivityRow, RunStatus } from "@rakazo/contracts";
-import { isAgedStuckWork } from "@rakazo/core";
-import { Button, Input, Label, NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+import type { RunActivityRow, RunStatus } from "@anviq/contracts";
+import { isAgedStuckWork } from "@anviq/core";
+import { Button, Input, Label, NativeSelect, NativeSelectOption } from "@anviq/ui-web";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ActivityListFilters } from "../lib/activity-list-filters";
 import {

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { HistoryReadInput, HistorySearchInput, MessageBlock } from "@rakazo/contracts";
+import type { HistoryReadInput, HistorySearchInput, MessageBlock } from "@anviq/contracts";
 import type { PrismaClient } from "./client.js";
 import { Prisma } from "./client.js";
 

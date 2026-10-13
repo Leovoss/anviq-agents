@@ -1,5 +1,5 @@
-import type { AiConsentStatus } from "@rakazo/contracts";
-import { AI_DISCLOSURE_VERSION } from "@rakazo/contracts";
+import type { AiConsentStatus } from "@anviq/contracts";
+import { AI_DISCLOSURE_VERSION } from "@anviq/contracts";
 import { describe, expect, it, vi } from "vitest";
 import {
   AiConsentBlocked,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Token-auth desktop control for the Rakazo supervisor."""
+"""Token-auth desktop control for the Anviq supervisor."""
 
 import base64
 import ctypes
@@ -12,21 +12,21 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-TOKEN = os.environ.get("RAKAZO_COMPUTER_CONTROL_TOKEN", "")
+TOKEN = os.environ.get("ANVIQ_COMPUTER_CONTROL_TOKEN", "")
 MAX_BODY_BYTES = 256 * 1024
 MAX_ARGV = 32
 MAX_ARG_LEN = 16_384
 KNOWN_LAUNCH = frozenset(
     {
-        "rakazo-browser",
+        "anviq-browser",
         "xterm",
     }
 )
-# Focus-or-launch wraps KNOWN_LAUNCH launchers: rakazo-focus-or-launch <launcher> [uri].
-FOCUS_OR_LAUNCH = "rakazo-focus-or-launch"
+# Focus-or-launch wraps KNOWN_LAUNCH launchers: anviq-focus-or-launch <launcher> [uri].
+FOCUS_OR_LAUNCH = "anviq-focus-or-launch"
 CONTROL_TIMEOUT_SEC = 10
 LAUNCH_SPAWN_POLL_SEC = 0.2
-# A live browser opens a URL in this process, then exits. rakazo-browser caps the
+# A live browser opens a URL in this process, then exits. anviq-browser caps the
 # profile scan at 0.4s and that forward at 1.6s. This poll outlasts both, plus a
 # little shell, so a forward that fails after the scan is not reported as success.
 BROWSER_OPEN_POLL_SEC = 2.4
@@ -49,28 +49,28 @@ class NativeCapture:
     """Persistent MIT-SHM frame source with native lossless PNG encoding."""
 
     def __init__(self, display):
-        library = ctypes.CDLL("/usr/local/lib/librakazo-xcapture.so")
-        library.rakazo_xcapture_open.argtypes = [ctypes.c_char_p]
-        library.rakazo_xcapture_open.restype = ctypes.c_void_p
-        library.rakazo_xcapture_png.argtypes = [
+        library = ctypes.CDLL("/usr/local/lib/libanviq-xcapture.so")
+        library.anviq_xcapture_open.argtypes = [ctypes.c_char_p]
+        library.anviq_xcapture_open.restype = ctypes.c_void_p
+        library.anviq_xcapture_png.argtypes = [
             ctypes.c_void_p,
             ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)),
             ctypes.POINTER(ctypes.c_size_t),
             ctypes.POINTER(ctypes.c_int),
             ctypes.POINTER(ctypes.c_int),
         ]
-        library.rakazo_xcapture_png.restype = ctypes.c_int
-        library.rakazo_xcapture_damage.argtypes = [
+        library.anviq_xcapture_png.restype = ctypes.c_int
+        library.anviq_xcapture_damage.argtypes = [
             ctypes.c_void_p,
             ctypes.POINTER(ctypes.c_int),
             ctypes.POINTER(ctypes.c_int),
             ctypes.POINTER(ctypes.c_int),
             ctypes.POINTER(ctypes.c_int),
         ]
-        library.rakazo_xcapture_damage.restype = ctypes.c_int
-        library.rakazo_xinput_argv.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
-        library.rakazo_xinput_argv.restype = ctypes.c_int
-        context = library.rakazo_xcapture_open(display.encode("utf-8"))
+        library.anviq_xcapture_damage.restype = ctypes.c_int
+        library.anviq_xinput_argv.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
+        library.anviq_xinput_argv.restype = ctypes.c_int
+        context = library.anviq_xcapture_open(display.encode("utf-8"))
         if not context:
             raise RuntimeError("MIT-SHM capture is unavailable")
         self.library = library
@@ -80,12 +80,12 @@ class NativeCapture:
         png = ctypes.POINTER(ctypes.c_ubyte)()
         png_size = ctypes.c_size_t()
         width, height = ctypes.c_int(), ctypes.c_int()
-        if self.library.rakazo_xcapture_png(
+        if self.library.anviq_xcapture_png(
             self.context, ctypes.byref(png), ctypes.byref(png_size), ctypes.byref(width), ctypes.byref(height)
         ):
             raise RuntimeError("MIT-SHM screen capture failed")
         damage = (ctypes.c_int(), ctypes.c_int(), ctypes.c_int(), ctypes.c_int())
-        changed = self.library.rakazo_xcapture_damage(
+        changed = self.library.anviq_xcapture_damage(
             self.context, *(ctypes.byref(value) for value in damage)
         )
         return (
@@ -98,7 +98,7 @@ class NativeCapture:
 
     def act(self, argv):
         encoded = (ctypes.c_char_p * len(argv))(*(value.encode("utf-8") for value in argv))
-        return self.library.rakazo_xinput_argv(self.context, len(argv), encoded)
+        return self.library.anviq_xinput_argv(self.context, len(argv), encoded)
 
 
 def native_capture(display):
@@ -158,7 +158,7 @@ def allowed_xdotool_argv(argv):
 
 def control_command_index(argv):
     """Locate the executable after the optional supervisor-owned browser profile."""
-    return 3 if len(argv) > 2 and argv[2].startswith("RAKAZO_BROWSER_PROFILE=") else 2
+    return 3 if len(argv) > 2 and argv[2].startswith("ANVIQ_BROWSER_PROFILE=") else 2
 
 
 def allowed_control_argv(argv, display):
@@ -174,10 +174,10 @@ def allowed_control_argv(argv, display):
         return False
     command = argv[index]
     if index == 3:
-        profile = argv[2].removeprefix("RAKAZO_BROWSER_PROFILE=")
-        if not re.fullmatch(r"/home/rakazo/\.browser-profiles/chromium-bot-[a-f0-9]{32}", profile):
+        profile = argv[2].removeprefix("ANVIQ_BROWSER_PROFILE=")
+        if not re.fullmatch(r"/home/anviq/\.browser-profiles/chromium-bot-[a-f0-9]{32}", profile):
             return False
-        if command not in ("xdg-open", "rakazo-browser", FOCUS_OR_LAUNCH):
+        if command not in ("xdg-open", "anviq-browser", FOCUS_OR_LAUNCH):
             return False
     if command == "xdotool":
         return allowed_xdotool_argv(argv)
@@ -187,7 +187,7 @@ def allowed_control_argv(argv, display):
         return (
             len(argv) in (index + 2, index + 3)
             and argv[index + 1] in KNOWN_LAUNCH
-            and (index == 2 or argv[index + 1] == "rakazo-browser")
+            and (index == 2 or argv[index + 1] == "anviq-browser")
         )
     if "/" in command or command not in KNOWN_LAUNCH:
         return False
@@ -218,7 +218,7 @@ def launch_spawn_poll_sec(argv):
     if command == FOCUS_OR_LAUNCH:
         # The wrapped launcher keeps its own poll bound through the wrapper.
         command = argv[index + 1] if len(argv) > index + 1 else ""
-    if command == "rakazo-browser":
+    if command == "anviq-browser":
         return BROWSER_OPEN_POLL_SEC
     return LAUNCH_SPAWN_POLL_SEC
 

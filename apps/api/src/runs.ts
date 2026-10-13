@@ -1,7 +1,7 @@
-import type { Actor, RunActivityRow } from "@rakazo/contracts";
-import { MessageBlock } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES, BACKGROUND_RUN_TRIGGERS, botMessageContext } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
+import type { Actor, RunActivityRow } from "@anviq/contracts";
+import { MessageBlock } from "@anviq/contracts";
+import { ACTIVE_RUN_STATUSES, BACKGROUND_RUN_TRIGGERS, botMessageContext } from "@anviq/core";
+import type { PrismaClient } from "@anviq/db";
 
 const RECENT_LIMIT = 20;
 const TERMINAL_STATUSES = ["completed", "failed", "cancelled"] as const;

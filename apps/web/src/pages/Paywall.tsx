@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { BillingStatus } from "@rakazo/contracts";
-import { Button } from "@rakazo/ui-web";
+import type { BillingStatus } from "@anviq/contracts";
+import { Button } from "@anviq/ui-web";
 import { Check } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";

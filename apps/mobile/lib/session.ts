@@ -1,12 +1,12 @@
-import type { AvatarStyle } from "@rakazo/contracts";
+import type { AvatarStyle } from "@anviq/contracts";
 import * as SecureStore from "expo-secure-store";
 import { invalidateArtifactCacheSession } from "./artifact-cache-session";
 import { clearAvatarStyle, saveAvatarStyle } from "./avatar-style";
 import { stopLiveNotifications } from "./live-notifications";
 import { clearFailedSends } from "./thread-feedback";
 
-const SESSION_KEY = "rakazo.session_token";
-const INTEGRATIONS_SCOPE_KEY = "rakazo.integrations-scope";
+const SESSION_KEY = "anviq.session_token";
+const INTEGRATIONS_SCOPE_KEY = "anviq.integrations-scope";
 
 export type VerifiedIntegrationsScope = {
   apiBase: string;

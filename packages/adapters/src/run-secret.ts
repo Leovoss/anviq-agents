@@ -1,13 +1,13 @@
-import type { AdapterContext, ManagedConnectorProvider, SecretStore } from "@rakazo/adapter-kit";
+import type { AdapterContext, ManagedConnectorProvider, SecretStore } from "@anviq/adapter-kit";
 import {
   encodeLoginSecret,
   LoginSecretValue,
   MessageBlock as MessageBlockSchema,
   SecretAskPurpose,
-} from "@rakazo/contracts";
-import { isSecretAskBlock } from "@rakazo/core";
-import type { PrismaClient, RunSecretWriter } from "@rakazo/db";
-import { withTransactionRetry } from "@rakazo/db";
+} from "@anviq/contracts";
+import { isSecretAskBlock } from "@anviq/core";
+import type { PrismaClient, RunSecretWriter } from "@anviq/db";
+import { withTransactionRetry } from "@anviq/db";
 import { type ApprovalPausedToolResult, resolveDuplicateEffectGate } from "./approval-effect.js";
 import { prepareBotSecret } from "./bot-secrets.js";
 import { persistPreparedSecret } from "./secret-persistence.js";

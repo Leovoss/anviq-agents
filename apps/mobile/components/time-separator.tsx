@@ -1,4 +1,4 @@
-import { formatTimeSeparator } from "@rakazo/core";
+import { formatTimeSeparator } from "@anviq/core";
 import { Text } from "react-native";
 import { mobileTokens } from "../lib/appearance";
 import { dateLocaleForUi, useI18n } from "../lib/i18n";

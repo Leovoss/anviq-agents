@@ -1,12 +1,12 @@
-import type { ConnectorRegistry } from "@rakazo/adapters";
-import type { Actor, MessageBlock } from "@rakazo/contracts";
-import { featuredConnectorProvidersMatch } from "@rakazo/core";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
+import type { ConnectorRegistry } from "@anviq/adapters";
+import type { Actor, MessageBlock } from "@anviq/contracts";
+import { featuredConnectorProvidersMatch } from "@anviq/core";
+import type { Prisma, PrismaClient, ThreadEvents } from "@anviq/db";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   IsolationError,
-} from "@rakazo/db";
+} from "@anviq/db";
 import { requireBotThread, updateBlocks } from "./bot-thread.js";
 
 /**

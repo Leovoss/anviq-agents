@@ -1,5 +1,5 @@
 import type { MenuAction } from "@expo/ui/community/menu";
-import { ChatMarkdown } from "@rakazo/chat-ui/native";
+import { ChatMarkdown } from "@anviq/chat-ui/native";
 import type {
   AgentSkillCatalogEntry,
   Connection,
@@ -7,9 +7,9 @@ import type {
   MessageBlock,
   MessageReaction,
   Routine,
-} from "@rakazo/contracts";
-import { canReactToThreadMessage, MESSAGE_REACTIONS } from "@rakazo/contracts";
-import type { SlashActionId, ThreadItem } from "@rakazo/core";
+} from "@anviq/contracts";
+import { canReactToThreadMessage, MESSAGE_REACTIONS } from "@anviq/contracts";
+import type { SlashActionId, ThreadItem } from "@anviq/core";
 import {
   abortableDelay,
   appendNewerThreadPage,
@@ -38,7 +38,7 @@ import {
   timeSeparatorIds,
   userVisibleMessages,
   withLiveStreamingProgress,
-} from "@rakazo/core";
+} from "@anviq/core";
 import * as Clipboard from "expo-clipboard";
 import {
   useFocusEffect,

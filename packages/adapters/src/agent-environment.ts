@@ -1,6 +1,6 @@
-import type { SecretStore } from "@rakazo/adapter-kit";
-import { AgentSecretInputSchema } from "@rakazo/contracts";
-import { redactSecrets } from "@rakazo/core";
+import type { SecretStore } from "@anviq/adapter-kit";
+import { AgentSecretInputSchema } from "@anviq/contracts";
+import { redactSecrets } from "@anviq/core";
 
 type EncryptedAgentSecret = {
   name: string;

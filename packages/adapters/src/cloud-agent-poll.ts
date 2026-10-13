@@ -3,12 +3,12 @@ import type {
   AdapterContext,
   BackgroundJobPayloads,
   CloudAgentSnapshot,
-} from "@rakazo/adapter-kit";
-import { CloudAgentRequestRejected, runContinueJob } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import { cloudAgentHttpsUrl } from "@rakazo/core";
-import { appendEventInTransaction, type CloudAgent, Prisma } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/adapter-kit";
+import { CloudAgentRequestRejected, runContinueJob } from "@anviq/adapter-kit";
+import type { MessageBlock } from "@anviq/contracts";
+import { cloudAgentHttpsUrl } from "@anviq/core";
+import { appendEventInTransaction, type CloudAgent, Prisma } from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import { cloudAgentsEnabled } from "./cloud-agent-factory.js";
 import { type CloudAgentDeps, cloudAgentBlock, enqueueCloudAgent } from "./cloud-agent-service.js";
 import { cloudAgentLaunchSchema, cloudAgentPromptSchema } from "./cloud-agent-tools.js";

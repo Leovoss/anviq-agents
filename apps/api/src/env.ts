@@ -3,16 +3,16 @@ import {
   resolveDeploymentModel,
   resolveSandboxProvider,
   secretStoreOptionsFromEnv,
-} from "@rakazo/adapters";
-import type { OidcConfig } from "@rakazo/auth";
+} from "@anviq/adapters";
+import type { OidcConfig } from "@anviq/auth";
 import {
   resolveAuthSecret,
   resolveEncryptionKey,
   resolveScreenProxySecret,
   resolveSupervisorToken,
-} from "@rakazo/core";
+} from "@anviq/core";
 
-export { resolveCloudAgentProvider, resolveSandboxProvider } from "@rakazo/adapters";
+export { resolveCloudAgentProvider, resolveSandboxProvider } from "@anviq/adapters";
 
 export interface AppEnv {
   passwordAuth?: boolean;
@@ -153,15 +153,15 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
   const sandboxProvider = resolveSandboxProvider(source);
   const cloudAgentProvider = resolveCloudAgentProvider(source);
   const deploymentModel = resolveDeploymentModel(source);
-  const updaterUrl = optional(source.RAKAZO_UPDATER_URL);
-  const updaterToken = optional(source.RAKAZO_UPDATER_TOKEN);
+  const updaterUrl = optional(source.ANVIQ_UPDATER_URL);
+  const updaterToken = optional(source.ANVIQ_UPDATER_TOKEN);
   return {
     passwordAuth,
     oidc,
     nodeEnv: source.NODE_ENV ?? "",
     databaseUrl: required(source, "DATABASE_URL"),
     realtimeDatabaseUrl: source.REALTIME_DATABASE_URL ?? required(source, "DATABASE_URL"),
-    desktopStackToken: optional(source.RAKAZO_DESKTOP_STACK_TOKEN),
+    desktopStackToken: optional(source.ANVIQ_DESKTOP_STACK_TOKEN),
     authSecret,
     authUrl: source.BETTER_AUTH_URL ?? source.WEB_ORIGIN ?? "http://127.0.0.1:5173",
     webOrigin: source.WEB_ORIGIN ?? "http://127.0.0.1:5173",
@@ -224,7 +224,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     larkEncryptKey: optional(source.LARK_ENCRYPT_KEY),
     larkDomain: optional(source.LARK_DOMAIN),
     messagingOpenSignup: source.MESSAGING_OPEN_SIGNUP === "true",
-    teamChatBotId: optional(source.TEAM_CHAT_BOT_ID) ?? optional(source.SLACK_RAKAZO_BOT_ID),
+    teamChatBotId: optional(source.TEAM_CHAT_BOT_ID) ?? optional(source.SLACK_ANVIQ_BOT_ID),
     teamChatJudgeProvider: optional(source.TEAM_CHAT_JUDGE_PROVIDER),
     teamChatJudgeModel: optional(source.TEAM_CHAT_JUDGE_MODEL),
     defaultProvider: deploymentModel.provider,
@@ -237,10 +237,10 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
       .filter(Boolean),
     mcpAllowPrivateEndpoint: source.MCP_ALLOW_PRIVATE_ENDPOINT === "true",
     port: Number(source.API_PORT ?? 3100),
-    gitSha: optional(source.GIT_SHA) ?? optional(source.RAKAZO_GIT_SHA),
+    gitSha: optional(source.GIT_SHA) ?? optional(source.ANVIQ_GIT_SHA),
     updaterUrl,
     updaterToken,
-    imageTag: optional(source.RAKAZO_IMAGE_TAG),
+    imageTag: optional(source.ANVIQ_IMAGE_TAG),
   };
 }
 

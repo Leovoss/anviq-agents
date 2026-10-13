@@ -1,5 +1,5 @@
-import { runContinueJob } from "@rakazo/adapter-kit";
-import type { BotMessageIntent, MessageBlock } from "@rakazo/contracts";
+import { runContinueJob } from "@anviq/adapter-kit";
+import type { BotMessageIntent, MessageBlock } from "@anviq/contracts";
 import {
   BOT_MESSAGE_MAX_LENGTH,
   botMessageContext,
@@ -8,14 +8,14 @@ import {
   clampBotMessage,
   nextBotMessageHop,
   resolveBotAddress,
-} from "@rakazo/core";
+} from "@anviq/core";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   type PrismaClient,
   withTransactionRetry,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import type { ExecutorDeps } from "./executor.js";
 
 /**

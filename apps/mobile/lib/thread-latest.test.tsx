@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 
 import { readFileSync } from "node:fs";
-import type { ThreadScrollState } from "@rakazo/core";
+import type { ThreadScrollState } from "@anviq/core";
 import {
   appendNewerThreadPage,
   leaveThreadWindow,
   openThreadWindow,
   reconcileThreadScrollState,
-} from "@rakazo/core";
+} from "@anviq/core";
 import { act, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";

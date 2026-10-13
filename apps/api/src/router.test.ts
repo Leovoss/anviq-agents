@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { createRouterClient } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
-import type { ManagedConnectorProvider } from "@rakazo/adapter-kit";
-import { SecretStoreUnavailableError } from "@rakazo/adapter-kit";
+import type { ManagedConnectorProvider } from "@anviq/adapter-kit";
+import { SecretStoreUnavailableError } from "@anviq/adapter-kit";
 import {
   COMPUTER_SCREEN_UNAVAILABLE,
   CodexCatalogCache,
@@ -13,12 +13,12 @@ import {
   IntegrationProviderSettings,
   LocalAgentHomeStore,
   screenLeaseIdForRun,
-} from "@rakazo/adapters";
-import type { Actor, Bot, ProductEvent } from "@rakazo/contracts";
-import { REPLY_QUOTE_MAX_LENGTH } from "@rakazo/contracts";
-import { openScreenCapability } from "@rakazo/core/node/screen-capability";
-import type { PrismaClient } from "@rakazo/db";
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
+} from "@anviq/adapters";
+import type { Actor, Bot, ProductEvent } from "@anviq/contracts";
+import { REPLY_QUOTE_MAX_LENGTH } from "@anviq/contracts";
+import { openScreenCapability } from "@anviq/core/node/screen-capability";
+import type { PrismaClient } from "@anviq/db";
+import { createLogger, createTestSink, installLogger } from "@anviq/logging";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { RouterDeps } from "./router.js";
 import { createRouter, enqueueBotIntroRun, HEARTBEAT_MS, SESSION_RECHECK_MS } from "./router.js";
@@ -30,7 +30,7 @@ describe("account preferences", () => {
       user: {
         update,
         findUniqueOrThrow: vi.fn().mockResolvedValue({
-          email: "user@rakazo.test",
+          email: "user@anviq.test",
           name: "Test User",
           avatarStyle,
         }),
@@ -47,12 +47,12 @@ describe("account preferences", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
     return { update, deps, actor, handler: new RPCHandler(createRouter(deps)) };
@@ -165,7 +165,7 @@ describe("billing", () => {
     const prisma = {
       user: {
         findUniqueOrThrow: vi.fn().mockResolvedValue({
-          email: "user@rakazo.test",
+          email: "user@anviq.test",
           name: "Test User",
           avatarStyle: "robot",
         }),
@@ -183,12 +183,12 @@ describe("billing", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner,
     } satisfies Actor;
     return createRouterClient(createRouter(deps), { context: { actor } });
@@ -222,7 +222,7 @@ describe("model setup gate", () => {
     const prisma = {
       user: {
         findUniqueOrThrow: vi.fn().mockResolvedValue({
-          email: "user@rakazo.test",
+          email: "user@anviq.test",
           name: "Test User",
           avatarStyle: "robot",
         }),
@@ -250,12 +250,12 @@ describe("model setup gate", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
     return { actor, handler: new RPCHandler(createRouter(deps)) };
@@ -396,7 +396,7 @@ describe("thread answer delivery", () => {
     const answerRunInput = vi.fn().mockResolvedValue(true);
     const enqueue = vi.fn().mockRejectedValue(new Error("job broker unavailable"));
     const sink = createTestSink();
-    installLogger(createLogger({ service: "rakazo-api", sinks: [sink] }));
+    installLogger(createLogger({ service: "anviq-api", sinks: [sink] }));
     const prisma = {
       bot: {
         findFirst: vi.fn().mockResolvedValue({
@@ -417,12 +417,12 @@ describe("thread answer delivery", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
     const handler = new RPCHandler(createRouter(deps));
@@ -455,7 +455,7 @@ describe("thread answer delivery", () => {
     );
     expect(enqueue).toHaveBeenCalledOnce();
     expect(sink.events.some((event) => event.message === "thread answer enqueue")).toBe(true);
-    installLogger(createLogger({ service: "rakazo-api", level: "off", sinks: [] }));
+    installLogger(createLogger({ service: "anviq-api", level: "off", sinks: [] }));
   });
 });
 
@@ -512,12 +512,12 @@ describe("thread stream authorization", () => {
       prisma,
       events: { follow: vi.fn(() => follow) },
       env: { webOrigin: "http://127.0.0.1:5173", screenProxySecret: "fake-test-secret" },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
     const stillAuthorized = vi.fn().mockResolvedValue(true);
@@ -612,12 +612,12 @@ describe("MCP server deletion", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
     const handler = new RPCHandler(createRouter(deps));
@@ -756,12 +756,12 @@ describe("MCP prepared credential updates", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "space",
       userId: "user",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
     const client = createRouterClient(createRouter(deps), { context: { actor } as never });
@@ -811,7 +811,7 @@ describe("MCP loopback endpoints", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     return { create, handler: new RPCHandler(createRouter(deps)) };
   }
@@ -820,7 +820,7 @@ describe("MCP loopback endpoints", () => {
     return {
       spaceId: "workspace-1",
       userId: isDeploymentOwner ? "owner-1" : "member-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner,
     };
   }
@@ -909,7 +909,7 @@ describe("private API connectors", () => {
         sandboxProvider: "fake",
         mcpAllowPrivateEndpoint,
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     return { create, handler: new RPCHandler(createRouter(deps)) };
   }
@@ -918,7 +918,7 @@ describe("private API connectors", () => {
     return {
       spaceId: "workspace-1",
       userId: isDeploymentOwner ? "owner-1" : "member-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner,
     };
   }
@@ -1006,12 +1006,12 @@ describe("connections.begin", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
     const handler = new RPCHandler(createRouter(deps));
@@ -1163,7 +1163,7 @@ describe("connections.complete", () => {
             actor: {
               spaceId: "workspace-1",
               userId: "user-1",
-              email: "user@rakazo.test",
+              email: "user@anviq.test",
               isDeploymentOwner: true,
             },
           },
@@ -1239,12 +1239,12 @@ describe("connections.complete", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
     const handler = new RPCHandler(createRouter(deps));
@@ -1278,7 +1278,7 @@ describe("updater owner gate", () => {
     const prisma = {
       user: {
         findUniqueOrThrow: vi.fn().mockResolvedValue({
-          email: "user@rakazo.test",
+          email: "user@anviq.test",
           name: "Test User",
           avatarStyle: "robot",
         }),
@@ -1298,7 +1298,7 @@ describe("updater owner gate", () => {
         updaterUrl: undefined,
         updaterToken: undefined,
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     return { deps, handler: new RPCHandler(createRouter(deps)) };
   }
@@ -1308,7 +1308,7 @@ describe("updater owner gate", () => {
     const actor = {
       spaceId: "workspace-1",
       userId: "user-2",
-      email: "member@rakazo.test",
+      email: "member@anviq.test",
       isDeploymentOwner: false,
     } satisfies Actor;
 
@@ -1329,7 +1329,7 @@ describe("updater owner gate", () => {
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "owner@rakazo.test",
+      email: "owner@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
 
@@ -1354,7 +1354,7 @@ describe("updater owner gate", () => {
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "owner@rakazo.test",
+      email: "owner@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
 
@@ -1379,7 +1379,7 @@ describe("computer screen url", () => {
   const actor = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
   const computerRow = {
@@ -1421,7 +1421,7 @@ describe("computer screen url", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "e2b",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const handler = new RPCHandler(createRouter(deps));
     const { response } = await handler.handle(
@@ -1508,7 +1508,7 @@ describe("computer terminal and file transfer", () => {
   const actor = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
   const controlled = {
@@ -1561,7 +1561,7 @@ describe("computer terminal and file transfer", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "docker",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const handler = new RPCHandler(createRouter(deps));
     const call = async (procedure: string, json: Record<string, unknown>) => {
@@ -1706,7 +1706,7 @@ describe("integration setup authorization", () => {
             actor: {
               userId: "user",
               spaceId: "space",
-              email: "user@rakazo.test",
+              email: "user@anviq.test",
               isDeploymentOwner: owner,
             },
           },
@@ -1741,7 +1741,7 @@ describe("integration setup authorization", () => {
           actor: {
             userId: "member",
             spaceId: "space",
-            email: "member@rakazo.test",
+            email: "member@anviq.test",
             isDeploymentOwner: false,
           },
         },
@@ -1785,7 +1785,7 @@ describe("interrupted computer reservation release", () => {
             actor: {
               spaceId: "space-1",
               userId: "user-1",
-              email: "user@rakazo.test",
+              email: "user@anviq.test",
               isDeploymentOwner: owner,
             },
           },
@@ -1833,7 +1833,7 @@ describe("model credential persistence", () => {
   const actor = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
 
@@ -2023,7 +2023,7 @@ describe("bot intro run", () => {
   const actor = {
     spaceId: "space-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
   const bot = { id: "bot-1", threadId: "thread-1" } as unknown as Bot;
@@ -2114,7 +2114,7 @@ describe("codex catalog auth", () => {
   const actor = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
   const spark = "gpt-5.3-codex-spark";
@@ -2202,7 +2202,7 @@ describe("codex live catalog", () => {
   const actor = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
   const spark = "gpt-5.3-codex-spark";
@@ -2723,7 +2723,7 @@ describe("model set default auth", () => {
   const actor = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
   const spark = "gpt-5.3-codex-spark";
@@ -3044,7 +3044,7 @@ describe("bot model auth on save", () => {
   const actor = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
   const spark = "gpt-5.3-codex-spark";
@@ -3315,7 +3315,7 @@ describe("bot restore computer quota", () => {
             actor: {
               spaceId: "space-1",
               userId: "user-1",
-              email: "user@rakazo.test",
+              email: "user@anviq.test",
               isDeploymentOwner: true,
             },
           },
@@ -3359,7 +3359,7 @@ describe("routines.update", () => {
   const actor = {
     spaceId: "space-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
   const routine = {
@@ -3608,7 +3608,7 @@ describe("threads.endCall", () => {
     const actor = {
       spaceId: "space-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
     const handler = new RPCHandler(createRouter(deps));
@@ -3743,14 +3743,14 @@ describe("groups.archive", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
       sandbox: { releaseScreen, execute },
       jobs: { cancel: vi.fn().mockResolvedValue(undefined) },
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "workspace-1",
       userId: "user-1",
-      email: "user@rakazo.test",
+      email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
 
@@ -3805,7 +3805,7 @@ describe("boards.rename", () => {
   const actor = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
 
@@ -3886,7 +3886,7 @@ describe("export.bot", () => {
   const actor = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: true,
   } satisfies Actor;
   const roots: string[] = [];
@@ -3896,7 +3896,7 @@ describe("export.bot", () => {
   });
 
   async function homeWith(files: Record<string, string | Uint8Array>) {
-    const root = await mkdtemp(path.join(tmpdir(), "rakazo-export-"));
+    const root = await mkdtemp(path.join(tmpdir(), "anviq-export-"));
     roots.push(root);
     const home = new LocalAgentHomeStore(root);
     for (const [file, content] of Object.entries(files)) {
@@ -3932,7 +3932,7 @@ describe("export.bot", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "docker",
       },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const client = createRouterClient(createRouter(deps), { context: { actor } as never });
     const manifest = await client.export.bot({ botId: "bot-1" });
@@ -4024,7 +4024,7 @@ describe("link favicons", () => {
       prisma: {} as PrismaClient,
       favicons: { favicon },
       env: { webOrigin: "http://127.0.0.1:5173", screenProxySecret: "fake-test-secret" },
-      dataDir: "/tmp/rakazo-router-test",
+      dataDir: "/tmp/anviq-router-test",
     } as unknown as RouterDeps;
     const client = createRouterClient(createRouter(deps), { context: { actor } });
     return { client, favicon };
@@ -4033,7 +4033,7 @@ describe("link favicons", () => {
   const reader = {
     spaceId: "workspace-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@anviq.test",
     isDeploymentOwner: false,
   } satisfies Actor;
 

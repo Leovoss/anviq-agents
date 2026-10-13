@@ -1,4 +1,4 @@
-import type { SecretChangeListener } from "@rakazo/adapter-kit";
+import type { SecretChangeListener } from "@anviq/adapter-kit";
 
 /** Store-owned invalidation; listeners never need provider revisions. */
 export class SecretChanges {

@@ -1,18 +1,18 @@
-appId: com.rakazo.app
+appId: com.anviq.app
 ---
 - runFlow: launch-app.yaml
 - runFlow:
     when:
-      visible: "Sign up for Rakazo"
+      visible: "Sign up for Anviq"
     commands:
       - tapOn: "Sign in"
 - extendedWaitUntil:
-    visible: "Sign in to Rakazo"
+    visible: "Sign in to Anviq"
     timeout: 15000
 - tapOn: "Email"
-- inputText: ${RAKAZO_ACTIVE_EMAIL}
+- inputText: ${ANVIQ_ACTIVE_EMAIL}
 - tapOn: "Password"
-- inputText: ${RAKAZO_SCREENSHOT_PASSWORD}
+- inputText: ${ANVIQ_SCREENSHOT_PASSWORD}
 - hideKeyboard
 - tapOn: "Sign in"
 - tapOn:

@@ -27,7 +27,7 @@ let cachedInitial: string | null = null;
  * call is up, so the screen sleeps normally the rest of the time.
  */
 function KeepScreenOnDuringCall() {
-  useKeepAwake("rakazo-call");
+  useKeepAwake("anviq-call");
   return null;
 }
 

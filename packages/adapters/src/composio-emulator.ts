@@ -3,11 +3,11 @@ import type {
   ConnectorCall,
   ConnectorEvent,
   ConnectorTool,
-} from "@rakazo/adapter-kit";
+} from "@anviq/adapter-kit";
 import type { ComposioCatalogItem, ComposioProvider } from "./composio-connector.js";
 import { expandComposioMultiExecute, filterCatalog } from "./composio-connector.js";
 import {
-  DEFAULT_RAKAZO_EMULATED_RELEASES,
+  DEFAULT_ANVIQ_EMULATED_RELEASES,
   type EmulatedGithubRelease,
   RELEASE_WATCH_GITHUB_TOOL_NAMES,
 } from "./release-watch.js";
@@ -183,11 +183,11 @@ function seedMailbox(): Mailbox {
       {
         messageId: "18c5f5d1a2b3c4d5",
         threadId: "18c5f5d1a2b3c4d5",
-        subject: "Welcome to Rakazo",
-        sender: "hello@rakazo.test",
+        subject: "Welcome to Anviq",
+        sender: "hello@anviq.test",
         to: "me@example.test",
         snippet: "Your inbox is ready for agent workflows.",
-        messageText: "Your inbox is ready for agent workflows.\n\n— Rakazo",
+        messageText: "Your inbox is ready for agent workflows.\n\n— Anviq",
         labelIds: ["INBOX", "UNREAD"],
         internalDate: String(base),
       },
@@ -285,8 +285,8 @@ function githubReleaseTools(): ConnectorTool[] {
       inputSchema: {
         type: "object",
         properties: {
-          owner: { type: "string", description: "Repository owner, e.g. elie222" },
-          repo: { type: "string", description: "Repository name, e.g. rakazo" },
+          owner: { type: "string", description: "Repository owner, e.g. leovoss" },
+          repo: { type: "string", description: "Repository name, e.g. anviq" },
         },
         required: ["owner", "repo"],
       },
@@ -328,7 +328,7 @@ function findAccountIndex(refs: readonly string[], connectionRef: string): numbe
 export class ComposioEmulator implements ComposioProvider {
   private readonly connectedByUser = new Map<string, string[]>();
   private readonly mailboxesByUser = new Map<string, Mailbox>();
-  private githubReleases: EmulatedGithubRelease[] = [...DEFAULT_RAKAZO_EMULATED_RELEASES];
+  private githubReleases: EmulatedGithubRelease[] = [...DEFAULT_ANVIQ_EMULATED_RELEASES];
   private nextAccountSeq = 0;
   readonly executions: Array<{
     userId: string;
@@ -476,8 +476,8 @@ export class ComposioEmulator implements ComposioProvider {
   }
 
   private executeGithub(tool: string, args: Record<string, unknown>): Record<string, unknown> {
-    const owner = String(args.owner ?? args.owner_name ?? "elie222");
-    const repo = String(args.repo ?? args.repository ?? "rakazo");
+    const owner = String(args.owner ?? args.owner_name ?? "leovoss");
+    const repo = String(args.repo ?? args.repository ?? "anviq");
     const matched = this.githubReleases.filter(
       (release) =>
         release.owner.toLowerCase() === owner.toLowerCase() &&

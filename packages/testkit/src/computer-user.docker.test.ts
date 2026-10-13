@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { ensureScreenCommand } from "@rakazo/core/node/desktop-runtime";
+import { ensureScreenCommand } from "@anviq/core/node/desktop-runtime";
 import { describe, expect, it } from "vitest";
 
 describe.skipIf(process.env.RUN_COMPUTER_REPLAY_DOCKER !== "1")(
@@ -9,7 +9,7 @@ describe.skipIf(process.env.RUN_COMPUTER_REPLAY_DOCKER !== "1")(
     it.each(["1000:1000", "23456:23457"])(
       "starts Chrome and resolves %s for startup and Docker exec without root",
       (user) => {
-        const name = `rakazo-user-test-${randomUUID()}`;
+        const name = `anviq-user-test-${randomUUID()}`;
         const [uid, gid] = user.split(":");
         try {
           execFileSync(
@@ -31,8 +31,8 @@ describe.skipIf(process.env.RUN_COMPUTER_REPLAY_DOCKER !== "1")(
               "--tmpfs",
               "/tmp:mode=1777,exec",
               "--tmpfs",
-              `/home/rakazo:uid=${uid},gid=${gid},mode=700`,
-              process.env.RAKAZO_COMPUTER_IMAGE ?? "rakazo/computer:local",
+              `/home/anviq:uid=${uid},gid=${gid},mode=700`,
+              process.env.ANVIQ_COMPUTER_IMAGE ?? "anviq/computer:local",
             ],
             { stdio: "pipe", timeout: 30_000 },
           );
@@ -43,8 +43,8 @@ describe.skipIf(process.env.RUN_COMPUTER_REPLAY_DOCKER !== "1")(
               name,
               "bash",
               "-euc",
-              "for i in $(seq 1 200); do [ -s /tmp/rakazo/dbus-session ] && xdpyinfo -display :1 >/dev/null 2>&1 && break; sleep 0.05; done; " +
-                "test -s /tmp/rakazo/dbus-session; xdpyinfo -display :1 >/dev/null; " +
+              "for i in $(seq 1 200); do [ -s /tmp/anviq/dbus-session ] && xdpyinfo -display :1 >/dev/null 2>&1 && break; sleep 0.05; done; " +
+                "test -s /tmp/anviq/dbus-session; xdpyinfo -display :1 >/dev/null; " +
                 'getent passwd "$(id -u)"; getent group "$(id -g)"; ' +
                 'eval "$(dbus-launch --sh-syntax)"; test -n "$DBUS_SESSION_BUS_ADDRESS"; ' +
                 'kill "$DBUS_SESSION_BUS_PID"',

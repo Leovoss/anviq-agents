@@ -2,7 +2,7 @@
 
 Generated JSON reports are preserved locally under ignored `test-report/evals/archive/`, with a second backup outside the disposable worktree. They are not tracked documentation or repository downloads; maintained findings and synthetic fixtures remain in source control. Report references below identify local archived evidence, including every original failed and partial run.
 
-Rakazo separates deterministic execution regressions from real-model task quality.
+Anviq separates deterministic execution regressions from real-model task quality.
 A scripted response can prove that a tool call executes correctly; only a real
 model can demonstrate that it chooses a useful action for a natural request.
 
@@ -26,7 +26,7 @@ Missing live credentials mean **not run**, not a passing model evaluation.
 ## Deterministic Pi tests
 
 `packages/testkit/src/model-emulator.ts` serves a loopback OpenAI-compatible
-stream through Rakazo's existing generic connection. It does not replace Pi.
+stream through Anviq's existing generic connection. It does not replace Pi.
 Each step validates the actual request before streaming a response, and tests
 must assert that all expected steps were consumed without unexpected requests.
 The next request must contain the tool result from real execution.
@@ -54,7 +54,7 @@ covered by the separate real-model acceptance test.
 pnpm sandbox:build
 pnpm test:computer-replay
 # Or use an already built image:
-pnpm test:computer-replay --image=rakazo/computer:local
+pnpm test:computer-replay --image=anviq/computer:local
 # If Docker has exhausted its automatic address pools, choose an unused subnet:
 pnpm test:computer-replay --subnet=<unused-private-cidr>
 ```
@@ -76,7 +76,7 @@ To capture another successful run manually:
 
 ```bash
 # Requires OPENROUTER_API_KEY; incurs inference usage, with a local Docker sandbox.
-pnpm test:computer-replay --image=rakazo/computer:local \
+pnpm test:computer-replay --image=anviq/computer:local \
   --live --record=new-fixture.json
 ```
 

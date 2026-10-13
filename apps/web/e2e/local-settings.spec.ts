@@ -6,7 +6,7 @@ test("local settings open and save integrations without an app session", async (
 }, testInfo) => {
   await page.addInitScript(() => {
     let connected = false;
-    window.rakazoDesktop = {
+    window.anviqDesktop = {
       platform: "darwin",
       localSettings: {
         request: async (pathname: string, body: string) => {
@@ -59,7 +59,7 @@ test("local settings open and save integrations without an app session", async (
           return { status: 200, body: JSON.stringify({ json }) };
         },
       },
-    } as typeof window.rakazoDesktop;
+    } as typeof window.anviqDesktop;
   });
   await page.goto("/desktop-settings");
   await page.getByRole("button", { name: "Server integrations", exact: true }).click();

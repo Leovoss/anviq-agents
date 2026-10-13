@@ -1,5 +1,5 @@
-import type { AiRecipient } from "@rakazo/contracts";
-import { AI_DATA_DISCLOSURES, AI_PRIVACY_URL } from "@rakazo/contracts";
+import type { AiRecipient } from "@anviq/contracts";
+import { AI_DATA_DISCLOSURES, AI_PRIVACY_URL } from "@anviq/contracts";
 import { Alert, AppState, Linking } from "react-native";
 import { t } from "./i18n";
 

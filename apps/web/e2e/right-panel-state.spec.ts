@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type { Bot, Routine } from "@rakazo/contracts";
+import type { Bot, Routine } from "@anviq/contracts";
 import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 async function waitForStoredPanel(page: Page, panel: string | null) {
@@ -9,7 +9,7 @@ async function waitForStoredPanel(page: Page, panel: string | null) {
       return page.evaluate((expected) => {
         for (let i = 0; i < localStorage.length; i += 1) {
           const key = localStorage.key(i);
-          if (!key?.includes("rakazo:right-panel-state:")) continue;
+          if (!key?.includes("anviq:right-panel-state:")) continue;
           try {
             const value = JSON.parse(localStorage.getItem(key) ?? "null") as { panel?: unknown };
             if (value && "panel" in value && value.panel === expected) return true;
@@ -24,7 +24,7 @@ async function waitForStoredPanel(page: Page, panel: string | null) {
 }
 
 test("reload restores the open, closed and settings rail states", async ({ page }, testInfo) => {
-  await signup(page, `rail-state-${Date.now()}@rakazo.test`, "password12", "Panel Layout");
+  await signup(page, `rail-state-${Date.now()}@anviq.test`, "password12", "Panel Layout");
   await completeOnboarding(page);
   const panel = page.getByTestId("side-panel");
   await expect(panel).toHaveAttribute("data-panel", "closed");
@@ -65,7 +65,7 @@ test("reload restores the open, closed and settings rail states", async ({ page 
 test("reload restores the selected routine and scopes preferences to the chat", async ({
   page,
 }, testInfo) => {
-  await signup(page, `rail-routine-${Date.now()}@rakazo.test`, "password12", "Routine Layout");
+  await signup(page, `rail-routine-${Date.now()}@anviq.test`, "password12", "Routine Layout");
   await completeOnboarding(page);
   const botId = activeBotId(page);
   const routine = await rpc<Routine>(page, "routines/create", {

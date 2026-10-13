@@ -1,4 +1,4 @@
-import type { CapabilityInstall, Connection, ConnectionCatalogItem } from "@rakazo/contracts";
+import type { CapabilityInstall, Connection, ConnectionCatalogItem } from "@anviq/contracts";
 import {
   abortableDelay,
   buildFeaturedConnectorTiles,
@@ -6,7 +6,7 @@ import {
   EMPTY_PLUGIN_CATALOG_MESSAGE,
   filterConnectionCatalogItems,
   humanizeToolName,
-} from "@rakazo/core";
+} from "@anviq/core";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {

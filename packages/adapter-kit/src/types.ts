@@ -2,7 +2,7 @@ import type {
   CacheCapabilities as ConnectionCacheCapabilities,
   ConnectionCatalogItem,
   SandboxKind,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 
 export interface AdapterContext {
   operationId: string;

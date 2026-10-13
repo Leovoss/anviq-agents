@@ -27,8 +27,8 @@ vi.mock("react-native", () => ({
   Linking: { openURL: native.openURL },
 }));
 
-import type { AiRecipient } from "@rakazo/contracts";
-import { AI_DATA_DISCLOSURES } from "@rakazo/contracts";
+import type { AiRecipient } from "@anviq/contracts";
+import { AI_DATA_DISCLOSURES } from "@anviq/contracts";
 import { Alert } from "react-native";
 import { FOREGROUND_FALLBACK_MS, promptAiConsent } from "./ai-consent";
 import { resetI18nForTests, t } from "./i18n";

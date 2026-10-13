@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import type { AgentSkillCatalogEntry, ThreadMessage } from "@rakazo/contracts";
-import type { ComposerMention } from "@rakazo/core";
+import type { AgentSkillCatalogEntry, ThreadMessage } from "@anviq/contracts";
+import type { ComposerMention } from "@anviq/core";
 import type { ComponentProps, ReactNode } from "react";
 import { act, createRef } from "react";
 import type { Root } from "react-dom/client";

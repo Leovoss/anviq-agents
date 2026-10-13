@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/api",
+  "name": "@anviq/api",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
@@ -13,14 +13,14 @@
   "dependencies": {
     "@hono/node-server": "2.1.1",
     "@orpc/server": "1.15.0",
-    "@rakazo/adapter-kit": "workspace:*",
-    "@rakazo/adapters": "workspace:*",
-    "@rakazo/auth": "workspace:*",
-    "@rakazo/contracts": "workspace:*",
-    "@rakazo/core": "workspace:*",
-    "@rakazo/db": "workspace:*",
-    "@rakazo/logging": "workspace:*",
-    "@rakazo/memory": "workspace:*",
+    "@anviq/adapter-kit": "workspace:*",
+    "@anviq/adapters": "workspace:*",
+    "@anviq/auth": "workspace:*",
+    "@anviq/contracts": "workspace:*",
+    "@anviq/core": "workspace:*",
+    "@anviq/db": "workspace:*",
+    "@anviq/logging": "workspace:*",
+    "@anviq/memory": "workspace:*",
     "hono": "4.13.7"
   },
   "devDependencies": {

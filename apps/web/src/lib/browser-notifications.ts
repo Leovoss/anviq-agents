@@ -1,5 +1,5 @@
-import type { ProductEvent } from "@rakazo/contracts";
-import { plainTextFromMarkdown } from "@rakazo/core";
+import type { ProductEvent } from "@anviq/contracts";
+import { plainTextFromMarkdown } from "@anviq/core";
 import { i18n } from "./i18n";
 
 export type BrowserNotificationPermission = "default" | "denied" | "granted";

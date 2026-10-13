@@ -7,8 +7,8 @@ import type {
   ThreadMessage,
   ThreadMessagePage,
   ThreadSnapshot,
-} from "@rakazo/contracts";
-import { RUN_TRIGGERS } from "@rakazo/contracts";
+} from "@anviq/contracts";
+import { RUN_TRIGGERS } from "@anviq/contracts";
 import {
   isActive,
   isBackgroundRunTrigger,
@@ -23,7 +23,7 @@ import {
   takeLiveMessage,
   updateCloudAgentMessages,
   upsertMessageById,
-} from "@rakazo/core";
+} from "@anviq/core";
 
 const runTriggers = new Set<string>(RUN_TRIGGERS);
 

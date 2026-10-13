@@ -1,4 +1,4 @@
-import { ACTIVE_RUN_STATUSES, BACKGROUND_RUN_TRIGGERS, plainTextFromMarkdown } from "@rakazo/core";
+import { ACTIVE_RUN_STATUSES, BACKGROUND_RUN_TRIGGERS, plainTextFromMarkdown } from "@anviq/core";
 
 export const activeRunStatuses = [...ACTIVE_RUN_STATUSES];
 const backgroundRunTriggers = [...BACKGROUND_RUN_TRIGGERS];

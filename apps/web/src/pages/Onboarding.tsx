@@ -14,14 +14,14 @@ import {
   parseModelMaxImagesPerPrompt,
   parseModelMaxTokens,
   type ThinkingLevel,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 import {
   COMPATIBLE_THINKING_LEVELS,
   clampCatalogThinkingLevel,
   createModelProbe,
   initialModelProbeState,
   pickCatalogModelId,
-} from "@rakazo/core";
+} from "@anviq/core";
 import {
   Button,
   Input,
@@ -31,7 +31,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@rakazo/ui-web";
+} from "@anviq/ui-web";
 import { Check, Copy } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -55,11 +55,11 @@ import { rpc } from "../lib/rpc";
 import { useModelOAuthSignIn } from "../lib/use-model-oauth-signin";
 import { errorText } from "../lib/user-error";
 
-const CUSTOM_MODEL_OPTION = "__rakazo_custom_model__";
-const DEFAULT_THINKING_LEVEL_OPTION = "__rakazo_default_thinking__";
+const CUSTOM_MODEL_OPTION = "__anviq_custom_model__";
+const DEFAULT_THINKING_LEVEL_OPTION = "__anviq_default_thinking__";
 const FIRST_BOT_NAME = "Chief";
 const FIRST_BOT_SPAWN_KEY = "onboarding:first";
-const FIRST_BOT_LOCK = "rakazo:onboarding-first-bot";
+const FIRST_BOT_LOCK = "anviq:onboarding-first-bot";
 
 /** Survives StrictMode remounts; concurrent first-bot creates share one in-flight attempt. */
 let firstBotEnsure: Promise<{ id: string }> | null = null;

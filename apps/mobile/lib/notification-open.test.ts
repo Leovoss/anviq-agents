@@ -60,9 +60,9 @@ describe("notification tap routing", () => {
   it("reads the Android notification extra keys", () => {
     expect(
       notificationOpenTarget({
-        "rakazo.botId": "bot-1",
-        "rakazo.threadId": "thread-9",
-        "rakazo.spaceId": "space-2",
+        "anviq.botId": "bot-1",
+        "anviq.threadId": "thread-9",
+        "anviq.spaceId": "space-2",
       }),
     ).toEqual({
       pathname: "/thread",
@@ -73,7 +73,7 @@ describe("notification tap routing", () => {
   it("opens the thread named by an Android deep link, including its thread id", () => {
     expect(
       notificationOpenTargetFromLink(
-        "rakazo://thread?botId=bot-1&name=Ada%20Lovelace&spaceId=space-2&threadId=thread-9",
+        "anviq://thread?botId=bot-1&name=Ada%20Lovelace&spaceId=space-2&threadId=thread-9",
       ),
     ).toEqual({
       pathname: "/thread",
@@ -86,7 +86,7 @@ describe("notification tap routing", () => {
     });
     expect(
       notificationOpenTargetFromLink(
-        "rakazo://group-thread?groupId=group-1&name=Squad&spaceId=space-2&threadId=thread-9",
+        "anviq://group-thread?groupId=group-1&name=Squad&spaceId=space-2&threadId=thread-9",
       ),
     ).toEqual({
       pathname: "/group-thread",
@@ -98,7 +98,7 @@ describe("notification tap routing", () => {
     expect(notificationOpenTarget(null)).toBeNull();
     expect(notificationOpenTarget({ kind: "completion" })).toBeNull();
     expect(notificationOpenTargetFromLink("https://example.com/thread?botId=bot-1")).toBeNull();
-    expect(notificationOpenTargetFromLink("rakazo://account")).toBeNull();
+    expect(notificationOpenTargetFromLink("anviq://account")).toBeNull();
     expect(notificationOpenTargetFromLink("not a url")).toBeNull();
   });
 

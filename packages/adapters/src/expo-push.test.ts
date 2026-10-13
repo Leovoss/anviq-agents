@@ -56,7 +56,7 @@ describe("expo push tickets", () => {
 
 describe("expo push", () => {
   it("keeps refreshed push tokens owner-only", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     const tokenFile = path.join(dataDir, "push-tokens", "user-1.txt");
     await savePushToken(dataDir, "user-1", "ExponentPushToken[old]");
@@ -68,7 +68,7 @@ describe("expo push", () => {
   });
 
   it("does not follow a token-file symlink for reads or writes", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     const tokenDir = path.join(dataDir, "push-tokens");
     const tokenFile = path.join(tokenDir, "user-1.txt");
@@ -86,7 +86,7 @@ describe("expo push", () => {
   });
 
   it("removes a registered token", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]");
     await deletePushToken(dataDir, "user-1");
@@ -94,7 +94,7 @@ describe("expo push", () => {
   });
 
   it("moves a device token to the user who saves it last", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[device]", "session-1");
     await savePushToken(dataDir, "user-3", "ExponentPushToken[other]", "session-3");
@@ -107,7 +107,7 @@ describe("expo push", () => {
   });
 
   it("removes a token only with the session that registered it", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]", "session-1");
 
@@ -119,7 +119,7 @@ describe("expo push", () => {
   });
 
   it("moves a token to the session that replaces its own", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]", "session-1");
 
@@ -132,7 +132,7 @@ describe("expo push", () => {
   });
 
   it("does not restore a token another account claimed during session replacement", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     const token = "ExponentPushToken[device]";
     await savePushToken(dataDir, "user-a", token, "session-a");
@@ -150,7 +150,7 @@ describe("expo push", () => {
   });
 
   it("does not delete a token that changed after it was read", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     const tokenFile = path.join(dataDir, "push-tokens", "user-1.txt");
     await savePushToken(dataDir, "user-1", "ExponentPushToken[t]", "session-1");
@@ -166,7 +166,7 @@ describe("expo push", () => {
   });
 
   it("does not publish a token once its session is no longer active", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[kept]", "session-kept");
 
@@ -181,7 +181,7 @@ describe("expo push", () => {
   });
 
   it("removes a token when session end waits out the registration that just saved it", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     let release!: (active: boolean) => void;
     const gate = new Promise<boolean>((resolve) => {
@@ -209,7 +209,7 @@ describe("expo push", () => {
   });
 
   it("publishes nothing when registration loses the session check", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     let release!: (active: boolean) => void;
     const gate = new Promise<boolean>((resolve) => {
@@ -232,7 +232,7 @@ describe("expo push", () => {
   });
 
   it("keeps a single owner when two accounts claim one token together", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[t]", "session-1");
     let release!: (active: boolean) => void;
@@ -268,7 +268,7 @@ describe("expo push", () => {
   });
 
   it("reads a token file written before tokens recorded their session", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await mkdir(path.join(dataDir, "push-tokens"));
     await writeFile(path.join(dataDir, "push-tokens", "user-1.txt"), "ExponentPushToken[legacy]\n");
@@ -281,7 +281,7 @@ describe("expo push", () => {
   });
 
   it("does not call Expo when the user has no token", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
@@ -314,7 +314,7 @@ describe("expo push", () => {
   });
 
   it("posts to Expo when a token is registered", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]");
     const fetchMock = vi
@@ -397,7 +397,7 @@ describe("expo push", () => {
   });
 
   it("does not deliver a token whose session row is gone, and leaves it to be retargeted", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     const token = "ExponentPushToken[test]";
     await savePushToken(dataDir, "user-1", token, "session-1");
@@ -424,7 +424,7 @@ describe("expo push", () => {
   });
 
   it("does not deliver a token whose session expiry has passed", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]", "session-1");
     const fetchMock = vi.fn();
@@ -442,7 +442,7 @@ describe("expo push", () => {
   });
 
   it("does not send a token another account claimed while the session was looked up", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     const token = "ExponentPushToken[device]";
     await savePushToken(dataDir, "user-1", token, "session-1");
@@ -474,7 +474,7 @@ describe("expo push", () => {
   });
 
   it("saves a token when a leftover lock file is empty", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await mkdir(path.join(dataDir, "push-tokens"), { recursive: true });
     await writeFile(path.join(dataDir, "push-tokens", ".lock"), "");
@@ -487,7 +487,7 @@ describe("expo push", () => {
   it.skipIf(process.platform === "win32")(
     "waits while another process holds the shared token lock file",
     async () => {
-      const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+      const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
       dirs.push(dataDir);
       const lockFile = path.join(dataDir, "push-tokens", ".lock");
       await mkdir(path.dirname(lockFile), { recursive: true });
@@ -545,7 +545,7 @@ flock(fd, 8);
   );
 
   it("delivers when the registering session is still live", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]", "session-1");
     const fetchMock = vi
@@ -566,7 +566,7 @@ flock(fd, 8);
   });
 
   it("does not deliver a session-bound token when it cannot check the session", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]", "session-1");
     const fetchMock = vi.fn();
@@ -584,7 +584,7 @@ flock(fd, 8);
   });
 
   it("keeps the token when the session lookup fails", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]", "session-1");
     const fetchMock = vi.fn();
@@ -604,7 +604,7 @@ flock(fd, 8);
   });
 
   it("throws when Expo rejects the request", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]");
     vi.stubGlobal(
@@ -621,7 +621,7 @@ flock(fd, 8);
   });
 
   it("rejects and cancels a declared oversized response", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]");
     const response = new Response("oversized", {
@@ -640,7 +640,7 @@ flock(fd, 8);
   });
 
   it("does not wait past cancellation when an oversized body cancel hangs", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]");
     let cancelStarted = false;
@@ -673,7 +673,7 @@ flock(fd, 8);
   });
 
   it("caps a streamed response without a content length", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]");
     vi.stubGlobal(
@@ -690,7 +690,7 @@ flock(fd, 8);
   });
 
   it("rejects malformed successful responses", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("not json")));
@@ -704,7 +704,7 @@ flock(fd, 8);
   });
 
   it("passes caller cancellation to the Expo request", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]");
     const controller = new AbortController();
@@ -725,7 +725,7 @@ flock(fd, 8);
   });
 
   it("throws when the Expo request never reaches the network", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[test]");
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
@@ -739,7 +739,7 @@ flock(fd, 8);
   });
 
   it("reports DeviceNotRegistered without deleting a stored or replacement token", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-push-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-push-"));
     dirs.push(dataDir);
     await savePushToken(dataDir, "user-1", "ExponentPushToken[old]");
     vi.stubGlobal(

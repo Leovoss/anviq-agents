@@ -1,6 +1,6 @@
-import { parseTicketRef } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { coerceTicketStatus } from "@rakazo/db";
+import { parseTicketRef } from "@anviq/contracts";
+import type { PrismaClient } from "@anviq/db";
+import { coerceTicketStatus } from "@anviq/db";
 
 const MAX_TICKET_CONTEXT_BYTES = 4 * 1024;
 

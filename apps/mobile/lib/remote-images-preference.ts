@@ -1,5 +1,5 @@
-import type { RemoteImagesPreference } from "@rakazo/core";
-import { normalizeRemoteImagesPreference, REMOTE_IMAGES_STORAGE_KEY } from "@rakazo/core";
+import type { RemoteImagesPreference } from "@anviq/core";
+import { normalizeRemoteImagesPreference, REMOTE_IMAGES_STORAGE_KEY } from "@anviq/core";
 import * as SecureStore from "expo-secure-store";
 
 export type { RemoteImagesPreference };

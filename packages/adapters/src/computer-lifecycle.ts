@@ -5,17 +5,17 @@ import type {
   ComputerRef,
   JobPublisher,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
-import { computerControlExpireJobKey } from "@rakazo/adapter-kit";
-import type { ComputerUpdate } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES, parseScreenLeaseId, screenLeaseId } from "@rakazo/core";
+} from "@anviq/adapter-kit";
+import { computerControlExpireJobKey } from "@anviq/adapter-kit";
+import type { ComputerUpdate } from "@anviq/contracts";
+import { ACTIVE_RUN_STATUSES, parseScreenLeaseId, screenLeaseId } from "@anviq/core";
 import {
   expireComputerExecutionLeases,
   type PrismaClient,
   parseComputerMode,
   type ThreadEvents,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import {
   clearInactiveUserComputerControl,
   expireComputerControl,

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Rakazo computer</title>
+    <title>Anviq computer</title>
     <style>
       html,
       body,
@@ -142,7 +142,7 @@
       rfb.clipViewport = false;
       attachRemoteClipboardCopy(rfb);
       if (!rfb.viewOnly) attachHostClipboardPaste(rfb);
-      if (!rfb.viewOnly && (isTouchBrowser() || window.__rakazoNativeKeys)) {
+      if (!rfb.viewOnly && (isTouchBrowser() || window.__anviqNativeKeys)) {
         const keyboardInput = document.getElementById("mobile-keyboard-input");
         attachMobilePaste(rfb, {
           button: document.getElementById("mobile-paste"),

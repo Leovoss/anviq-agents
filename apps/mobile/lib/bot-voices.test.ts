@@ -28,7 +28,7 @@ vi.mock("expo-localization", () => ({
   getLocales: () => [{ languageTag: device.locale, regionCode: device.regionCode }],
 }));
 
-const ASSIGNMENTS = "doc/rakazo-bot-voices.json";
+const ASSIGNMENTS = "doc/anviq-bot-voices.json";
 
 vi.mock("expo-file-system", () => ({
   Paths: { document: "doc" },

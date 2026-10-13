@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { SpaceMemoryConfig } from "@rakazo/contracts";
+import type { SpaceMemoryConfig } from "@anviq/contracts";
 import {
   Button,
   Dialog,
@@ -12,7 +12,7 @@ import {
   NativeSelect,
   NativeSelectOption,
   Toggle,
-} from "@rakazo/ui-web";
+} from "@anviq/ui-web";
 import { XIcon } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { rpc } from "../lib/rpc";

@@ -27,8 +27,8 @@ import type {
   SandboxProvider,
   ScreenRequest,
   ScreenSession,
-} from "@rakazo/adapter-kit";
-import { boundedSandboxCommandTimeoutMs } from "@rakazo/core";
+} from "@anviq/adapter-kit";
+import { boundedSandboxCommandTimeoutMs } from "@anviq/core";
 import {
   applyPlaceholderAction,
   boundedComputerActions,
@@ -683,7 +683,7 @@ async function* walkDesktopWorkspace(home: string, directory: string): AsyncIter
 }
 
 function resolveExecuteCwd(requestCwd: string | undefined, home: string) {
-  if (!requestCwd || requestCwd === "/home/rakazo" || requestCwd === "/home/user") return home;
+  if (!requestCwd || requestCwd === "/home/anviq" || requestCwd === "/home/user") return home;
   return path.resolve(home, requestCwd);
 }
 

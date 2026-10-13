@@ -3,11 +3,11 @@
  * not a usable app. After session resolves, wait for a bootstrapped shell
  * (`data-ready` / shell-ready mark) or an auth/welcome/onboarding surface so a
  * bare Suspense fallback or pre-bootstrap ShellPage cannot pass. Plain e2e
- * fixtures omit the Rakazo app-state marker. Runs in the renderer.
+ * fixtures omit the Anviq app-state marker. Runs in the renderer.
  */
 export const APP_DOCUMENT_STATE_SCRIPT = `(() => {
   const appState =
-    document.querySelector("[data-rakazo-app-state]")?.getAttribute("data-rakazo-app-state") ??
+    document.querySelector("[data-anviq-app-state]")?.getAttribute("data-anviq-app-state") ??
     null;
   if (appState === "session-pending") return "pending";
   // The web app's last-resort error screen: keep it so its Refresh can recover.
@@ -19,7 +19,7 @@ export const APP_DOCUMENT_STATE_SCRIPT = `(() => {
       performance.getEntriesByName("rk:renderer:shell-ready").length > 0,
   );
   const authOrWelcomeSurface = Boolean(
-    document.querySelector('[data-rakazo-surface="welcome"]') ||
+    document.querySelector('[data-anviq-surface="welcome"]') ||
       document.querySelector(
         'form input[type="email"], form input[name="email"], form input#email',
       ) ||
@@ -36,7 +36,7 @@ export const APP_DOCUMENT_STATE_SCRIPT = `(() => {
     performance.getEntriesByName("rk:renderer:session-committed").length > 0;
   if (sessionReady && surfaceReady) return "ready";
 
-  // Desktop e2e fixtures mount a plain page without Rakazo app-state markers.
+  // Desktop e2e fixtures mount a plain page without Anviq app-state markers.
   if (appState === null) {
     const bodyText = (document.body?.innerText || "").trim();
     if (bodyText.includes("Opening your Space")) return "pending";

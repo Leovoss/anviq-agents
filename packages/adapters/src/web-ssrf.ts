@@ -1,6 +1,6 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
-import { readBoundedResponseBytes } from "@rakazo/core";
+import { readBoundedResponseBytes } from "@anviq/core";
 import { Agent } from "undici";
 import {
   createAddressCheckedLookup,
@@ -129,7 +129,7 @@ export async function fetchSafeWebBytes(
       resolve,
       dispatcher,
       maxBytes,
-      userAgent: options.userAgent ?? "Rakazo/0.1 (+https://github.com/elie222/rakazo)",
+      userAgent: options.userAgent ?? "Anviq/0.1 (+https://github.com/leovoss/anviq-agents)",
       headers: options.headers,
       signal,
       redirectsRemaining: options.maxRedirects ?? MAX_REDIRECTS,

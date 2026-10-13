@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { MAX_DESKTOP_DISPLAY, screenPorts } from "@rakazo/core/node/desktop-runtime";
+import { MAX_DESKTOP_DISPLAY, screenPorts } from "@anviq/core/node/desktop-runtime";
 import type Docker from "dockerode";
 
-export const COMPUTER_IMAGE = process.env.RAKAZO_COMPUTER_IMAGE ?? "rakazo/computer:local";
+export const COMPUTER_IMAGE = process.env.ANVIQ_COMPUTER_IMAGE ?? "anviq/computer:local";
 export const COMPUTER_UID = 1000;
 export const COMPUTER_GID = 1000;
 export const COMPUTER_USER = `${COMPUTER_UID}:${COMPUTER_GID}`;
@@ -43,7 +43,7 @@ export function resolveSpaceComputerLimit(
  * A computer runs Xvfb, a window manager and a full Chromium on behalf of an
  * agent that decides for itself what to open. #343 gave these containers a
  * pids ceiling, but Memory and NanoCpus are still unset, so one runaway page is
- * a host-wide memory and CPU event that takes every other bot and the Rakazo
+ * a host-wide memory and CPU event that takes every other bot and the Anviq
  * services down with it. Every service in docker-compose.prod.yml already
  * carries mem_limit; this applies the same discipline to the containers that
  * actually run untrusted page content.
@@ -122,16 +122,16 @@ function envOrDefault(name: string, fallback: string): string {
 /** The host resource ceilings applied to every bot computer. */
 export function computerResourceLimits() {
   const memoryBytes = parseMemoryBytes(
-    "RAKAZO_COMPUTER_MEMORY",
-    envOrDefault("RAKAZO_COMPUTER_MEMORY", DEFAULT_COMPUTER_MEMORY),
+    "ANVIQ_COMPUTER_MEMORY",
+    envOrDefault("ANVIQ_COMPUTER_MEMORY", DEFAULT_COMPUTER_MEMORY),
   );
   const nanoCpus = parseNanoCpus(
-    "RAKAZO_COMPUTER_CPUS",
-    envOrDefault("RAKAZO_COMPUTER_CPUS", DEFAULT_COMPUTER_CPUS),
+    "ANVIQ_COMPUTER_CPUS",
+    envOrDefault("ANVIQ_COMPUTER_CPUS", DEFAULT_COMPUTER_CPUS),
   );
   const pidsLimit = parsePidsLimit(
-    "RAKAZO_COMPUTER_PIDS_LIMIT",
-    envOrDefault("RAKAZO_COMPUTER_PIDS_LIMIT", DEFAULT_COMPUTER_PIDS_LIMIT),
+    "ANVIQ_COMPUTER_PIDS_LIMIT",
+    envOrDefault("ANVIQ_COMPUTER_PIDS_LIMIT", DEFAULT_COMPUTER_PIDS_LIMIT),
   );
   return {
     // Memory and MemorySwap are set together: leaving MemorySwap unset lets the
@@ -155,7 +155,7 @@ export function resolveScreenNetworkMode(value: string | undefined): ScreenNetwo
  * cloud metadata endpoints. `restricted` keeps public internet egress but lets the
  * operator drop everything else with one host-side iptables rule set — the
  * supervisor gives each computer network a deterministic bridge interface name so
- * the rules match by interface (`-i rakazo-c+`) instead of ephemeral subnets.
+ * the rules match by interface (`-i anviq-c+`) instead of ephemeral subnets.
  * Enforcement lives on the Docker host (infra/compose/restrict-computer-egress.sh);
  * the flag only marks the networks. Supervisor capabilities stay unchanged.
  */
@@ -171,12 +171,12 @@ export function resolveComputerEgressMode(
 
 /**
  * Host bridge interface name for a computer network. Linux caps interface names
- * at 15 bytes (IFNAMSIZ), so "rakazo-c" gets a 7-hex-char suffix derived from the
+ * at 15 bytes (IFNAMSIZ), so "anviq-c" gets a 7-hex-char suffix derived from the
  * same digest as the network name — deterministic across recreate, unique per bot.
  */
 export function computerBridgeNameFor(botId: string) {
   const hash = createHash("sha256").update(botId).digest("hex").slice(0, 7);
-  return `rakazo-c${hash}`;
+  return `anviq-c${hash}`;
 }
 
 /**
@@ -204,7 +204,7 @@ export function computerNetworkCreateOptions(
     Name: computerNetworkNameFor(botId),
     Driver: "bridge",
     CheckDuplicate: true,
-    Labels: { "rakazo.computerOwner": owner, "rakazo.botId": botId },
+    Labels: { "anviq.netputerOwner": owner, "anviq.botId": botId },
     ...(egress === "restricted"
       ? { Options: { "com.docker.network.bridge.name": computerBridgeNameFor(botId) } }
       : {}),
@@ -267,7 +267,7 @@ export function homeVolumeMatches(
   return (
     mounts?.some(
       (mount) =>
-        mount.Target === "/home/rakazo" &&
+        mount.Target === "/home/anviq" &&
         mount.Type === "volume" &&
         mount.Source === volume.name &&
         mount.VolumeOptions?.Subpath === volume.subpath &&
@@ -311,16 +311,16 @@ export function containerCreateOptions(input: ComputerCreateInput) {
     Tty: true,
     Env: [
       "DISPLAY=:1",
-      "HOME=/home/rakazo",
-      "PATH=/home/rakazo/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-      "NPM_CONFIG_PREFIX=/home/rakazo/.local",
+      "HOME=/home/anviq",
+      "PATH=/home/anviq/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "NPM_CONFIG_PREFIX=/home/anviq/.local",
       "PIP_USER=1",
-      ...(input.controlToken ? [`RAKAZO_COMPUTER_CONTROL_TOKEN=${input.controlToken}`] : []),
+      ...(input.controlToken ? [`ANVIQ_COMPUTER_CONTROL_TOKEN=${input.controlToken}`] : []),
     ],
     Labels: {
-      "rakazo.managed": "true",
-      "rakazo.botId": input.botId,
-      "rakazo.spaceId": input.spaceId,
+      "anviq.managed": "true",
+      "anviq.botId": input.botId,
+      "anviq.spaceId": input.spaceId,
     },
     ExposedPorts: ports.ExposedPorts,
     HostConfig: {
@@ -331,7 +331,7 @@ export function containerCreateOptions(input: ComputerCreateInput) {
               {
                 Type: "volume" as const,
                 Source: input.homeVolume.name,
-                Target: "/home/rakazo",
+                Target: "/home/anviq",
                 // Docker makes Labels and DriverConfig optional; dockerode's types do not.
                 VolumeOptions: {
                   NoCopy: true,
@@ -340,7 +340,7 @@ export function containerCreateOptions(input: ComputerCreateInput) {
               },
             ],
           }
-        : { Binds: [`${input.homePath}:/home/rakazo`], Mounts: undefined }),
+        : { Binds: [`${input.homePath}:/home/anviq`], Mounts: undefined }),
       PortBindings: ports.PortBindings,
       ShmSize: 256 * 1024 * 1024,
       CapDrop: ["ALL"],
@@ -350,7 +350,7 @@ export function containerCreateOptions(input: ComputerCreateInput) {
       AutoRemove: false,
       NetworkMode: input.networkMode ?? "bridge",
     },
-    WorkingDir: "/home/rakazo",
+    WorkingDir: "/home/anviq",
   };
 }
 
@@ -360,7 +360,7 @@ export function sanitizeIdentifier(botId: string) {
 }
 
 export function containerNameFor(botId: string) {
-  return `rakazo-bot-${sanitizeIdentifier(botId)}`;
+  return `anviq-bot-${sanitizeIdentifier(botId)}`;
 }
 
 export function computerNetworkNameFor(botId: string) {
@@ -368,7 +368,7 @@ export function computerNetworkNameFor(botId: string) {
   // characters (e.g. "a/b" and "ab"). Do not change containerNameFor — that
   // name must stay stable so an existing computer can resume.
   const hash = createHash("sha256").update(botId).digest("hex").slice(0, 32);
-  return `rakazo-computer-${sanitizeIdentifier(botId).slice(0, 32)}-${hash}`;
+  return `anviq-computer-${sanitizeIdentifier(botId).slice(0, 32)}-${hash}`;
 }
 
 /** Current and prior network names used by this PR, for delete cleanup. */
@@ -377,8 +377,8 @@ export function computerNetworkNamesForCleanup(botId: string) {
   const digest = createHash("sha256").update(botId).digest("hex");
   return [
     computerNetworkNameFor(botId),
-    `rakazo-computer-${safe}`,
-    `rakazo-computer-${safe.slice(0, 32)}-${digest.slice(0, 8)}`,
+    `anviq-computer-${safe}`,
+    `anviq-computer-${safe.slice(0, 32)}-${digest.slice(0, 8)}`,
   ];
 }
 

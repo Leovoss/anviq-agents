@@ -1,6 +1,6 @@
 import type { Credential, OAuthCredential } from "@earendil-works/pi-ai";
-import type { ModelCredentialFailedState, ModelCredentialRetireReason } from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
+import type { ModelCredentialFailedState, ModelCredentialRetireReason } from "@anviq/adapter-kit";
+import type { PrismaClient } from "@anviq/db";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   CHATGPT_OAUTH_PROVIDER,

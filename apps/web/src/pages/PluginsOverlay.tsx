@@ -5,14 +5,14 @@ import type {
   ConnectionCatalogItem,
   IntegrationCatalogResult,
   IntegrationCatalogSurface,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 import {
   abortableDelay,
   buildFeaturedConnectorTiles,
   CONNECTION_CATALOG_PAGE_SIZE,
   filterConnectionCatalogItems,
   humanizeToolName,
-} from "@rakazo/core";
+} from "@anviq/core";
 import {
   Button,
   Card,
@@ -27,7 +27,7 @@ import {
   Input,
   NativeSelect,
   NativeSelectOption,
-} from "@rakazo/ui-web";
+} from "@anviq/ui-web";
 import { ChevronDown, ChevronLeft, ChevronUp, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";
@@ -228,7 +228,7 @@ export function PluginsOverlay({
         displayName: nextAccountLabel(item.name, existing.length),
       });
       if (started.authorizationUrl)
-        window.open(started.authorizationUrl, "rakazo-plugin-connect", "noopener,noreferrer");
+        window.open(started.authorizationUrl, "anviq-plugin-connect", "noopener,noreferrer");
       if (item.noAuth && !started.authorizationUrl) {
         if (controller.signal.aborted) return;
         setItemConnected(item, true);

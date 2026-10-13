@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { AgentRunRequest, AgentRuntimeEvent, ConnectorTool } from "@rakazo/adapter-kit";
-import { PiAgentRuntime } from "@rakazo/adapters";
+import type { AgentRunRequest, AgentRuntimeEvent, ConnectorTool } from "@anviq/adapter-kit";
+import { PiAgentRuntime } from "@anviq/adapters";
 import { afterEach, describe, expect, it } from "vitest";
 import { type ModelEmulatorRequest, startModelEmulator } from "./model-emulator.js";
 
@@ -320,7 +320,7 @@ describe("real Pi against an offline model HTTP endpoint", () => {
   });
 
   it("assembles fragmented tool arguments, executes the write, and sends its result back", async () => {
-    const dir = await mkdtemp(path.join(tmpdir(), "rakazo-pi-offline-"));
+    const dir = await mkdtemp(path.join(tmpdir(), "anviq-pi-offline-"));
     cleanups.push(() => rm(dir, { recursive: true, force: true }));
     const calls: Array<{ name: string; args: Record<string, unknown>; id?: string }> = [];
     const server = await startModelEmulator({

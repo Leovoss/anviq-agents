@@ -1,4 +1,4 @@
-import type { RunActivityRow, RunStatus } from "@rakazo/contracts";
+import type { RunActivityRow, RunStatus } from "@anviq/contracts";
 
 export type ActivityStatusFilter = RunStatus | "all";
 

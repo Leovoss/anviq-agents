@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { ComposioEmulator } from "@rakazo/adapters";
+import { ComposioEmulator } from "@anviq/adapters";
 import { describe, expect, it } from "vitest";
 import { discardBotIntroRun } from "./discard-bot-intro.js";
 import { sessionCookieHeader } from "./index.js";
@@ -162,7 +162,7 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
           })),
         ],
       });
-      const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-history-redaction-"));
+      const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-history-redaction-"));
       let stop: (() => Promise<void>) | undefined;
       try {
         const { createApp } = await import("../../../apps/api/src/app.ts");
@@ -187,7 +187,7 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
           method: "POST",
           headers: { "content-type": "application/json", origin },
           body: JSON.stringify({
-            email: `history-${randomUUID()}@rakazo.test`,
+            email: `history-${randomUUID()}@anviq.test`,
             password: "password12",
             name: "History fixture",
           }),

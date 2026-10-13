@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import { readFileSync } from "node:fs";
-import type { ThreadScrollState } from "@rakazo/core";
-import { openThreadWindow, withLiveStreamingProgress } from "@rakazo/core";
+import type { ThreadScrollState } from "@anviq/core";
+import { openThreadWindow, withLiveStreamingProgress } from "@anviq/core";
 import { act, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import ts from "typescript";

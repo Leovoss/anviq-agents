@@ -8,7 +8,7 @@ import type {
   TranscriptContext,
 } from "@earendil-works/pi-ai";
 import { AssistantMessageEventStream } from "@earendil-works/pi-ai/utils/event-stream";
-import type { AgentRunRequest, AgentRuntimeEvent, ModelCallObserver } from "@rakazo/adapter-kit";
+import type { AgentRunRequest, AgentRuntimeEvent, ModelCallObserver } from "@anviq/adapter-kit";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const providerState = vi.hoisted(() => ({

@@ -1,4 +1,4 @@
-import { ATTACHMENT_MAX_BASE64_LENGTH } from "@rakazo/contracts";
+import { ATTACHMENT_MAX_BASE64_LENGTH } from "@anviq/contracts";
 
 const IMAGE_TILE_PIXELS = 32;
 const IMAGE_TOKENS_PER_TILE = 16;

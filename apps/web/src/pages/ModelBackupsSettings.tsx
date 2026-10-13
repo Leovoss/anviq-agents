@@ -1,13 +1,13 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { Me, ModelBackupChoice, ModelCatalogEntry, ModelCredential } from "@rakazo/contracts";
+import type { Me, ModelBackupChoice, ModelCatalogEntry, ModelCredential } from "@anviq/contracts";
 import {
   backupChoiceKey,
   connectedBackupOptions,
   MAX_MODEL_BACKUPS,
   moveBackupChoice,
   sameBackupChoices,
-} from "@rakazo/contracts";
-import { Button, NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+} from "@anviq/contracts";
+import { Button, NativeSelect, NativeSelectOption } from "@anviq/ui-web";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { rpc, selectedSpaceId } from "../lib/rpc";
 

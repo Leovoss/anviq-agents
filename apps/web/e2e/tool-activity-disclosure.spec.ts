@@ -11,7 +11,7 @@ const states = [
 ];
 
 test("chat shows only the bot response when tool activity is off", async ({ page }, testInfo) => {
-  await page.addInitScript(() => localStorage.setItem("rakazo.showToolActivity", "off"));
+  await page.addInitScript(() => localStorage.setItem("anviq.showToolActivity", "off"));
   for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     for (const state of states) {

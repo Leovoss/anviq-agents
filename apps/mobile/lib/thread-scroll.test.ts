@@ -1,5 +1,5 @@
-import type { ThreadScrollState } from "@rakazo/core";
-import { reconcileThreadScrollState } from "@rakazo/core";
+import type { ThreadScrollState } from "@anviq/core";
+import { reconcileThreadScrollState } from "@anviq/core";
 import { describe, expect, it } from "vitest";
 import { ThreadScrollBehavior } from "./thread-scroll.js";
 

@@ -5,13 +5,13 @@ for (const platform of ["darwin", "win32"]) {
   test(`host computer choice explains file access on ${platform}`, async ({ page }, testInfo) => {
     await signup(
       page,
-      `host-choice-${platform}-${Date.now()}@rakazo.test`,
+      `host-choice-${platform}-${Date.now()}@anviq.test`,
       "password12",
       "Host Tester",
     );
     await completeOnboarding(page);
     await page.addInitScript((platform) => {
-      Object.defineProperty(window, "rakazoDesktop", {
+      Object.defineProperty(window, "anviqDesktop", {
         value: {
           platform,
           window: {
@@ -60,10 +60,10 @@ for (const platform of ["darwin", "win32"]) {
 }
 
 test("a saved host choice closes when refreshing the profile fails", async ({ page }) => {
-  await signup(page, `host-choice-refresh-${Date.now()}@rakazo.test`, "password12", "Host Tester");
+  await signup(page, `host-choice-refresh-${Date.now()}@anviq.test`, "password12", "Host Tester");
   await completeOnboarding(page);
   await page.addInitScript(() => {
-    Object.defineProperty(window, "rakazoDesktop", {
+    Object.defineProperty(window, "anviqDesktop", {
       value: {
         platform: "darwin",
         window: {

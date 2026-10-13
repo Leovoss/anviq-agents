@@ -16,9 +16,9 @@ import type {
   ScreenRequest,
   ScreenSession,
   TerminalRequest,
-} from "@rakazo/adapter-kit";
-import { boundedSandboxCommandTimeoutMs, resolveSupervisorToken } from "@rakazo/core";
-import { outgoingCorrelationHeaders } from "@rakazo/logging";
+} from "@anviq/adapter-kit";
+import { boundedSandboxCommandTimeoutMs, resolveSupervisorToken } from "@anviq/core";
+import { outgoingCorrelationHeaders } from "@anviq/logging";
 import {
   boundedComputerActions,
   clampRounded,
@@ -133,12 +133,12 @@ export class DockerSandboxProvider implements SandboxProvider {
   private headers(context: AdapterContext, botId?: string) {
     return {
       authorization: `Bearer ${this.supervisorToken}`,
-      "x-rakazo-space-id": context.spaceId,
+      "x-anviq-space-id": context.spaceId,
       ...outgoingCorrelationHeaders(),
-      ...(botId ? { "x-rakazo-bot-id": botId } : {}),
-      ...(context.botId ? { "x-rakazo-screen-id": context.botId } : {}),
-      ...(context.screenLeaseId ? { "x-rakazo-screen-lease-id": context.screenLeaseId } : {}),
-      ...(context.cancelRunWork ? { "x-rakazo-cancel-run-work": "1" } : {}),
+      ...(botId ? { "x-anviq-bot-id": botId } : {}),
+      ...(context.botId ? { "x-anviq-screen-id": context.botId } : {}),
+      ...(context.screenLeaseId ? { "x-anviq-screen-lease-id": context.screenLeaseId } : {}),
+      ...(context.cancelRunWork ? { "x-anviq-cancel-run-work": "1" } : {}),
     };
   }
 
@@ -675,9 +675,9 @@ function requestDeadline(timeoutMs: number, message: string) {
 }
 
 function dockerCwd(cwd: string | undefined) {
-  if (!cwd || cwd === "." || cwd === "/" || cwd === "/home/rakazo") return "/home/rakazo";
-  const relative = cwd.startsWith("/home/rakazo/")
-    ? cwd.slice("/home/rakazo/".length)
+  if (!cwd || cwd === "." || cwd === "/" || cwd === "/home/anviq") return "/home/anviq";
+  const relative = cwd.startsWith("/home/anviq/")
+    ? cwd.slice("/home/anviq/".length)
     : normalizeWorkspacePath(cwd);
-  return path.posix.join("/home/rakazo", relative);
+  return path.posix.join("/home/anviq", relative);
 }

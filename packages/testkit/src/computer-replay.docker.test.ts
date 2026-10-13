@@ -4,12 +4,12 @@ import { mkdir, writeFile } from "node:fs/promises";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
 import { serve } from "@hono/node-server";
-import type { ComputerRef } from "@rakazo/adapter-kit";
+import type { ComputerRef } from "@anviq/adapter-kit";
 import {
   ComputerBrowserProvider,
   DockerSandboxProvider,
   FakeSandboxProvider,
-} from "@rakazo/adapters";
+} from "@anviq/adapters";
 import { describe, expect, it } from "vitest";
 import {
   assertContactsExport,
@@ -150,7 +150,7 @@ describe.skipIf(process.env.RUN_COMPUTER_REPLAY_DOCKER !== "1")(
                   computer!.id,
                   "bash",
                   "-c",
-                  "/usr/local/bin/rakazo-page-browser snapshot; tail -40 /tmp/rakazo/screen-1-browser.log",
+                  "/usr/local/bin/anviq-page-browser snapshot; tail -40 /tmp/anviq/screen-1-browser.log",
                 ],
                 { encoding: "utf8", timeout: 40_000 },
               );

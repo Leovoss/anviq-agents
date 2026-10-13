@@ -1,4 +1,4 @@
-import { inferAttachmentMimeType } from "@rakazo/core";
+import { inferAttachmentMimeType } from "@anviq/core";
 import { describe, expect, it } from "vitest";
 import { filterPickedAttachments } from "./pick-attachments-filter.js";
 

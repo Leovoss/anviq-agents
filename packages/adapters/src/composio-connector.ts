@@ -8,8 +8,8 @@ import type {
   ConnectorProvider,
   ConnectorTool,
   ManagedConnectorProvider,
-} from "@rakazo/adapter-kit";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/adapter-kit";
+import { getLogger } from "@anviq/logging";
 import {
   composioToolkitDirectory,
   mergeCatalogWithConnected,
@@ -432,7 +432,7 @@ export class ComposioConnector implements ComposioProvider {
   }
 
   private async loadDirectory(): Promise<ToolkitDirectoryEntry[]> {
-    const session = await this.sessionFor("__rakazo_catalog__");
+    const session = await this.sessionFor("__anviq_catalog__");
     const toolkits = await collectPages((cursor) => session.toolkits({ limit: 50, cursor }));
     return toolkits.map((toolkit) => ({
       slug: toolkit.slug,

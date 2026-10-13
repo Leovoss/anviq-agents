@@ -1,9 +1,9 @@
-import type { AvatarStyle } from "@rakazo/contracts";
-import { AvatarStyleSchema } from "@rakazo/contracts";
+import type { AvatarStyle } from "@anviq/contracts";
+import { AvatarStyleSchema } from "@anviq/contracts";
 import * as SecureStore from "expo-secure-store";
 
 /** The last avatar style the server confirmed, so an offline launch starts from it. */
-export const AVATAR_STYLE_KEY = "rakazo.avatar-style";
+export const AVATAR_STYLE_KEY = "anviq.avatar-style";
 
 let memoryStyle: AvatarStyle | null = null;
 /** What SecureStore holds. A failed write leaves this unchanged so the same style is retried. */

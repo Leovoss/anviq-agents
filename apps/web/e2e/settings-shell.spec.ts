@@ -11,7 +11,7 @@ for (const totalTokens of [201, null]) {
       }),
     );
     const stamp = Date.now();
-    await signup(page, `usage-total-${stamp}@rakazo.test`, "password12", "Usage totals");
+    await signup(page, `usage-total-${stamp}@anviq.test`, "password12", "Usage totals");
     await completeOnboarding(page);
     await openUserSettings(page, "usage");
     await expect(page.getByTestId("usage-settings")).toContainText(
@@ -30,7 +30,7 @@ test("settings shell is two-pane and deep-links Models Memory Voice Usage", asyn
 }, testInfo) => {
   const stamp = Date.now();
   const userName = `Settings shell ${stamp}`;
-  await signup(page, `settings-shell-${stamp}@rakazo.test`, "password12", userName);
+  await signup(page, `settings-shell-${stamp}@anviq.test`, "password12", userName);
   await completeOnboarding(page);
 
   await page.getByTestId("user-menu-trigger").click();
@@ -61,7 +61,7 @@ test("settings shell is two-pane and deep-links Models Memory Voice Usage", asyn
   await streamReplies.click();
   await expect(streamReplies).toBeChecked();
   await expect
-    .poll(() => page.evaluate(() => window.localStorage.getItem("rakazo.responseStreaming")))
+    .poll(() => page.evaluate(() => window.localStorage.getItem("anviq.responseStreaming")))
     .toBe("on");
 
   await settings.getByTestId("settings-nav-models").click();

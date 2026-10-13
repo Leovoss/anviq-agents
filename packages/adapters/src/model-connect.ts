@@ -1,12 +1,12 @@
 import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
-import type { ModelConnectInput, ModelCredential, ThinkingLevel } from "@rakazo/contracts";
+import type { ModelConnectInput, ModelCredential, ThinkingLevel } from "@anviq/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE,
   OPENAI_COMPATIBLE_PROVIDER_ID as CONTRACT_OPENAI_COMPAT,
   cloudflareGatewayRouting,
   isCloudflareAiGatewayProvider,
   modelOutputLeavesInputRoom,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 import { modelIdSupportsImages, updateModelImageCapabilities } from "./model-vision.js";
 import { modelCredentialAuthKind } from "./pi-catalog-availability.js";
 import {

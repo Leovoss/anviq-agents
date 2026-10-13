@@ -1,4 +1,4 @@
-import type { AgentRuntimeEvent, UsageOperationKind } from "@rakazo/adapter-kit";
+import type { AgentRuntimeEvent, UsageOperationKind } from "@anviq/adapter-kit";
 import type { PrismaClient } from "./generated/prisma/client.js";
 
 type UsageEvent = Extract<AgentRuntimeEvent, { type: "usage" }>;

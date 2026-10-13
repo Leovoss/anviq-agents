@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import type { Bot } from "@rakazo/contracts";
+import type { Bot } from "@anviq/contracts";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { MobileBot } from "./api";
 import { retainUnchangedBotRoster } from "./bot-roster";

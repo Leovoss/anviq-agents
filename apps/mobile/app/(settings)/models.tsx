@@ -1,4 +1,4 @@
-import type { ModelBackupChoice, ModelOAuthBegin, ThinkingLevel } from "@rakazo/contracts";
+import type { ModelBackupChoice, ModelOAuthBegin, ThinkingLevel } from "@anviq/contracts";
 import {
   backupChoiceKey,
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
@@ -17,7 +17,7 @@ import {
   parseModelMaxImagesPerPrompt,
   parseModelMaxTokens,
   sameBackupChoices,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 import {
   COMPATIBLE_THINKING_LEVELS,
   clampCatalogThinkingLevel,
@@ -26,7 +26,7 @@ import {
   filterModelCatalog,
   initialModelProbeState,
   pickCatalogModelId,
-} from "@rakazo/core";
+} from "@anviq/core";
 import * as Clipboard from "expo-clipboard";
 import { useFocusEffect } from "expo-router";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1357,7 +1357,7 @@ export default function Models() {
         {selected.auth === "oauth" && !subscriptionSignIn ? (
           <Text style={styles.secondary}>
             {t(
-              "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider.",
+              "This subscription sign-in is not available in Anviq yet. Use a deployment credential or choose another provider.",
             )}
           </Text>
         ) : null}

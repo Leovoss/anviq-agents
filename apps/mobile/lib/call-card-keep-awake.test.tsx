@@ -125,17 +125,17 @@ describe("CallCard keep-awake lifetime", () => {
     act(() => root.render(<CallCard />));
     expect(container.childElementCount).toBe(0);
     expect(useKeepAwake).not.toHaveBeenCalled();
-    expect(activeTags.has("rakazo-call")).toBe(false);
+    expect(activeTags.has("anviq-call")).toBe(false);
 
     await act(async () => {
       startCall({ botId: "bot-1", botName: "Ada" }, deps);
     });
     expect(container.textContent).toContain("Ada");
-    expect(useKeepAwake).toHaveBeenCalledWith("rakazo-call");
-    expect(activeTags.has("rakazo-call")).toBe(true);
+    expect(useKeepAwake).toHaveBeenCalledWith("anviq-call");
+    expect(activeTags.has("anviq-call")).toBe(true);
 
     await act(async () => endCall());
     expect(container.childElementCount).toBe(0);
-    expect(activeTags.has("rakazo-call")).toBe(false);
+    expect(activeTags.has("anviq-call")).toBe(false);
   });
 });

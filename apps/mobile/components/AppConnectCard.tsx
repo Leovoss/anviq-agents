@@ -1,5 +1,5 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { abortableDelay } from "@rakazo/core";
+import type { MessageBlock } from "@anviq/contracts";
+import { abortableDelay } from "@anviq/core";
 import { useEffect, useRef, useState } from "react";
 import type { ViewProps } from "react-native";
 import { Linking, Text, View } from "react-native";

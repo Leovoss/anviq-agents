@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 import type { HastNode } from "./table-utils";
 import "./markdown.web.css";
 import "./markdown-table.css";
-import { droppedTableHtmlText } from "@rakazo/contracts";
+import { droppedTableHtmlText } from "@anviq/contracts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +15,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@rakazo/ui-web";
+} from "@anviq/ui-web";
 import { CheckIcon, CopyIcon, GlobeIcon, ImageIcon } from "./icons";
 import type { ChatMarkdownProps } from "./markdown";
 import {

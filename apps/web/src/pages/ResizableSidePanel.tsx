@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro";
 import type { CSSProperties, PointerEvent, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
-const STORAGE_KEY = "rakazo:right-panel-width";
+const STORAGE_KEY = "anviq:right-panel-width";
 const MIN_WIDTH = 320;
 const DEFAULT_WIDTH = 384;
 const ABSOLUTE_MAX = 1000;

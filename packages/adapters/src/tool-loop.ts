@@ -1,5 +1,5 @@
-import type { ToolCallStreak } from "@rakazo/core";
-import { trackToolCallStreak } from "@rakazo/core";
+import type { ToolCallStreak } from "@anviq/core";
+import { trackToolCallStreak } from "@anviq/core";
 
 const LOOP_GUARD_STOP_PREFIX = "I got stuck calling ";
 const LOOP_GUARD_STOP_COUNT_PREFIX = " with the same input ";

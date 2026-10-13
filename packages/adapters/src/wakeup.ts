@@ -4,9 +4,9 @@ import {
   dispatchBackgroundJob,
   type JobPublisher,
   type JobWorkerHost,
-} from "@rakazo/adapter-kit";
-import { isTooManyDatabaseConnections } from "@rakazo/db";
-import { runCorrelatedJob, unwrapJobPayload, wrapJobPayload } from "@rakazo/logging";
+} from "@anviq/adapter-kit";
+import { isTooManyDatabaseConnections } from "@anviq/db";
+import { runCorrelatedJob, unwrapJobPayload, wrapJobPayload } from "@anviq/logging";
 import { makeWorkerUtils, type Runner, run, type WorkerUtils } from "graphile-worker";
 import type { Pool } from "pg";
 import { recordHistoryCompactAttemptsExhausted } from "./history-compaction.js";

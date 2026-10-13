@@ -1,4 +1,4 @@
-import type { Space } from "@rakazo/contracts";
+import type { Space } from "@anviq/contracts";
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput } from "react-native";

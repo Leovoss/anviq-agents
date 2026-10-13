@@ -10,7 +10,7 @@ import type {
   SandboxProvider,
   SecretStore,
   UsageOperationKind,
-} from "@rakazo/adapter-kit";
+} from "@anviq/adapter-kit";
 import {
   computerControlExpireJobKey,
   messagingDeliverJob,
@@ -19,7 +19,7 @@ import {
   runContinueJob,
   runJobKey,
   SecretStoreUnavailableError,
-} from "@rakazo/adapter-kit";
+} from "@anviq/adapter-kit";
 import type {
   CloudAgentConnection,
   CodexLiveCatalog,
@@ -33,7 +33,7 @@ import type {
   PiOAuthLogins,
   RemoteConnectorDependencies,
   TicketChangeNotifier,
-} from "@rakazo/adapters";
+} from "@anviq/adapters";
 import {
   acquireComputerExecutionLease,
   applyCodexLiveCatalog,
@@ -120,8 +120,8 @@ import {
   validateModelAuthAvailability,
   validateStoredModelAuth,
   verifyMcpInstall,
-} from "@rakazo/adapters";
-import type { Auth } from "@rakazo/auth";
+} from "@anviq/adapters";
+import type { Auth } from "@anviq/auth";
 import type {
   Actor,
   BoardEvent,
@@ -135,7 +135,7 @@ import type {
   ProductEvent,
   Routine,
   SpaceNavigation,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 import {
   ATTACHMENT_MAX_BYTES,
   appContract,
@@ -146,7 +146,7 @@ import {
   OPENAI_COMPATIBLE_PROVIDER_ID,
   parseTicketRef,
   usableModelId,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 import {
   ACTIVE_RUN_STATUSES,
   AttachmentValidationError,
@@ -158,8 +158,8 @@ import {
   hasMixedOneShotSchedule,
   isOneShotRoutineCrons,
   nextCronDateAcrossStrict,
-} from "@rakazo/core";
-import type { BoardEvents, Board as BoardRow, PrismaClient, ThreadEvents } from "@rakazo/db";
+} from "@anviq/core";
+import type { BoardEvents, Board as BoardRow, PrismaClient, ThreadEvents } from "@anviq/db";
 import {
   appendEventInTransaction,
   BotSectionNameConflictError,
@@ -212,8 +212,8 @@ import {
   toTicketCommentDto,
   toTicketDto,
   touchGroupUpdatedAt,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import { deleteAgentSecret, listAgentSecrets, putAgentSecret } from "./agent-secrets.js";
 import { createAgentSkillsService } from "./agent-skills.js";
 import { aiConsentStatus, allowAiConsent } from "./ai-consent.js";

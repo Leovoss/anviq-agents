@@ -7,7 +7,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-} from "@rakazo/ui-web";
+} from "@anviq/ui-web";
 import type { ComponentType, ReactNode } from "react";
 import { Component, lazy } from "react";
 

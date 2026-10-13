@@ -32,12 +32,12 @@ export function infisicalFake() {
     }
     expect(headers.get("authorization")).toMatch(/^Bearer token-[1-9][0-9]*$/);
     expect(Number(headers.get("authorization")?.split("-").at(-1))).toBeLessThanOrEqual(logins);
-    expect(url.pathname).toMatch(/^\/api\/v3\/secrets\/raw\/rakazo_[a-f0-9]{24}_[a-f0-9-]{36}$/);
+    expect(url.pathname).toMatch(/^\/api\/v3\/secrets\/raw\/anviq_[a-f0-9]{24}_[a-f0-9-]{36}$/);
     const key = url.pathname.split("/").at(-1)!;
     const scope = {
       workspaceId: "fake-project",
       environment: "test",
-      secretPath: "/rakazo",
+      secretPath: "/anviq",
       type: "shared",
     };
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
@@ -74,7 +74,7 @@ export function infisicalFake() {
     clientSecret: "fake-client-secret",
     projectId: "fake-project",
     environment: "test",
-    folder: "/rakazo",
+    folder: "/anviq",
     fetch: fetcher,
     sleep,
   };

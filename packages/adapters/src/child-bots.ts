@@ -6,10 +6,10 @@ import type {
   ArtifactStore,
   JobPublisher,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
-import { routineJobKey, runContinueJob, runJobKey } from "@rakazo/adapter-kit";
-import { type Actor, type Bot, type ComputerMode, GROUP_MEMBER_MIN } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES } from "@rakazo/core";
+} from "@anviq/adapter-kit";
+import { routineJobKey, runContinueJob, runJobKey } from "@anviq/adapter-kit";
+import { type Actor, type Bot, type ComputerMode, GROUP_MEMBER_MIN } from "@anviq/contracts";
+import { ACTIVE_RUN_STATUSES } from "@anviq/core";
 import {
   cancelRunsInTransaction,
   computerScopeKey,
@@ -19,8 +19,8 @@ import {
   type Prisma,
   type PrismaClient,
   withTransactionRetry,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import { BrowserStoppedReleaseError } from "./computer-screens.js";
 import { toComputerRef } from "./computer-support.js";
 import {

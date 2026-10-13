@@ -1,4 +1,4 @@
-import type { ConnectorTool } from "@rakazo/adapter-kit";
+import type { ConnectorTool } from "@anviq/adapter-kit";
 import {
   BotSecretName,
   botSecretDestinationSchema,
@@ -6,7 +6,7 @@ import {
   SecretHttpRequest,
   TICKET_PRIORITIES,
   TICKET_STATUSES,
-} from "@rakazo/contracts";
+} from "@anviq/contracts";
 import { z } from "zod";
 import { allowPrivateHttpSecretOrigins } from "./bot-secrets.js";
 

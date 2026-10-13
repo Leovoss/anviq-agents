@@ -5,7 +5,7 @@ test("a failed overlay chunk keeps the shell and the draft, and Refresh loads it
   page,
 }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `overlay-load-${stamp}@rakazo.test`, "password12", "Overlay Load");
+  await signup(page, `overlay-load-${stamp}@anviq.test`, "password12", "Overlay Load");
   await completeOnboarding(page);
 
   const composer = page.getByRole("combobox", { name: "Message Chief" });
@@ -32,7 +32,7 @@ test("a failed overlay chunk keeps the shell and the draft, and Refresh loads it
 
 test("a failed page chunk shows Refresh instead of a blank app", async ({ page }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `page-load-${stamp}@rakazo.test`, "password12", "Page Load");
+  await signup(page, `page-load-${stamp}@anviq.test`, "password12", "Page Load");
   await completeOnboarding(page);
 
   const artifactsChunk = /\/pages\/Artifacts\.tsx/;
@@ -44,7 +44,7 @@ test("a failed page chunk shows Refresh instead of a blank app", async ({ page }
 
   await page.unroute(artifactsChunk);
   await page.getByRole("button", { name: "Refresh", exact: true }).click();
-  await expect(page.locator('[data-rakazo-app-state="ready"]')).toBeVisible();
+  await expect(page.locator('[data-anviq-app-state="ready"]')).toBeVisible();
   await expect(page.getByText("Something went wrong. Try again.", { exact: true })).toHaveCount(0);
 });
 
@@ -54,7 +54,7 @@ for (const [failing, intact] of [
 ] as const) {
   test(`a failed ${failing} chunk keeps the rest of the bot settings panel`, async ({ page }) => {
     const stamp = Date.now();
-    await signup(page, `section-load-${stamp}@rakazo.test`, "password12", "Section Load");
+    await signup(page, `section-load-${stamp}@anviq.test`, "password12", "Section Load");
     await completeOnboarding(page);
 
     const composer = page.getByRole("combobox", { name: "Message Chief" });

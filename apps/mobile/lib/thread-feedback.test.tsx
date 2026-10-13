@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { resolveComposerSendPlan } from "@rakazo/core";
+import { resolveComposerSendPlan } from "@anviq/core";
 import type { ReactNode } from "react";
 import { act, createElement } from "react";
 import type { Root } from "react-dom/client";

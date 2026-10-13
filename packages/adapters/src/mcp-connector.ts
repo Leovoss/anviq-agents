@@ -5,11 +5,11 @@ import type {
   ConnectorProvider,
   ConnectorTool,
   SecretStore,
-} from "@rakazo/adapter-kit";
-import { SecretStoreUnavailableError } from "@rakazo/adapter-kit";
-import { isLocalMcpHost } from "@rakazo/contracts";
-import type { McpServer, PrismaClient, ThreadEvents } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@anviq/adapter-kit";
+import { SecretStoreUnavailableError } from "@anviq/adapter-kit";
+import { isLocalMcpHost } from "@anviq/contracts";
+import type { McpServer, PrismaClient, ThreadEvents } from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import { catalogToolPrefix } from "./approval-effect.js";
 import { redactConnectorPayload, sanitizeConnectorError } from "./connector-safety.js";
 import { credentialDigest } from "./credential-digest.js";
@@ -404,7 +404,7 @@ export class McpConnector implements ConnectorProvider {
     digest?: string;
     recordId?: string;
   }> {
-    const session = new McpSession({ name: `rakazo-${server.slug}` });
+    const session = new McpSession({ name: `anviq-${server.slug}` });
     // Hoisted so a throw after the secret is decoded can still hand the material out.
     let material: OAuthMaterial | undefined;
     try {

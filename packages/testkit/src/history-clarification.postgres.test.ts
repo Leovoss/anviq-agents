@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { PiAgentRuntime } from "@rakazo/adapters";
+import { PiAgentRuntime } from "@anviq/adapters";
 import { describe, expect, it } from "vitest";
 import { HISTORY_EVAL_CASES } from "./evals/cases.js";
 import { runTrial } from "./evals/runner.js";
@@ -57,7 +57,7 @@ describe.skipIf(!enabled)("product history clarification eval boundary", () => {
           },
         ],
       });
-      const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-clarification-"));
+      const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-clarification-"));
       try {
         const { createApp } = await import("../../../apps/api/src/app.ts");
         const result = await runTrial(scenario, 1, {
