@@ -1,4 +1,4 @@
-# Anviq
+# Anviq Agents
 
 Anviq runs persistent AI agents ("bots") that keep their own conversations, memory and routines
 and work on a computer of their own: a browser, a terminal, files and a graphical desktop. One API
