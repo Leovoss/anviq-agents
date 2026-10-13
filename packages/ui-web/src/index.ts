@@ -1,5 +1,6 @@
 export { type AvatarStyle, AvatarStyleProvider, useAvatarStyle } from "./avatar-style.js";
 export {
+  AnviqMark,
   BotAvatar,
   DEFAULT_GROK_BOT_COLOR,
   defaultBotAvatarValue,

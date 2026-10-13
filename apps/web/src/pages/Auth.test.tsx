@@ -17,6 +17,7 @@ vi.mock("@lingui/react/macro", () => ({
   Trans: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("@anviq/ui-web", () => ({
+  AnviqMark: () => null,
   Button: ({
     children,
     variant,
