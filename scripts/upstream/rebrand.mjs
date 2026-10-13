@@ -18,6 +18,7 @@ const git = (...args) =>
 const SKIP_CONTENT = new Set(["CHANGELOG.md", "LICENSE"]);
 const DROP = [
   "apps/www",
+  "README.md",
   "CONTRIBUTING.md",
   "VISION.md",
   "CHANGELOG.md",
@@ -42,6 +43,11 @@ const rules = [
   [/^\s*"owner": "inbox-zero",\n/m, ""],
   [/,\n\s*"eas": \{\n\s*"projectId": "[0-9a-f-]{36}"\n\s*\}/, ""],
   [/,\n\s*"updates": \{\n\s*"url": "https:\/\/u\.expo\.dev\/[0-9a-f-]{36}"\n\s*\}/, ""],
+  // Packaging tools build file and bundle names from productName, so it stays a single word.
+  [/("productName"\s*:\s*)"Rakazo"/g, '$1"Anviq"'],
+  // The product name shown to people. Identifiers, paths and package names keep the short form.
+  [/(?<![\w@./\\:-])Rakazo['’]s\b/g, "Anviq Agents'"],
+  [/(?<![\w@./\\:-])Rakazo(?![\w/\\-]|\.[A-Za-z])/g, "Anviq Agents"],
   [/Rakazo/g, "Anviq"],
   [/RAKAZO/g, "ANVIQ"],
   [/rakazo/g, "anviq"],

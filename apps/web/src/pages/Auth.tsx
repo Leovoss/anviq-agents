@@ -416,9 +416,15 @@ export function AuthFrame({
   return (
     <div className="flex min-h-full items-center justify-center bg-background px-6 py-16 text-foreground">
       <form onSubmit={onSubmit} className="flex w-[460px] flex-col items-center">
-        <div className="flex h-[74px] w-[74px] items-center justify-center gap-[11px] rounded-full bg-muted">
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
+        <div className="flex h-[74px] w-[74px] items-center justify-center rounded-full bg-muted">
+          <svg viewBox="24 86 254 140" className="h-[29px] w-[52px]" aria-hidden="true">
+            <path
+              className="fill-primary"
+              d="M50 86H252C268 86 278 94 278 107V117C278 129 270 137 256 141L211 155C194 160 185 172 185 187C185 202 196 214 217 226H85C71 215 64 204 64 190C64 176 71 164 85 154L116 132H50C35 132 24 122 24 109C24 96 35 86 50 86Z"
+            />
+            <rect className="fill-muted" x="108" y="148" width="20" height="48" rx="10" />
+            <rect className="fill-muted" x="144" y="148" width="20" height="48" rx="10" />
+          </svg>
         </div>
         <h1 aria-live="polite" className="mb-9 mt-7 text-4xl font-medium tracking-tight">
           {title}
