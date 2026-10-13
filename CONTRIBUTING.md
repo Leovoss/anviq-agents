@@ -84,10 +84,27 @@ capability config, fixtures, logs, or snapshots; use the encrypted secret store 
 - Describe why the change is needed, what changed, and **how you tested** (e.g. `pnpm test`, manual steps).
 - Link related issues when applicable.
 
+## Upstream changes
+
+Anviq follows [rakazo](https://github.com/elie222/rakazo). The `upstream` remote points at it and
+`anviq-upstream` is a branch holding upstream with the Anviq rename already applied, so merges
+only conflict where Anviq really diverges.
+
+```bash
+git remote add upstream https://github.com/elie222/rakazo.git   # once
+scripts/upstream/sync.sh v0.3.0                                  # or upstream/main
+git switch -c sync-upstream main
+git merge anviq-upstream
+```
+
+If `pnpm-lock.yaml` conflicts, take the incoming side and run `pnpm install --lockfile-only`.
+Run `pnpm check` and `pnpm test`, then open a pull request.
+
+Never merge `upstream/*` directly, and do not use GitHub's "Sync fork" button: both bring the
+unrenamed code straight into `main`. New upstream names the script does not know about make it
+fail, so add a rule to `scripts/upstream/rebrand.mjs` and rerun.
+
 ## Contact
 
-| Address | Use for |
-| --- | --- |
-| [lvoss@anviq.net](mailto:lvoss@anviq.net) | Vulnerabilities only — see [SECURITY.md](SECURITY.md) |
-| [lvoss@anviq.net](mailto:lvoss@anviq.net) | User and support questions |
-| [lvoss@anviq.net](mailto:lvoss@anviq.net) | Maintainer |
+Vulnerabilities (see [SECURITY.md](SECURITY.md)), support and maintainer questions:
+[lvoss@anviq.net](mailto:lvoss@anviq.net).
