@@ -16,7 +16,14 @@ const git = (...args) =>
   execFileSync("git", args, { cwd: root, maxBuffer: 1 << 28 }).toString("utf8");
 
 const SKIP_CONTENT = new Set(["CHANGELOG.md", "LICENSE"]);
-const DROP = ["apps/www"];
+const DROP = [
+  "apps/www",
+  "CONTRIBUTING.md",
+  "VISION.md",
+  "CHANGELOG.md",
+  ".coderabbit.yaml",
+  ".github/ISSUE_TEMPLATE",
+];
 
 const rules = [
   [/\b(?:hello|support|security|elie)@rakazo\.com\b/gi, "lvoss@anviq.net"],

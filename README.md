@@ -116,8 +116,7 @@ pnpm check
 pnpm test
 ```
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the development workflow, the test matrix and how
-upstream changes are merged.
+Upstream changes are merged as described in [docs/upstream-sync.md](./docs/upstream-sync.md).
 
 ## Documentation
 
@@ -133,4 +132,6 @@ Report vulnerabilities as described in [SECURITY.md](./SECURITY.md), not in publ
 
 ## License
 
-Apache License 2.0, see [LICENSE](./LICENSE). Anviq is based on rakazo and its contributors.
+The upstream code from rakazo and its contributors is licensed under the Apache License 2.0, see
+[LICENSE](./LICENSE). Anviq LLC's own additions are proprietary, see
+[LICENSE-ANVIQ.md](./LICENSE-ANVIQ.md) and [NOTICE](./NOTICE).
