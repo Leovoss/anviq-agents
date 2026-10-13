@@ -1,15 +1,15 @@
 # Anviq Agents
 
-Anviq runs persistent AI agents ("bots") that keep their own conversations, memory and routines
+Anviq Agents runs persistent AI agents ("bots") that keep their own conversations, memory and routines
 and work on a computer of their own: a browser, a terminal, files and a graphical desktop. One API
 serves a web app, an Electron desktop app and an Expo mobile app.
 
 It is self-hosted. You bring your own model credentials and a computer provider, or run the whole
 stack on one machine with Docker.
 
-Anviq is a fork of [rakazo](https://github.com/elie222/rakazo) by Elie Steinbock, maintained by
-Anviq LLC for enterprise and EU deployments. It keeps the Apache-2.0 license, follows upstream
-releases and carries its own changes on top. Anviq is in beta.
+Anviq Agents is a fork of [rakazo](https://github.com/elie222/rakazo) by Elie Steinbock, maintained
+by Anviq LLC for enterprise and EU deployments. It keeps the Apache-2.0 license, follows upstream
+releases and carries its own changes on top. Anviq Agents is in beta.
 
 ## Requirements
 

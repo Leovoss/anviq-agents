@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
-  <title id="title">Anviq mark</title>
+  <title id="title">Anviq Agents</title>
   <rect width="512" height="512" rx="112" fill="#F2F2F0" />
   <g transform="translate(52.15 45.40) scale(1.35)">
     <path fill="#252825" d="M50 86H252C268 86 278 94 278 107V117C278 129 270 137 256 141L211 155C194 160 185 172 185 187C185 202 196 214 217 226H85C71 215 64 204 64 190C64 176 71 164 85 154L116 132H50C35 132 24 122 24 109C24 96 35 86 50 86Z" />

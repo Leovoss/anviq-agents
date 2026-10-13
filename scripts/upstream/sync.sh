@@ -19,6 +19,9 @@ git -C "$tmp" config core.longpaths true
 
 node "$here/rebrand.mjs" "$tmp"
 (cd "$tmp" && corepack pnpm install --lockfile-only >/dev/null)
+# The rename changes import order, so let Biome (from this checkout) tidy the mirror.
+root=$(git rev-parse --show-toplevel)
+(cd "$tmp" && node "$root/node_modules/@biomejs/biome/bin/biome" check --write . >/dev/null 2>&1 || true)
 git -C "$tmp" add -A
 tree=$(git -C "$tmp" write-tree)
 

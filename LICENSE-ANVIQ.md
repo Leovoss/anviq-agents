@@ -1,4 +1,4 @@
-# Anviq additions
+# Anviq Agents additions
 
 Copyright 2026 Anviq LLC. All rights reserved.
 
@@ -12,7 +12,8 @@ This repository combines two kinds of material.
    forking this repository on GitHub is permitted as far as GitHub's terms of service allow. Any
    other use needs the written agreement of Anviq LLC.
 
-The Anviq name and logo are trademarks of Anviq LLC and are not licensed under either license.
+The names Anviq and Anviq Agents and the Anviq logo are trademarks of Anviq LLC and are not
+licensed under either license.
 
 ## Anviq additions
 
