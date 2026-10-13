@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { AgentSkill, AgentSkillCatalogEntry, MemoryDocument } from "@anviq/contracts";
 import {
   Badge,
@@ -10,6 +9,7 @@ import {
   TabsTrigger,
   Textarea,
 } from "@anviq/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import { downloadArtifactBytes } from "../lib/artifact-open";
 import { rpc } from "../lib/rpc";

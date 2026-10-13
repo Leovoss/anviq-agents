@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
 import type { ComputerUpdate } from "@anviq/contracts";
+import { expect, test } from "@playwright/test";
 import { activeBotId, captureScreenshot, completeOnboarding, signup } from "./helpers";
 
 test("computer maintenance shows durable background progress and failure recovery", async ({

@@ -1,6 +1,6 @@
+import type { Routine, ThreadMessage } from "@anviq/contracts";
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type { Routine, ThreadMessage } from "@anviq/contracts";
 import {
   activeBotId,
   captureScreenshot,

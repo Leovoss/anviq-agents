@@ -1,4 +1,3 @@
-import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
   cloudflareGatewayRouting,
@@ -32,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@anviq/ui-web";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { Check, Copy } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";

@@ -1,9 +1,4 @@
-import type {
-  ComputerStatus,
-  ProductEvent,
-  ThreadMessage,
-  ThreadSnapshot,
-} from "@anviq/contracts";
+import type { ComputerStatus, ProductEvent, ThreadMessage, ThreadSnapshot } from "@anviq/contracts";
 import { withLiveStreamingProgress } from "@anviq/core";
 import { describe, expect, it } from "vitest";
 import {

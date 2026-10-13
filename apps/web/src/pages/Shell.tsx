@@ -1,6 +1,3 @@
-import { i18n } from "@lingui/core";
-import { t } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
 import { ChatMarkdown, LinkifiedText } from "@anviq/chat-ui/web";
 import type {
   AgentSkillCatalogEntry,
@@ -84,6 +81,9 @@ import {
   PopoverTrigger,
   resolvePersonaColorDef,
 } from "@anviq/ui-web";
+import { i18n } from "@lingui/core";
+import { t } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import {
   ArrowDown,
   ArrowUp,

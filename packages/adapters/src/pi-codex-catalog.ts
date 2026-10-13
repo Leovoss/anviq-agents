@@ -1,8 +1,8 @@
-import type { OAuthCredential } from "@earendil-works/pi-ai";
 import type { SecretStore } from "@anviq/adapter-kit";
 import type { ThinkingLevel } from "@anviq/contracts";
 import { ThinkingLevelSchema } from "@anviq/contracts";
 import type { PrismaClient } from "@anviq/db";
+import type { OAuthCredential } from "@earendil-works/pi-ai";
 import type { ModelCredentialAuthKind } from "./pi-catalog-availability.js";
 import type { PiCatalogEntry } from "./pi-models.js";
 import { listPiCatalog } from "./pi-models.js";

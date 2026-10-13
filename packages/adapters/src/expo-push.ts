@@ -2,11 +2,7 @@ import { randomUUID } from "node:crypto";
 import { closeSync, constants, openSync } from "node:fs";
 import { mkdir, open, readdir, rename, unlink } from "node:fs/promises";
 import path from "node:path";
-import type {
-  AdapterContext,
-  NotificationMessage,
-  NotificationProvider,
-} from "@anviq/adapter-kit";
+import type { AdapterContext, NotificationMessage, NotificationProvider } from "@anviq/adapter-kit";
 import { getLogger } from "@anviq/logging";
 import koffi from "koffi";
 import { combineSignals } from "./connector-safety.js";

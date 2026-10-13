@@ -111,13 +111,7 @@ const RESERVED_COMMAND_VARIABLE_NAMES = new Set([
 ]);
 // Whole families a single variable name cannot enumerate: dynamic-loader injection, Anviq Agents' own
 // namespace, git's config file set, and npm's configuration overrides.
-const RESERVED_COMMAND_VARIABLE_PREFIXES = [
-  "LD_",
-  "DYLD_",
-  "ANVIQ_",
-  "GIT_CONFIG_",
-  "NPM_CONFIG_",
-];
+const RESERVED_COMMAND_VARIABLE_PREFIXES = ["LD_", "DYLD_", "ANVIQ_", "GIT_CONFIG_", "NPM_CONFIG_"];
 
 /** The environment variable a command credential is exported as: `netbird-setup-key` → `NETBIRD_SETUP_KEY`. */
 export function commandVariableName(credentialName: string): string {

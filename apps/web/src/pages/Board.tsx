@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import { ChatMarkdown } from "@anviq/chat-ui/web";
 import type { Bot, Ticket, TicketComment, TicketPriority, TicketStatus } from "@anviq/contracts";
 import {
@@ -19,6 +18,7 @@ import {
   NativeSelectOption,
   Textarea,
 } from "@anviq/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { ChevronLeft } from "lucide-react";
 import { useCallback, useEffect, useId, useState } from "react";
 import { Link } from "react-router-dom";

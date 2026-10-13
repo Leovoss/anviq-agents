@@ -1,8 +1,8 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { LinkFavicons } from "@anviq/chat-ui/web";
 import { LinkFaviconsContext, RemoteImagesContext } from "@anviq/chat-ui/web";
 import { LOCAL_SETTINGS_PAGE } from "@anviq/contracts";
 import { Button, Skeleton } from "@anviq/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import {
   lazy,
   Suspense,

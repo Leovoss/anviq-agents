@@ -76,7 +76,9 @@ describe("the images compose file", () => {
     expect(firstPartyImageNames(null)).toEqual([]);
     expect(firstPartyImageNames(true)).toEqual([]);
     expect(firstPartyImageNames(7091)).toEqual([]);
-    expect(firstPartyImageNames("ghcr.io/leovoss/anviq-agents/computer:edge")).toEqual(["computer"]);
+    expect(firstPartyImageNames("ghcr.io/leovoss/anviq-agents/computer:edge")).toEqual([
+      "computer",
+    ]);
   });
 
   it("only references first-party images that the publish matrix publishes", () => {

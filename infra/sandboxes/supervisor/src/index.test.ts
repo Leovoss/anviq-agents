@@ -352,13 +352,7 @@ describe("sandbox supervisor input containment", () => {
         ":2",
       ),
     ).toEqual({
-      argv: [
-        "env",
-        "DISPLAY=:2",
-        "anviq-focus-or-launch",
-        "anviq-browser",
-        "https://example.com",
-      ],
+      argv: ["env", "DISPLAY=:2", "anviq-focus-or-launch", "anviq-browser", "https://example.com"],
     });
     const profile = browserProfilePathForScreen("writer");
     expect(containerActionStep({ kind: "focus", application: "chromium" }, ":2", profile)).toEqual({

@@ -114,9 +114,7 @@ describe("the updater compose service", () => {
     expect(updater.environment?.ANVIQ_COMPOSE_FILE).toBe(
       interpolated("ANVIQ_COMPOSE_FILE", "infra/compose/docker-compose.prod.yml"),
     );
-    expect(updater.environment?.ANVIQ_UPDATE_SERVICES).toBe(
-      interpolated("ANVIQ_UPDATE_SERVICES"),
-    );
+    expect(updater.environment?.ANVIQ_UPDATE_SERVICES).toBe(interpolated("ANVIQ_UPDATE_SERVICES"));
     expect(updater.environment?.COMPOSE_PATH_SEPARATOR).toBe(
       interpolated("COMPOSE_PATH_SEPARATOR"),
     );

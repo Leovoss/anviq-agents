@@ -1,8 +1,8 @@
-import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import {
   CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE,
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
 } from "@anviq/contracts";
+import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import { describe, expect, it } from "vitest";
 import {
   cloudflareGatewayProviderEnv,

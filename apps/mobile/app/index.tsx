@@ -1,8 +1,8 @@
-import { MenuView } from "@expo/ui/community/menu";
 import type { RunActivityRow, SearchHit, SpaceBot, SpaceGroup } from "@anviq/contracts";
 import { normalizeCreateBotProfile } from "@anviq/contracts";
 import { ACTIVE_RUN_STATUSES } from "@anviq/core";
 import { botColors } from "@anviq/ui-tokens";
+import { MenuView } from "@expo/ui/community/menu";
 import { Redirect, useFocusEffect, useNavigation, useRouter } from "expo-router";
 import type { ReactNode } from "react";
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";

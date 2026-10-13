@@ -5,7 +5,6 @@ import http from "node:http";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { serve } from "@hono/node-server";
 import {
   boundedSandboxCommandTimeoutMs,
   readBoundedJsonResponse,
@@ -15,6 +14,7 @@ import { loadRootEnv } from "@anviq/core/node/load-root-env";
 import { getLogger, SERVICE_NAMES } from "@anviq/logging";
 import { createRootLogger } from "@anviq/logging/axiom";
 import { requestLogging } from "@anviq/logging/hono";
+import { serve } from "@hono/node-server";
 import Docker from "dockerode";
 import { Hono, type MiddlewareHandler } from "hono";
 import { bodyLimit } from "hono/body-limit";
@@ -778,11 +778,7 @@ app.post("/computers/:id/terminal", async (c) => {
   try {
     const id = c.req.param("id");
     const botId = c.req.header("x-anviq-bot-id");
-    const { container, info } = await managedContainer(
-      id,
-      botId,
-      c.req.header("x-anviq-space-id"),
-    );
+    const { container, info } = await managedContainer(id, botId, c.req.header("x-anviq-space-id"));
     const cwd = workspaceTarget(normalizeWorkspaceRelative(body.cwd));
     const terminalToken = randomUUID();
     const layout = await withComputerScreenLock(id, async () => {
@@ -1114,8 +1110,7 @@ async function isManagedSpaceContainer(
   try {
     const info = await docker.getContainer(item.Id).inspect();
     const infoLabels = info.Config?.Labels ?? {};
-    const managed =
-      infoLabels["anviq.managed"] === "true" || info.Config?.Image === COMPUTER_IMAGE;
+    const managed = infoLabels["anviq.managed"] === "true" || info.Config?.Image === COMPUTER_IMAGE;
     const infoSpaceId = infoLabels["anviq.spaceId"] ?? infoLabels["anviq.workspaceId"];
     return managed && infoSpaceId === spaceId;
   } catch {

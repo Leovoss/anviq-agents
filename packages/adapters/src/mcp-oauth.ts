@@ -1,4 +1,10 @@
 import { randomUUID } from "node:crypto";
+import type { SecretStore } from "@anviq/adapter-kit";
+import { SecretStoreUnavailableError } from "@anviq/adapter-kit";
+import { isLocalMcpHost } from "@anviq/contracts";
+import { readBoundedResponseBytes } from "@anviq/core";
+import type { PrismaClient } from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import type {
   OAuthClientProvider,
   OAuthDiscoveryState,
@@ -10,12 +16,6 @@ import type {
   OAuthClientMetadata,
   OAuthTokens,
 } from "@modelcontextprotocol/sdk/shared/auth.js";
-import type { SecretStore } from "@anviq/adapter-kit";
-import { SecretStoreUnavailableError } from "@anviq/adapter-kit";
-import { isLocalMcpHost } from "@anviq/contracts";
-import { readBoundedResponseBytes } from "@anviq/core";
-import type { PrismaClient } from "@anviq/db";
-import { getLogger } from "@anviq/logging";
 import { sanitizeConnectorError } from "./connector-safety.js";
 import { secureFetch, validateUrl, withEndpointOriginFallback } from "./mcp-transport.js";
 import { actorMayUsePrivateEndpoint } from "./private-endpoint.js";

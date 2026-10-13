@@ -100,8 +100,7 @@ export class FakeSandboxProvider implements SandboxProvider {
       return;
     }
     // The shell tool wraps the model's command in a background-work launcher; answer the command.
-    const wrapped =
-      request.argv[3] === "anviq-background-launch" ? request.argv.at(-1) : undefined;
+    const wrapped = request.argv[3] === "anviq-background-launch" ? request.argv.at(-1) : undefined;
     const cmd = wrapped ?? request.argv.join(" ");
     if (wrapped?.startsWith("echo ")) {
       yield { type: "stdout", data: `${wrapped.slice(5)}\n` };

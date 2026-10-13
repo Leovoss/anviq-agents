@@ -1,6 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { ORPCError, onError } from "@orpc/server";
-import { RPCHandler } from "@orpc/server/fetch";
 import type {
   AgentContextStrategy,
   AgentRuntime,
@@ -96,6 +94,8 @@ import {
 } from "@anviq/logging";
 import { requestLogging } from "@anviq/logging/hono";
 import { MarkdownMemoryStore } from "@anviq/memory";
+import { ORPCError, onError } from "@orpc/server";
+import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createBillingService } from "./billing.js";

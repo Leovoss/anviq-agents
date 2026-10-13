@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { BotSecretMetadata } from "@anviq/contracts";
 import {
   BotSecretName,
@@ -7,6 +6,7 @@ import {
   encodeLoginSecret,
 } from "@anviq/contracts";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@anviq/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useId, useState } from "react";
 import { rpc } from "../../lib/rpc";
 import { errorText } from "../../lib/user-error";

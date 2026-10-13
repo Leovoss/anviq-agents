@@ -1,5 +1,5 @@
-import { createMockAdapter, createTestMessage } from "@chat-adapter/tests";
 import type { AdapterContext, MessagingInboundEvent } from "@anviq/adapter-kit";
+import { createMockAdapter, createTestMessage } from "@chat-adapter/tests";
 import type { Adapter, ChatInstance } from "chat";
 import { describe, expect, it, vi } from "vitest";
 import {

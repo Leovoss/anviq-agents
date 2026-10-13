@@ -1,5 +1,5 @@
-import { Plural } from "@lingui/react/macro";
 import type { ThreadMessage } from "@anviq/contracts";
+import { Plural } from "@lingui/react/macro";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { formatToolActivityDuration, toolStepCount } from "../lib/tool-activity-view";

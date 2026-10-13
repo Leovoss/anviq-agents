@@ -19,12 +19,7 @@ test("onboarding requires a model when the deployment has none", async ({ page }
   });
 
   const stamp = Date.now();
-  await signup(
-    page,
-    `model-required-${stamp}@anviq.test`,
-    "password12",
-    `Model required ${stamp}`,
-  );
+  await signup(page, `model-required-${stamp}@anviq.test`, "password12", `Model required ${stamp}`);
   await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible({
     timeout: 20_000,
   });

@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { Me, ModelBackupChoice, ModelCatalogEntry, ModelCredential } from "@anviq/contracts";
 import {
   backupChoiceKey,
@@ -8,6 +7,7 @@ import {
   sameBackupChoices,
 } from "@anviq/contracts";
 import { Button, NativeSelect, NativeSelectOption } from "@anviq/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { rpc, selectedSpaceId } from "../lib/rpc";
 

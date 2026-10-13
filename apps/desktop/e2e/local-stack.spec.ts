@@ -140,8 +140,7 @@ async function launch(mode: FakeDockerMode | "missing") {
     cwd: path.resolve(import.meta.dirname, ".."),
     env: {
       ...env,
-      ANVIQ_DOCKER_BINARY:
-        mode === "missing" ? "/nonexistent/docker" : await writeFakeDocker(mode),
+      ANVIQ_DOCKER_BINARY: mode === "missing" ? "/nonexistent/docker" : await writeFakeDocker(mode),
       ANVIQ_LOCAL_WEB_URL: serverUrl,
       ANVIQ_IMAGE_TAG: IMAGE_TAG,
     },

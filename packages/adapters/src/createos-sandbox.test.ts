@@ -4,10 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import type { ComputerRef, PortableFile, ProcessEvent } from "@anviq/adapter-kit";
-import {
-  browserProfilePathForScreen,
-  DEFAULT_DESKTOP_ENV,
-} from "@anviq/core/node/desktop-runtime";
+import { browserProfilePathForScreen, DEFAULT_DESKTOP_ENV } from "@anviq/core/node/desktop-runtime";
 import { describe, expect, it, vi } from "vitest";
 import {
   CHROME_OWNS_DEBUG_PORT_SCRIPT,

@@ -1,4 +1,19 @@
 import { randomUUID } from "node:crypto";
+import type {
+  AdapterContext,
+  AgentRunRequest,
+  AgentRuntime,
+  AgentRuntimeEvent,
+  AgentSteeringMessage,
+  AgentToolCompletion,
+  AgentToolExecutionResult,
+  AgentUsage,
+  ConnectorTool,
+  ModelCallObserver,
+} from "@anviq/adapter-kit";
+import { DEFAULT_CONTEXT_STRATEGY } from "@anviq/adapter-kit";
+import { usableModelId } from "@anviq/contracts";
+import { getLogger } from "@anviq/logging";
 import type { AgentMessage, AgentTool, AgentToolResult } from "@earendil-works/pi-agent-core";
 import { Agent } from "@earendil-works/pi-agent-core";
 import type {
@@ -16,21 +31,6 @@ import type {
 import { clampThinkingLevel, Type } from "@earendil-works/pi-ai";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import { AssistantMessageEventStream } from "@earendil-works/pi-ai/utils/event-stream";
-import type {
-  AdapterContext,
-  AgentRunRequest,
-  AgentRuntime,
-  AgentRuntimeEvent,
-  AgentSteeringMessage,
-  AgentToolCompletion,
-  AgentToolExecutionResult,
-  AgentUsage,
-  ConnectorTool,
-  ModelCallObserver,
-} from "@anviq/adapter-kit";
-import { DEFAULT_CONTEXT_STRATEGY } from "@anviq/adapter-kit";
-import { usableModelId } from "@anviq/contracts";
-import { getLogger } from "@anviq/logging";
 import { isToolPauseResult } from "./approval-effect.js";
 import { connectionIdArgument, credentialArgument } from "./bot-secrets.js";
 import { DELEGATION_TOOL_NAMES } from "./builtin-tools.js";

@@ -1,16 +1,16 @@
 import type {
+  AgentModelOAuthCredential,
+  ModelCredentialFailedState,
+  ModelCredentialRetireReason,
+} from "@anviq/adapter-kit";
+import { getLogger } from "@anviq/logging";
+import type {
   AuthOperationOptions,
   Credential,
   CredentialInfo,
   CredentialStore,
   OAuthCredential,
 } from "@earendil-works/pi-ai";
-import type {
-  AgentModelOAuthCredential,
-  ModelCredentialFailedState,
-  ModelCredentialRetireReason,
-} from "@anviq/adapter-kit";
-import { getLogger } from "@anviq/logging";
 import {
   OAUTH_ACCOUNT_CHANGED_ERROR,
   oauthCredentialAccountId,

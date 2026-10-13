@@ -1,5 +1,3 @@
-import { t } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { ModelCatalogEntry, ModelCredential, Routine } from "@anviq/contracts";
 import {
   type CronFreq,
@@ -27,6 +25,8 @@ import {
   PopoverTrigger,
   Textarea,
 } from "@anviq/ui-web";
+import { t } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import {
   ChevronLeft,
   Clock,

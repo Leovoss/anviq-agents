@@ -167,7 +167,10 @@ export default function Layout() {
                       contentStyle: { backgroundColor: String(native.page) },
                     }}
                   >
-                    <Stack.Screen name="index" options={{ headerShown: false, title: "Anviq Agents" }} />
+                    <Stack.Screen
+                      name="index"
+                      options={{ headerShown: false, title: "Anviq Agents" }}
+                    />
                     <Stack.Screen name="sign-in" options={{ headerShown: false }} />
                     <Stack.Screen
                       name="(settings)"
