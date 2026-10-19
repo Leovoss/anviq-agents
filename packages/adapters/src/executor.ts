@@ -89,6 +89,7 @@ import {
   renderBotDirectory,
   resolveActionApprovalDetail,
   sandboxCommandTimeoutMs,
+  TAKEOVER_COMPUTER_PENDING_STATE,
   toolRequiresApproval,
   toolRequiresExplicitApproval,
   truncatedPlainText,
@@ -109,7 +110,6 @@ import {
   createThreadMessageInTransaction,
   effectiveMemoryScope,
   findDefaultModelCredential,
-  findModelCredential,
   InstructionConflictError,
   InvalidSpaceNameError,
   isTooManyDatabaseConnections,
@@ -122,6 +122,7 @@ import {
   retireModelCredential,
   SpaceLimitError,
   searchHistory,
+  settleReleasedTakeoverCards,
   validateInstructionProposal,
   writeBotInstructions,
 } from "@anviq/db";
@@ -289,9 +290,10 @@ import { createMediaGenerationProvider } from "./media-generation-factory.js";
 import { generateMediaFromTool } from "./media-generation-tools.js";
 import { loadAgentMemoryContext } from "./memory-context.js";
 import type { MemoryProviderResolver } from "./memory-provider-factory.js";
-import { selectMemoryTools } from "./memory-tools.js";
+import { appendMemoryFact, selectMemoryTools } from "./memory-tools.js";
 import {
-  isCatalogModelChoice,
+  enabledOpenAiCompatibleModelIds,
+  findConnectedModelCredential,
   pinnedModelCredentialError,
   routineRunModelPin,
   runModelChoice,
@@ -307,9 +309,11 @@ import {
   modelAcceptsImageInput,
   modelIdSupportsImages,
 } from "./model-vision.js";
+import { nativeShellCommandArgv } from "./native-shell.js";
 import type { CodexLiveCatalog } from "./pi-codex-catalog.js";
 import { codexLiveListsModel } from "./pi-codex-catalog.js";
 import { toOAuthCredential } from "./pi-credentials.js";
+import type { StoredModelSecret } from "./pi-oauth.js";
 import {
   isRetiredModelCredentialError,
   kickModelCredentialRefresh,
@@ -3014,19 +3018,20 @@ export function createRunExecutor(deps: ExecutorDeps) {
   ): Promise<AgentRunRequest["model"]> => {
     const validationError = await validateConnectedModelChoice(
       deps.prisma,
+      deps.secretStore,
       scope,
       provider,
       modelId,
     );
     if (validationError) throw new Error(validationError);
-    const credential = await findModelCredential(deps.prisma, scope, provider, modelId);
+    const credential = await findConnectedModelCredential(
+      deps.prisma,
+      deps.secretStore,
+      scope,
+      provider,
+      modelId,
+    );
     if (!credential) throw new Error("Connect that model provider first");
-    // Free-form selections must keep the preference that owns this modelId. A
-    // intervening delete/change can make findModelCredential fall back to another
-    // same-provider credential; reject that mismatch instead of mixing baseUrl.
-    if (!isCatalogModelChoice(provider, modelId) && credential.defaultModel !== modelId) {
-      throw new Error("Unknown model for that provider");
-    }
     const resolved = await resolveModelKey(
       deps,
       scope.userId,
@@ -3035,7 +3040,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
       provider,
       modelId,
       registerSecrets,
-      requireStoredSecret,
+      { requireStoredSecret },
     );
     return {
       provider,
@@ -3086,7 +3091,13 @@ export function createRunExecutor(deps: ExecutorDeps) {
       const hasOverride = Boolean(override?.modelProvider && override.modelId);
       const [overrideCredential, defaultCredential, settings] = await Promise.all([
         hasOverride
-          ? findModelCredential(deps.prisma, scope, override!.modelProvider!, override!.modelId)
+          ? findConnectedModelCredential(
+              deps.prisma,
+              deps.secretStore,
+              scope,
+              override!.modelProvider!,
+              override!.modelId,
+            )
           : Promise.resolve(null),
         findDefaultModelCredential(deps.prisma, scope),
         deps.prisma.deploymentSettings.findUnique({
@@ -3550,6 +3561,19 @@ export function createRunExecutor(deps: ExecutorDeps) {
         await requeueComputerRun(deps, runId, workerId, fence, resumeCheckpoint, heldForTakeover);
         return;
       }
+      if (takeoverResume) {
+        await settleReleasedTakeoverCards(
+          deps.prisma,
+          {
+            spaceId: run.spaceId,
+            threadId: run.threadId,
+            botId: run.botId,
+            runId,
+            reason: takeoverResume.checkpoint,
+          },
+          (threadId, seq) => deps.events.notify(threadId, seq),
+        );
+      }
       let computerLease: ComputerExecutionLease | null = null;
       let computerScreenLease: ComputerExecutionLease | null = null;
       try {
@@ -3711,8 +3735,9 @@ export function createRunExecutor(deps: ExecutorDeps) {
         const hasModelOverride = Boolean(modelChoice.modelProvider && modelChoice.modelId);
         const overrideCredential =
           hasModelOverride && modelChoice.modelProvider
-            ? await findModelCredential(
+            ? await findConnectedModelCredential(
                 deps.prisma,
+                deps.secretStore,
                 run,
                 modelChoice.modelProvider,
                 modelChoice.modelId,
@@ -4190,9 +4215,31 @@ export function createRunExecutor(deps: ExecutorDeps) {
           computerKind,
           disabledBuiltinTools,
         );
-        const computerInstruction = dockerToolInstruction
-          ? `${baseComputerInstruction} ${dockerToolInstruction}`
-          : baseComputerInstruction;
+        const hostEnvironment =
+          computerKind === "desktop"
+            ? await deps.sandbox
+                .environment?.(
+                  {
+                    id: storedComputer.providerRef ?? storedComputer.id,
+                    botId: storedComputer.homeKey,
+                    kind: "desktop",
+                    providerRef: storedComputer.providerRef ?? "",
+                  },
+                  {
+                    ...context,
+                    signal: AbortSignal.any([context.signal, AbortSignal.timeout(2000)]),
+                  },
+                )
+                .catch(() => undefined)
+            : undefined;
+        const hostInstruction = hostEnvironment
+          ? `Commands run on the user's ${hostEnvironment.platform} computer with their account permissions. Home: ${JSON.stringify(hostEnvironment.home)}. Shell: ${JSON.stringify(hostEnvironment.shell)}. The shell tool executes commands with that shell. Use its native syntax, paths and installed tools; do not assume Linux or bash. Local files outside the bot workspace can be accessed through commands. App launching is available through OS commands; graphical screen control is unavailable.`
+          : undefined;
+        const computerInstruction = hostInstruction
+          ? `${baseComputerInstruction} ${hostInstruction}`
+          : dockerToolInstruction
+            ? `${baseComputerInstruction} ${dockerToolInstruction}`
+            : baseComputerInstruction;
         const workspaceInstruction =
           computerMode === "team"
             ? `Your Team Computer home is ${teamBotWorkspaceDirectory(bot.id)}. Relative file paths and shell working directories start there. Put intentionally shared work under shared/. Other bots' folders are visible under bots/; treat them as their working areas.`
@@ -4717,8 +4764,9 @@ export function createRunExecutor(deps: ExecutorDeps) {
               (checker
                 ? isAutoReviewCheckerConfigured({}) ||
                   Boolean(
-                    await findModelCredential(
+                    await findConnectedModelCredential(
                       deps.prisma,
+                      deps.secretStore,
                       { userId: run.userId, spaceId: run.spaceId },
                       checker.provider,
                     ),
@@ -4797,8 +4845,9 @@ export function createRunExecutor(deps: ExecutorDeps) {
                 if (kind === "jev" || kind === "scripted") {
                   provider = createAutoReviewProvider(kind);
                 } else {
-                  const reviewCredential = await findModelCredential(
+                  const reviewCredential = await findConnectedModelCredential(
                     deps.prisma,
+                    deps.secretStore,
                     { userId: run.userId, spaceId: run.spaceId },
                     checker!.provider,
                     checker!.model,
@@ -5510,22 +5559,30 @@ export function createRunExecutor(deps: ExecutorDeps) {
                 const safe = redactShellStreams(snapshot, runSecrets, { withholdPartial });
                 return `${safe.stdout}${safe.stderr}`;
               };
+              const computer = await runComputer.get();
+              const shellEnvironment =
+                hostEnvironment ??
+                (computer.kind === "desktop"
+                  ? await deps.sandbox.environment?.(computer, context)
+                  : undefined);
               const observed = await observeShellCommand(
                 deps.sandbox.execute(
-                  await runComputer.get(),
+                  computer,
                   {
-                    argv: [
-                      "bash",
-                      "-c",
-                      BACKGROUND_WORK_LAUNCH,
-                      "anviq-background-launch",
-                      // Marker id must match sleepComputerIfIdle's probe (DB id), not ComputerRef.id
-                      // (providerRef via toComputerRef). Scope launches to this run for cancel teardown.
-                      storedComputer.id,
-                      runId,
-                      randomUUID(),
-                      command,
-                    ],
+                    argv: shellEnvironment
+                      ? nativeShellCommandArgv(command, shellEnvironment)
+                      : [
+                          "bash",
+                          "-c",
+                          BACKGROUND_WORK_LAUNCH,
+                          "anviq-background-launch",
+                          // Marker id must match sleepComputerIfIdle's probe (DB id), not ComputerRef.id
+                          // (providerRef via toComputerRef). Scope launches to this run for cancel teardown.
+                          storedComputer.id,
+                          runId,
+                          randomUUID(),
+                          command,
+                        ],
                     cwd,
                     env:
                       Object.keys(commandEnvironment.env).length > 0
@@ -5661,18 +5718,36 @@ export function createRunExecutor(deps: ExecutorDeps) {
             }, finish);
           }
           if (name === "remember") {
-            await deps.memory.commit(
-              {
-                scope: "bot",
-                botId: bot.id,
-                path: String(args.path ?? "MEMORY.md"),
-                content: String(args.content ?? ""),
-                sourceRunId: runId,
-                sourceThreadId: thread.id,
-              },
-              context,
-            );
-            return finish({ ok: true });
+            const path = String(args.path ?? "").trim() || "MEMORY.md";
+            // A fact is added to the document, never replaces it. A concurrent save
+            // changes the revision, so re-read and append again.
+            for (let attempt = 1; ; attempt += 1) {
+              const snapshot = await deps.memory.read(
+                { scope: "bot", botId: bot.id, path },
+                context,
+              );
+              const existing = snapshot.documents[0];
+              const content = appendMemoryFact(existing?.content ?? "", String(args.content ?? ""));
+              if (content === (existing?.content ?? "")) return finish({ ok: true });
+              try {
+                await deps.memory.commit(
+                  {
+                    scope: "bot",
+                    botId: bot.id,
+                    path,
+                    content,
+                    expectedRevision: existing?.revision ?? 0,
+                    sourceRunId: runId,
+                    sourceThreadId: thread.id,
+                  },
+                  context,
+                );
+                return finish({ ok: true });
+              } catch (error) {
+                const message = error instanceof Error ? error.message : "";
+                if (message !== MEMORY_REVISION_CONFLICT_ERROR || attempt >= 3) throw error;
+              }
+            }
           }
           if (name === "save_shared_memory") {
             const invalid = sharedMemorySaveError(args);
@@ -7164,7 +7239,9 @@ export function createRunExecutor(deps: ExecutorDeps) {
                 });
               },
               prompt,
-              contextStrategy,
+              // Keep an explicit executor override, but let the runtime select
+              // cache-aware context for connections declaring a cache window.
+              contextStrategy: deps.contextStrategy,
               instructions: userTurnInstructions({
                 botInstructions: runIdentityInstruction(bot, run.trigger),
                 groupContext,
@@ -7491,7 +7568,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
                 deps,
                 run,
                 "bot",
-                [{ kind: "computer", state: "Needs you", text: safeReason }],
+                [{ kind: "computer", state: TAKEOVER_COMPUTER_PENDING_STATE, text: safeReason }],
                 true,
               );
               await workspaceCheckpoint.flush();
@@ -9294,6 +9371,22 @@ function deploymentKeyFor(deps: ExecutorDeps, provider: string): string | undefi
  */
 const CODEX_LIVE_RUN_WAIT_MS = 8_000;
 
+// Listed connections serve enabled ids and their space default; legacy connections serve any id.
+function assertCompatibleModelEnabled(
+  credential: { provider: string; defaultModel?: string | null },
+  secret: StoredModelSecret,
+  modelId: string,
+) {
+  if (credential.provider !== OPENAI_COMPATIBLE_PROVIDER_ID) return;
+  if (secret.kind !== "openai_compatible") return;
+  if (secret.enabledModelIds !== undefined) {
+    if (!enabledOpenAiCompatibleModelIds(secret, credential.defaultModel).includes(modelId)) {
+      throw new UnavailableModelForAuthError("Unknown model for that provider");
+    }
+    return;
+  }
+}
+
 async function resolveModelKey(
   deps: ExecutorDeps,
   userId: string,
@@ -9308,7 +9401,7 @@ async function resolveModelKey(
   provider: string,
   modelId: string,
   registerSecrets?: (values: string[]) => void,
-  requireStoredSecret = false,
+  { requireStoredSecret = false }: { requireStoredSecret?: boolean } = {},
 ): Promise<{
   apiKey?: string;
   accountId?: string;
@@ -9337,6 +9430,9 @@ async function resolveModelKey(
       });
       if (!row) {
         if (requireStoredSecret) throw new Error("Backup model credential is no longer available");
+        if (credential.provider === OPENAI_COMPATIBLE_PROVIDER_ID) {
+          throw new UnavailableModelForAuthError("Unknown model for that provider");
+        }
         cloudflareGatewayProviderEnv({ provider });
         return { apiKey: deploymentKeyFor(deps, provider), redact: [] };
       }
@@ -9391,6 +9487,7 @@ async function resolveModelKey(
         if (!liveListed) throw new UnavailableModelForAuthError(authError);
       }
       resolved ??= await resolveAuth();
+      assertCompatibleModelEnabled(credential, resolved.secret, modelId);
       const oauth = resolved.secret.kind === "oauth" ? resolved.secret.credential : undefined;
       const baseUrl =
         resolved.secret.kind === "openai_compatible" ? resolved.secret.baseUrl : undefined;

@@ -4,18 +4,19 @@ name: Anviq Agents mobile smoke
 - launchApp:
     clearState: true
 
-- assertVisible: "Sign in to Anviq Agents"
-- assertVisible: "Sign up"
-- tapOn: "Sign up"
 - assertVisible: "Sign up for Anviq Agents"
 - assertVisible: "Name"
 - tapOn: "Sign in"
+- runFlow:
+    when:
+      true: ${typeof ANVIQ_MOBILE_API_URL !== "undefined" && ANVIQ_MOBILE_API_URL != null && ANVIQ_MOBILE_API_URL.trim() !== ""}
+    file: helpers/server.yaml
 - assertVisible: "Sign in to Anviq Agents"
 - tapOn: "Email"
 - inputText: ${ANVIQ_E2E_EMAIL}
 - tapOn: "Password"
 - inputText: ${ANVIQ_E2E_PASSWORD}
-- tapOn: "Sign in to Anviq Agents"
+- hideKeyboard
 - tapOn: "Sign in"
 
 - extendedWaitUntil:
