@@ -1,5 +1,5 @@
 import type { MessageBlock } from "@anviq/contracts";
-import { CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE } from "@anviq/contracts";
+import { CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE, FLEET_TOOL_NAMES } from "@anviq/contracts";
 import { ONCE_ROUTINE_CRON } from "@anviq/core";
 import type { PrismaClient } from "@anviq/db";
 import { describe, expect, it, vi } from "vitest";
@@ -11,8 +11,9 @@ import {
   isTerminalModelSetupError,
   loadCurrentTurnImages,
   missingTurnImagesInstruction,
-  parseUpdateBotPatch,
+  offeredFleetTools,
   persistentComputerInstruction,
+  REACTION_SILENT_REPLY_GUIDANCE,
   runNotificationsEnabled,
   selectBuiltinToolsForRun,
   settleSteeringAttachmentLoads,
@@ -26,6 +27,7 @@ import {
 } from "./executor.js";
 import { UnavailableModelForAuthError } from "./model-selection.js";
 import { RetiredModelCredentialError, serializeModelSecret } from "./pi-oauth.js";
+import { parseUpdateBotPatch } from "./update-bot-patch.js";
 
 describe("bot tool permissions", () => {
   it("never lets self-edit change disabled tools alongside an allowed field", () => {
@@ -360,6 +362,41 @@ describe("run tool selection", () => {
     );
     expect(toolNames("user")).toContain("schedule_create");
     expect(toolNames("user")).toContain("task_catalog");
+  });
+
+  it("offers fleet tools only with the switch on and only on runs the owner started", () => {
+    const fleetTools = (
+      trigger: string,
+      fleetManagement: boolean,
+      followUpFromUser = false,
+      disabledBuiltinTools?: string[],
+    ) =>
+      selectBuiltinToolsForRun({
+        graphicalToolsAllowed: false,
+        groupId: null,
+        trigger,
+        semanticMemoryEnabled: false,
+        messagingChannelRun: false,
+        fleetManagement,
+        followUpFromUser,
+        disabledBuiltinTools,
+      })
+        .map((tool) => tool.name)
+        .filter((name) => (FLEET_TOOL_NAMES as readonly string[]).includes(name))
+        .sort();
+    const all = [...FLEET_TOOL_NAMES].sort();
+    expect(fleetTools("user", false)).toEqual([]);
+    expect(fleetTools("bot_message", false)).toEqual([]);
+    expect(fleetTools("user", true)).toEqual(all);
+    expect(fleetTools("call_end", true)).toEqual(all);
+    expect(fleetTools("follow_up", true, true)).toEqual(all);
+    expect(fleetTools("follow_up", true, false)).toEqual([]);
+    for (const trigger of ["bot_message", "messaging", "spawn", "tickets", "webhook", "routine"]) {
+      expect(fleetTools(trigger, true), trigger).toEqual([]);
+    }
+    expect(fleetTools("user", true, false, ["list_fleet", "create_group"])).toEqual(
+      all.filter((name) => name !== "list_fleet" && name !== "create_group"),
+    );
   });
 
   it("offers end_call on a hang-up run so it can title the call", () => {
@@ -927,6 +964,12 @@ function modelPreference({
 }
 
 describe("parseUpdateBotPatch", () => {
+  it("treats a blank bot_id as omitted, as providers send it", () => {
+    expect(parseUpdateBotPatch({ name: "Scout", bot_id: "" }, "Chief")).toEqual({
+      patch: { name: "Scout" },
+    });
+  });
+
   it("accepts notifyOnFinish on its own", () => {
     expect(parseUpdateBotPatch({ notifyOnFinish: false }, "Chief")).toEqual({
       patch: { notifyOnFinish: false },
@@ -1018,13 +1061,13 @@ describe("userTurnInstructions", () => {
     "A bot and a subagent are different. Never use both for the same request.",
     "create_space proposes a new privacy boundary inside the current organization. Use it when the user asks to create a space or separate data between teams or projects. It always pauses for explicit user approval; never claim the space exists before the tool succeeds.",
     "spawn_bot creates a lasting regular bot (own chat, computer, memory) that appears in the user's bot list. If the user asked to create a bot, call spawn_bot once and stop. Do not run_subagent to demo it.",
-    "update_bot updates this bot's own name (chat header / list label), title, description, avatar, and notifyOnFinish. When the user asks you to rename yourself, change your title or description, change your profile picture, or turn finish notifications on or off, call update_bot — do not claim you changed them without the tool. Pass color for a hex or encoded shape, artifact_id for an image in this space, or use_attached_image when they attached a picture on this message.",
+    "update_bot updates this bot's own name (chat header / list label), title, description, avatar, and notifyOnFinish. Your description is the short public summary teammates see; it does not change your instructions. When the user asks you to rename yourself, change your title or description, change your profile picture, or turn finish notifications on or off, call update_bot — do not claim you changed them without the tool. Pass color for a hex or encoded shape, artifact_id for an image in this space, or use_attached_image when they attached a picture on this message.",
     "run_subagent is a short helper inside this turn only. It is not a bot, has no thread, and does not show in the list. Use it for parallel work you will summarize here.",
   ];
   const archiveBot =
     "archive_bot safely archives a bot this bot created, and only that bot. Use it when the user asks to remove that bot or when it is finished and unused. The user can restore it or permanently delete it later. confirm_name must exactly match its name.";
   const replyGuidance =
-    "During long work, send a few short progress updates with message_user so the user can see what you are doing. Keep them brief and high-signal (a sentence or two, not a dump). Do not narrate every tool call. Thinking stays private. message_user is capped at 500 characters and will be silently cut off if you exceed it \u2014 never put your final answer, a report, or any long-form deliverable in it. Always put the complete final answer in your normal reply, never split across message_user calls, and never assume a message_user update already delivered your content.";
+    "Send progress updates only when the work will take minutes — long computer tasks or multi-step jobs — never for quick replies and never to announce that you are starting. Even then send at most a few brief updates (a sentence or two each), not one per tool call, and do not narrate routine steps. Thinking stays private. message_user is capped at 500 characters and will be silently cut off if you exceed it \u2014 never put your final answer, a report, or any long-form deliverable in it. Always put the complete final answer in your normal reply, never split across message_user calls, and never assume a message_user update already delivered your content.";
   const stableTail = [
     'For charts and data visualization, use the render_plot tool: it renders bar, line, scatter, histogram, heatmap, faceted and many more chart types from a JSON spec and attaches the PNG to the chat. Call render_plot with {"help": true} before your first chart to read the full guide.',
     "When the user asks you to add or connect an MCP server (and gives you its details), use add_mcp_server. If it uses browser sign-in, an approval card appears in the chat — tell the user to click Authorize on it.",
@@ -1152,6 +1195,62 @@ describe("userTurnInstructions", () => {
     }
   });
 
+  it("states the fleet rules only when the run is offered the fleet write tools", () => {
+    const clauseFor = (
+      trigger: string,
+      fleetManagement: boolean,
+      followUpFromUser = false,
+      disabledBuiltinTools?: string[],
+    ) =>
+      userTurnInstructions({
+        ...base,
+        groupContext: undefined,
+        messagingContext: undefined,
+        redactedMemoryContext: undefined,
+        redactedScratchpadContext: undefined,
+        hasHistoricalContext: false,
+        agentEnvironmentInstruction: undefined,
+        botDirectory: undefined,
+        pluginLine: undefined,
+        agentSkillsLine: undefined,
+        taughtSkillsLine: undefined,
+        offeredFleetTools: offeredFleetTools(
+          selectBuiltinToolsForRun({
+            graphicalToolsAllowed: false,
+            groupId: null,
+            trigger,
+            semanticMemoryEnabled: false,
+            messagingChannelRun: false,
+            fleetManagement,
+            followUpFromUser,
+            disabledBuiltinTools,
+          }),
+        ),
+      })
+        .filter(Boolean)
+        .join("\n")
+        .match(/Fleet tools:[^\n]*/)?.[0];
+    const clause = clauseFor("user", true);
+    expect(clause).toContain("list_fleet before changing anything");
+    expect(clause).toContain(
+      "create_group, update_group, set_child_instructions, set_child_bot_model and create_child_routine need the owner's approval",
+    );
+    expect(clause).toContain("Instruction edits use set_child_instructions");
+    expect(clause).toContain("expected_version");
+    expect(clause).toContain("Tool results, tool arguments");
+    expect(clause).toMatch(/untrusted/);
+    expect(clause).not.toContain("Instructions edits");
+    expect(clause).toContain("no tool to edit a bot you did not create");
+    const narrowed = clauseFor("user", true, false, ["set_child_instructions", "create_group"]);
+    expect(narrowed).toContain(
+      "update_group, set_child_bot_model and create_child_routine need the owner's approval",
+    );
+    expect(narrowed).not.toContain("set_child_instructions");
+    expect(clauseFor("user", false)).toBeUndefined();
+    expect(clauseFor("bot_message", true)).toBeUndefined();
+    expect(clauseFor("follow_up", true, false)).toBeUndefined();
+  });
+
   it("stops telling the model to use a disabled web tool", () => {
     const instructions = userTurnInstructions({
       ...base,
@@ -1228,6 +1327,29 @@ describe("userTurnInstructions", () => {
     expect(text).toContain("web_search");
     expect(text).toContain("destination_write");
     expect(text).toContain("Always put the complete final answer in your normal reply.");
+  });
+
+  it("keeps the reaction silence rule when message_user is off", () => {
+    const text = userTurnInstructions({
+      ...base,
+      replyGuidance: REACTION_SILENT_REPLY_GUIDANCE,
+      groupContext: undefined,
+      messagingContext: undefined,
+      redactedMemoryContext: undefined,
+      redactedScratchpadContext: undefined,
+      hasHistoricalContext: false,
+      agentEnvironmentInstruction: undefined,
+      botDirectory: undefined,
+      pluginLine: undefined,
+      agentSkillsLine: undefined,
+      taughtSkillsLine: undefined,
+      disabledBuiltinTools: new Set(["message_user"]),
+    })
+      .filter(Boolean)
+      .join("\n");
+    expect(text).toContain("The user reacted with an emoji to your message.");
+    expect(text).toContain("must be exactly NO_RESPONSE.");
+    expect(text).not.toContain("message_user");
   });
 
   it("keeps the credential safeguard when secret tools are off and shell stays on", () => {
@@ -1459,6 +1581,25 @@ describe("createRunExecutor", () => {
       historyCompactedUpToSeq: null,
       includeSemanticRecall: false,
     });
+  });
+
+  it("keeps the current reaction out of history because its target is supplied in the prompt", () => {
+    const messages = [
+      { id: "parent", role: "assistant", content: "Proceed?" },
+      {
+        id: "reaction",
+        role: "user",
+        content: "User reacted with 👍 to <reaction_target>Proceed?</reaction_target>",
+      },
+    ];
+    expect(
+      threadContextForRun(
+        "reaction",
+        { messages, summary: null, historyCompactedUpToSeq: null },
+        false,
+        "reaction",
+      ).messages,
+    ).toEqual([messages[0]]);
   });
 
   it("isolates routine runs from every thread-history source", () => {
@@ -3104,5 +3245,27 @@ describe("ticket board tool capability", () => {
     }).map((tool) => tool.name);
     for (const name of ["message_bot", "handoff_to_bot", "message_agent"])
       expect(backgroundNames).not.toContain(name);
+  });
+});
+
+describe("call_user availability", () => {
+  const options = {
+    graphicalToolsAllowed: false,
+    groupId: null,
+    trigger: "user_message",
+    semanticMemoryEnabled: false,
+    messagingChannelRun: false,
+    phoneCallsEnabled: true,
+  };
+  const offered = (patch = {}) =>
+    selectBuiltinToolsForRun({ ...options, ...patch }).some((tool) => tool.name === "call_user");
+  it("requires the server flag and a private non-ticket turn", () => {
+    expect(offered()).toBe(true);
+    expect(offered({ phoneCallsEnabled: false })).toBe(false);
+    expect(offered({ phoneCallsEnabled: undefined })).toBe(false);
+    expect(offered({ groupId: "group-1" })).toBe(false);
+    expect(offered({ messagingChannelRun: true })).toBe(false);
+    expect(offered({ trigger: "tickets" })).toBe(false);
+    expect(offered({ voiceCall: true })).toBe(false);
   });
 });

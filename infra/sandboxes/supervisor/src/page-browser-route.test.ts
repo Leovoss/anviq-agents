@@ -177,3 +177,102 @@ it("sends a saved-login fill only over stdin, never in the helper's arguments", 
   expect(helperCall[0].Env).toContain("ANVIQ_BROWSER_ARGS_STDIN=1");
   expect(mock.stdin.join("")).toBe(`${JSON.stringify({ command: "act", actions })}\n`);
 });
+
+it.each([
+  [{ command: "snapshot" }, "Retry once"],
+  [{ command: "act", actions: [{ kind: "click", ref: "e1" }] }, "Inspect the screen"],
+])("reports a helper that exceeds its deadline as a timeout: %j", async (body, advice) => {
+  const defaultExec = mock.exec.getMockImplementation()!;
+  mock.exec.mockImplementation(async (options: { Cmd: string[] }) => {
+    if (options.Cmd.includes("/usr/local/bin/anviq-page-browser")) {
+      return {
+        start: async () =>
+          Duplex.from({ readable: Readable.from([]), writable: new PassThrough() }),
+        inspect: async () => ({ ExitCode: 124 }),
+      };
+    }
+    if (options.Cmd[0] === "sh") {
+      return {
+        start: async () => Readable.from([]),
+        inspect: async () => ({ ExitCode: 1 }),
+      };
+    }
+    return defaultExec(options);
+  });
+  const response = await supervisorApp.request("/computers/computer-timeout/browser", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${resolveSupervisorToken(process.env)}`,
+      "content-type": "application/json",
+      "x-anviq-bot-id": "home",
+      "x-anviq-space-id": "space",
+      "x-anviq-screen-id": "first",
+      "x-anviq-screen-lease-id": "run:1",
+    },
+    body: JSON.stringify(body),
+  });
+  const result = (await response.json()) as { error: string; uncertain: boolean };
+  expect(result).toMatchObject({
+    ok: false,
+    fallback: "computer_act",
+    error: expect.stringContaining("timed out"),
+  });
+  expect(result.error).toContain(advice);
+  expect(result.uncertain).toBe(body.command === "act");
+});
+
+async function uploadRequest(roots?: unknown) {
+  return supervisorApp.request("/computers/computer-upload/browser", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${resolveSupervisorToken(process.env)}`,
+      "content-type": "application/json",
+      "x-anviq-bot-id": "home",
+      "x-anviq-space-id": "space",
+    },
+    body: JSON.stringify({
+      command: "act",
+      actions: [{ kind: "upload", ref: "e1", paths: ["bots/b1/file.txt"], roots }],
+    }),
+  });
+}
+
+it.each([undefined, ["bots/b1", "shared"]])("forwards trusted upload roots: %j", async (roots) => {
+  expect(await (await uploadRequest(roots)).json()).toMatchObject({ ok: true });
+  expect(JSON.parse(mock.stdin.join("")).actions[0]).toEqual({
+    kind: "upload",
+    ref: "e1",
+    paths: ["bots/b1/file.txt"],
+    ...(roots ? { roots } : {}),
+  });
+});
+
+it.each([["a", "b", "c"], [""], ["x".repeat(1025)]])(
+  "rejects invalid upload roots before running commands: %j",
+  async (...roots) => {
+    expect((await uploadRequest(roots)).status).toBeGreaterThanOrEqual(400);
+    expect(mock.exec).not.toHaveBeenCalled();
+    expect(mock.inspect).not.toHaveBeenCalled();
+  },
+);
+
+it.each([undefined, "5"])("forwards the upload size override only when set: %j", async (limit) => {
+  const original = process.env.ANVIQ_BROWSER_UPLOAD_MAX_BYTES;
+  try {
+    if (limit === undefined) delete process.env.ANVIQ_BROWSER_UPLOAD_MAX_BYTES;
+    else process.env.ANVIQ_BROWSER_UPLOAD_MAX_BYTES = limit;
+    expect(await (await uploadRequest()).json()).toMatchObject({ ok: true });
+    const helper = mock.exec.mock.calls.find(([options]) =>
+      options.Cmd.includes("/usr/local/bin/anviq-page-browser"),
+    )!;
+    const overrides = helper[0].Env.filter((value: string) =>
+      value.startsWith("ANVIQ_BROWSER_UPLOAD_MAX_BYTES="),
+    );
+    expect(overrides).toEqual(
+      limit === undefined ? [] : [`ANVIQ_BROWSER_UPLOAD_MAX_BYTES=${limit}`],
+    );
+  } finally {
+    if (original === undefined) delete process.env.ANVIQ_BROWSER_UPLOAD_MAX_BYTES;
+    else process.env.ANVIQ_BROWSER_UPLOAD_MAX_BYTES = original;
+  }
+});

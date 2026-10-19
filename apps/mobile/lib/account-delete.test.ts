@@ -19,7 +19,7 @@ describe("Account delete", () => {
     expect(screen).not.toContain("dangerZone");
     expect(screen).not.toContain("styles.deleteButton");
     expect(screen).not.toContain("styles.password");
-    const row = sliceBetween(screen, "function requestDeletion(", "function applyLocale(");
+    const row = sliceBetween(screen, "function requestDeletion(", "async function handleDeletion(");
     expect(row).toContain("promptAccountDeletion({");
     expect(row).toContain('deleteLabel: t("Delete")');
     expect(row).toContain("onSubmit: (password) => void handleDeletion(password, true)");
@@ -59,7 +59,7 @@ describe("Account delete", () => {
     expect(signOut).toContain("setSignOutError");
     expect(signOut).toContain('t("Could not sign out")');
     expect(signOut).not.toContain("setDeleteError");
-    const signOutControl = sliceBetween(screen, 't("Sign out")', 't("Archived bots")');
+    const signOutControl = sliceBetween(screen, 't("Sign out")', 't("Archived")');
     expect(signOutControl).toContain("signOutError");
     expect(signOutControl).toContain('accessibilityRole="alert"');
     expect(signOutControl).not.toContain("deleteError");

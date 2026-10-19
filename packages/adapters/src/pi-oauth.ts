@@ -11,6 +11,7 @@ import type {
   ThinkingLevel,
 } from "@anviq/contracts";
 import {
+  canonicalPiProviderId,
   MAX_MODEL_CONTEXT_WINDOW,
   MAX_MODEL_MAX_TOKENS,
   ModelContextLimitsSchema,
@@ -559,7 +560,9 @@ export function codexComputeResidency(accessToken: string | undefined): string |
 }
 
 export function loadProviderOAuth(providerId: string): OAuthAuth | undefined {
-  return providerCatalog().getProvider(providerId)?.auth.oauth;
+  // pi 1.3 adds ChatGPT OAuth to OpenAI; keep subscription sign-in on Codex.
+  if (providerId === "openai") return undefined;
+  return providerCatalog().getProvider(canonicalPiProviderId(providerId))?.auth.oauth;
 }
 
 let cachedProviderCatalog: ReturnType<typeof builtinModels> | undefined;

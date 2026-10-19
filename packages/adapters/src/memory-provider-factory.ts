@@ -8,6 +8,12 @@ import {
 } from "@anviq/memory-engine";
 import { ANVIQ_MEMORY_PROVIDER_ID, AnviqMemoryProvider } from "./anviq-memory-provider.js";
 import {
+  createHonchoProvider,
+  HONCHO_PROVIDER_ID,
+  honchoRequiresDeploymentOwner,
+  prepareHonchoConnection,
+} from "./honcho-memory-provider.js";
+import {
   classifySerenityConnectionSettings,
   createSerenityProvider,
   prepareSerenityConnection,
@@ -101,6 +107,15 @@ const MEMORY_PROVIDER_ADAPTERS: ReadonlyMap<string, MemoryProviderAdapter> = new
         options?: { allowPrivateEndpoint?: boolean },
       ) => prepareSerenityConnection(settings, credentials, undefined, options),
       create: createSerenityProvider,
+    },
+  ],
+  [
+    HONCHO_PROVIDER_ID,
+    {
+      requiresDeploymentOwner: honchoRequiresDeploymentOwner,
+      prepare: (settings: Record<string, string>, credentials: Record<string, string>) =>
+        prepareHonchoConnection(settings, credentials),
+      create: createHonchoProvider,
     },
   ],
 ]);

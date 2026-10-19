@@ -3,7 +3,7 @@
     "name": "Anviq Agents",
     "slug": "anviq",
     "scheme": "anviq",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
@@ -39,7 +39,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#B54827"
+          "color": "#0B0C0E"
         }
       ],
       [

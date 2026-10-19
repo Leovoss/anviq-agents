@@ -238,6 +238,15 @@ describe("contracts", () => {
     }
   });
 
+  it("accepts fleetManagement on bot updates and rejects non-boolean values", () => {
+    expect(UpdateBotInput.parse({ botId: "bot-1", fleetManagement: true }).fleetManagement).toBe(
+      true,
+    );
+    expect(UpdateBotInput.safeParse({ botId: "bot-1", fleetManagement: "yes" }).success).toBe(
+      false,
+    );
+  });
+
   it("accepts the same title limit when creating and updating bots", () => {
     const title = "T".repeat(BOT_TITLE_MAX_LENGTH);
     expect(CreateBotInput.safeParse({ name: "Chief", title }).success).toBe(true);
@@ -284,6 +293,13 @@ describe("contracts", () => {
     expect(
       UpdateGroupInput.safeParse({ groupId: "group-1", botIds: ["bot-1", "bot-1"] }).success,
     ).toBe(false);
+  });
+
+  it.each([1, 2, 10, 11])("enforces group member bounds for %i bots", (count) => {
+    const botIds = Array.from({ length: count }, (_, index) => `bot-${index}`);
+    const accepted = count >= 2 && count <= 10;
+    expect(CreateGroupInput.safeParse({ name: "Draft team", botIds }).success).toBe(accepted);
+    expect(UpdateGroupInput.safeParse({ groupId: "group-1", botIds }).success).toBe(accepted);
   });
 
   it("keeps model OAuth start results mode-specific", () => {

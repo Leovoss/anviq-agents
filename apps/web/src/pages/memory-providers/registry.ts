@@ -1,6 +1,7 @@
 import type { SpaceMemoryConfig } from "@anviq/contracts";
 import type { ComponentType } from "react";
 import { BuiltInSettingsForm } from "./BuiltInSettingsForm";
+import { HonchoSettingsForm } from "./HonchoSettingsForm";
 import { SerenitySettingsForm } from "./SerenitySettingsForm";
 import { SupermemorySettingsForm } from "./SupermemorySettingsForm";
 
@@ -49,6 +50,14 @@ export const MEMORY_PROVIDER_SETTINGS: readonly MemoryProviderSettingsRegistrati
       const mode = config.settings.allowWrites === "true" ? "read/write" : "recall only";
       return label ? `Serenity · ${label} · ${mode}` : `Serenity · ${endpoint} · ${mode}`;
     },
+  },
+  {
+    id: "honcho",
+    name: "Honcho",
+    description: "",
+    SettingsForm: HonchoSettingsForm,
+    connectedLabel: (config) =>
+      config.settings.workspaceId ? `Honcho · ${config.settings.workspaceId}` : "Honcho Cloud",
   },
 ];
 
