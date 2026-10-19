@@ -47,6 +47,7 @@ const rules = [
   [/,\n\s*"updates": \{\n\s*"url": "https:\/\/u\.expo\.dev\/[0-9a-f-]{36}"\n\s*\}/, ""],
   // Packaging tools build file and bundle names from productName, so it stays a single word.
   [/("productName"\s*:\s*)"Rakazo"/g, '$1"Anviq"'],
+  [/(productName\)\.toBe\()"Rakazo"/g, '$1"Anviq"'],
   // Bare object keys in locale catalogs are the source string, so they need quoting.
   [/^(\s*)Rakazo(?=:)/gm, '$1"Anviq Agents"'],
   // The product name shown to people. Identifiers, paths and package names keep the short form.

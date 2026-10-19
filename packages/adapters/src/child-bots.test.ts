@@ -242,6 +242,60 @@ describe("spawned bot archival", () => {
 });
 
 describe("destroyBot", () => {
+  function purgeFixture(purgeBot: () => Promise<void>) {
+    const transaction = vi.fn(async (callback: (tx: unknown) => Promise<void>) =>
+      callback({
+        $queryRaw: vi.fn().mockResolvedValue([]),
+        chatGroup: {
+          findMany: vi.fn().mockResolvedValue([]),
+          deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+        artifact: {
+          findMany: vi.fn().mockResolvedValue([]),
+          deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+        computerExecutionLease: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+        computer: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
+        $executeRaw: vi.fn().mockResolvedValue(0),
+        botDeletion: { create: vi.fn().mockResolvedValue({}) },
+        bot: { delete: vi.fn().mockResolvedValue({}) },
+      }),
+    );
+    const prisma = {
+      computer: { findUnique: vi.fn().mockResolvedValue(null) },
+      run: {
+        findMany: vi.fn().mockResolvedValue([]),
+        updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+      },
+      routine: { findMany: vi.fn().mockResolvedValue([]) },
+      $transaction: transaction,
+    } as unknown as PrismaClient;
+    const deps = {
+      prisma,
+      sandbox: {} as SandboxProvider,
+      home: {} as AgentHomeStore,
+      jobs: { cancel: vi.fn() } as unknown as JobPublisher,
+      memoryProviders: { resolve: vi.fn(), purgeBot },
+    };
+    const bot = { id: "bot-1", spaceId: "workspace-1", name: "Researcher", archivedAt: null };
+    return { deps, bot, transaction };
+  }
+
+  it("purges built-in memories only when memories are deleted", async () => {
+    const purgeBot = vi.fn().mockResolvedValue(undefined);
+    const { deps, bot } = purgeFixture(purgeBot);
+    await destroyBot(deps, bot, context, { deleteMemories: false });
+    expect(purgeBot).not.toHaveBeenCalled();
+    await destroyBot(deps, bot, context, { deleteMemories: true });
+    expect(purgeBot).toHaveBeenCalledExactlyOnceWith("bot-1");
+  });
+
+  it("keeps the bot when the memory purge fails", async () => {
+    const { deps, bot, transaction } = purgeFixture(vi.fn().mockRejectedValue(new Error("down")));
+    await expect(destroyBot(deps, bot, context, { deleteMemories: true })).rejects.toThrow("down");
+    expect(transaction).not.toHaveBeenCalled();
+  });
+
   it("moves bot memories into shared memory before the cascading delete", async () => {
     const createDeletion = vi.fn().mockResolvedValue({});
     const deleteBot = vi.fn().mockResolvedValue({});

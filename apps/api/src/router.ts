@@ -986,6 +986,9 @@ export function createRouter(deps: RouterDeps) {
             claimRenewal = null;
           }
           const fallback = await deleteEmptySpaceForMember(deps.prisma, claimedInput);
+          await deps.memoryProviders.purgeSpace?.(claimedInput.spaceId).catch((error) => {
+            getLogger().error("space memory purge failed", error);
+          });
           return { ok: true as const, activeSpaceId: fallback.id };
         } catch (error) {
           if (context.signal?.aborted) claimReleasable = false;
@@ -1884,6 +1887,7 @@ export function createRouter(deps: RouterDeps) {
             jobs: deps.jobs,
             artifacts: deps.artifacts,
             dataDir: deps.dataDir,
+            memoryProviders: deps.memoryProviders,
           },
           bot,
           {

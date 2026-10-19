@@ -408,10 +408,22 @@ export async function createApp(
         where: { userId },
         select: { id: true, userId: true, spaceId: true, name: true, archivedAt: true },
       });
+      const soleSpaces = await prisma.space.findMany({
+        where: { memberships: { some: { userId }, every: { userId } } },
+        select: { id: true },
+      });
       await Promise.all(
         bots.map((bot) =>
           destroyBot(
-            { prisma, sandbox, home, jobs, artifacts, dataDir: env.dataDir },
+            {
+              prisma,
+              sandbox,
+              home,
+              jobs,
+              artifacts,
+              dataDir: env.dataDir,
+              memoryProviders,
+            },
             bot,
             {
               operationId: `account-delete:${userId}`,
@@ -425,6 +437,7 @@ export async function createApp(
           ),
         ),
       );
+      await Promise.all(soleSpaces.map((space) => memoryProviders.purgeSpace(space.id)));
       await removePiUserSessions(env.dataDir, userId);
       await deletePushToken(env.dataDir, userId).catch((error) =>
         getLogger().error("push token removal failed", error),

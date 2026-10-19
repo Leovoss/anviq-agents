@@ -31,6 +31,7 @@ import {
   withCleanupDeadline,
 } from "./computer-workspace.js";
 import { resolveAgentHomePath } from "./home.js";
+import type { MemoryProviderResolver } from "./memory-provider-factory.js";
 import { removePiBotSessions } from "./pi-session.js";
 
 export function confirmSpawnedBotName(confirmName: string, botName: string) {
@@ -205,6 +206,7 @@ type BotLifecycleDeps = {
   jobs: JobPublisher;
   dataDir?: string;
   artifacts?: ArtifactStore;
+  memoryProviders?: MemoryProviderResolver;
 };
 
 type LifecycleBot = {
@@ -374,6 +376,7 @@ export async function destroyBot(
   }
   // Keep the bot deletion transaction from committing if raw transcript cleanup fails.
   await removePiBotSessions(deps.dataDir, bot.userId, bot.id);
+  if (options.deleteMemories) await deps.memoryProviders?.purgeBot?.(bot.id);
   const deletion = await withTransactionRetry(() =>
     deps.prisma.$transaction(async (tx) => {
       const locked = await tx.$queryRaw<Array<{ id: string; webhookSecretId: string | null }>>`

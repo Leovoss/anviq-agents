@@ -42,6 +42,9 @@ export interface ConfiguredMemoryProvider {
 
 export interface MemoryProviderResolver {
   resolve(spaceId: string): Promise<ConfiguredMemoryProvider | null>;
+  /** Remove built-in memories when their owner is deleted. */
+  purgeBot?(botId: string): Promise<void>;
+  purgeSpace?(spaceId: string): Promise<void>;
 }
 
 interface MemoryProviderAdapter {
@@ -177,6 +180,14 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
     this.engine = createMemoryEngine(async (sql, params = []) => ({
       rows: await prisma.$queryRawUnsafe(sql, ...params),
     }));
+  }
+
+  async purgeBot(botId: string): Promise<void> {
+    await this.engine.purgeBot(botId);
+  }
+
+  async purgeSpace(spaceId: string): Promise<void> {
+    await this.engine.purgeSpace(spaceId);
   }
 
   async resolve(spaceId: string): Promise<ConfiguredMemoryProvider | null> {
