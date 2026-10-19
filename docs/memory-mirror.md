@@ -38,6 +38,16 @@ files and `.sync-conflict` copies are ignored, and a note whose memory was forgo
 
 ## Syncthing on the server
 
+Use one of two ways.
+
+If the server already runs Syncthing, add a folder there that points at the mirror directory of the
+data volume (for a default install `/var/lib/docker/volumes/anviq_appdata/_data/memory-mirror`)
+and turn on "Sync Ownership: copy from parent" for it. The worker runs as user 1000, so files that
+Syncthing creates must take the owner of their folder, otherwise the worker cannot update them.
+
+If it does not, run Syncthing as a container. The overlay uses ports 8384 and 22000, so it cannot
+start next to a Syncthing that already listens on them:
+
 ```bash
 docker compose --env-file .env -f docker-compose.images.yml -f docker-compose.syncthing.yml up -d
 ```
