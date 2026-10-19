@@ -19,7 +19,7 @@ licensed under either license.
 
 - `scripts/upstream/`
 - `infra/compose/docker-compose.traefik.yml`
-- `docs/upstream-sync.md`
+- `docs/upstream-sync.md`, `docs/new-customer-instance.md`
 - `README.md`, `NOTICE`, `LICENSE-ANVIQ.md`
 - `packages/adapters/src/anviq-memory-provider.ts` and its test,
   `apps/web/src/pages/memory-providers/BuiltInSettingsForm.tsx`
