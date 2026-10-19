@@ -3,9 +3,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { ManagedConnectorProvider } from "@anviq/adapter-kit";
 import { SecretStoreUnavailableError } from "@anviq/adapter-kit";
+import * as adapters from "@anviq/adapters";
 import {
   COMPUTER_SCREEN_UNAVAILABLE,
   CodexCatalogCache,
+  ComputerBusyError,
   ComputerScreenUnavailableError,
   EncryptedSecretStore,
   IntegrationProviderSettings,
@@ -24,16 +26,21 @@ import type { RouterDeps } from "./router.js";
 import { createRouter, enqueueBotIntroRun, HEARTBEAT_MS, SESSION_RECHECK_MS } from "./router.js";
 
 describe("account preferences", () => {
-  function preferencesDeps(avatarStyle: string) {
+  function preferencesDeps(avatarStyle: string, timezone: string | null = null) {
     const update = vi.fn().mockResolvedValue({});
+    const user = { email: "user@anviq.test", name: "Test User", avatarStyle, timezone };
+    const updateMany = vi.fn(
+      async ({ where, data }: { where: { timezone: null }; data: { timezone: string } }) => {
+        if (user.timezone !== where.timezone) return { count: 0 };
+        Object.assign(user, data);
+        return { count: 1 };
+      },
+    );
     const prisma = {
       user: {
         update,
-        findUniqueOrThrow: vi.fn().mockResolvedValue({
-          email: "user@anviq.test",
-          name: "Test User",
-          avatarStyle,
-        }),
+        updateMany,
+        findUniqueOrThrow: vi.fn().mockResolvedValue(user),
       },
       spaceModelPreference: { findFirst: vi.fn().mockResolvedValue(null) },
       deploymentSettings: { findUnique: vi.fn().mockResolvedValue(null) },
@@ -55,7 +62,7 @@ describe("account preferences", () => {
       email: "user@anviq.test",
       isDeploymentOwner: true,
     } satisfies Actor;
-    return { update, deps, actor, handler: new RPCHandler(createRouter(deps)) };
+    return { update, updateMany, deps, actor, handler: new RPCHandler(createRouter(deps)) };
   }
 
   it("reports model credential store outages as service unavailable", async () => {
@@ -141,9 +148,99 @@ describe("account preferences", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
-  it("coerces unknown stored avatar styles to robot on me", async () => {
-    const { actor, handler } = preferencesDeps("custom-cdn");
+  async function updatePreferences(
+    { handler, actor }: ReturnType<typeof preferencesDeps>,
+    json: unknown,
+  ) {
+    const { response } = await handler.handle(
+      new Request("http://127.0.0.1/rpc/preferences/update", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ json }),
+      }),
+      { prefix: "/rpc", context: { actor } },
+    );
+    if (!response) throw new Error("no response");
+    return response;
+  }
 
+  it("persists an IANA timezone without touching the avatar style", async () => {
+    const setup = preferencesDeps("organic");
+
+    const response = await updatePreferences(setup, { timezone: "Pacific/Auckland" });
+
+    expect(response.status).toBe(200);
+    expect(setup.update).toHaveBeenCalledWith({
+      where: { id: "user-1" },
+      data: { timezone: "Pacific/Auckland" },
+    });
+  });
+
+  it.each([null, "Europe/London"])(
+    "adopts the browser timezone only while the saved value is null (%s)",
+    async (timezone) => {
+      const setup = preferencesDeps("organic", timezone);
+      const client = createRouterClient(createRouter(setup.deps), {
+        context: { actor: setup.actor } as never,
+      });
+      const me = await client.preferences.adoptTimezone({ timezone: "Pacific/Auckland" });
+      expect(setup.updateMany).toHaveBeenCalledWith({
+        where: { id: "user-1", timezone: null },
+        data: { timezone: "Pacific/Auckland" },
+      });
+      expect(me.timezone).toBe(timezone ?? "Pacific/Auckland");
+      expect(setup.update).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([{ timezone: "Mars/Olympus_Mons" }, { timezone: "" }, {}])(
+    "rejects an unknown timezone or an empty update: %j",
+    async (json) => {
+      const setup = preferencesDeps("robot");
+
+      const response = await updatePreferences(setup, json);
+
+      expect(response.status).toBeGreaterThanOrEqual(400);
+      expect(setup.update).not.toHaveBeenCalled();
+    },
+  );
+
+  it("adopts a detected timezone only while none is saved", async () => {
+    const setup = preferencesDeps("robot");
+    const { response } = await setup.handler.handle(
+      new Request("http://127.0.0.1/rpc/preferences/adoptTimezone", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ json: { timezone: "Pacific/Auckland" } }),
+      }),
+      { prefix: "/rpc", context: { actor: setup.actor } },
+    );
+
+    expect(response?.status).toBe(200);
+    expect(setup.updateMany).toHaveBeenCalledWith({
+      where: { id: "user-1", timezone: null },
+      data: { timezone: "Pacific/Auckland" },
+    });
+    expect(setup.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects adopting an unknown timezone", async () => {
+    const setup = preferencesDeps("robot");
+    const { response } = await setup.handler.handle(
+      new Request("http://127.0.0.1/rpc/preferences/adoptTimezone", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ json: { timezone: "Mars/Olympus_Mons" } }),
+      }),
+      { prefix: "/rpc", context: { actor: setup.actor } },
+    );
+
+    expect(response?.status).toBeGreaterThanOrEqual(400);
+    expect(setup.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("reports an unset timezone as null", async () => {
+    const { actor, handler } = preferencesDeps("robot");
     const { response } = await handler.handle(
       new Request("http://127.0.0.1/rpc/me", {
         method: "POST",
@@ -152,12 +249,31 @@ describe("account preferences", () => {
       }),
       { prefix: "/rpc", context: { actor } },
     );
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
-      json: expect.objectContaining({ avatarStyle: "robot" }),
+    await expect(response?.json()).resolves.toEqual({
+      json: expect.objectContaining({ timezone: null }),
     });
   });
+
+  it.each(["robot", "organic", "custom-cdn"])(
+    "returns the stored style or organic fallback for %s",
+    async (style) => {
+      const { actor, handler } = preferencesDeps(style);
+
+      const { response } = await handler.handle(
+        new Request("http://127.0.0.1/rpc/me", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ json: null }),
+        }),
+        { prefix: "/rpc", context: { actor } },
+      );
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({
+        json: expect.objectContaining({ avatarStyle: style === "robot" ? "robot" : "organic" }),
+      });
+    },
+  );
 });
 
 describe("billing", () => {
@@ -215,6 +331,7 @@ describe("billing", () => {
 describe("model setup gate", () => {
   function modelGateDeps(options: {
     agentRuntime: string;
+    maxUploadSizeBytes?: number;
     deploymentModelConfigured?: boolean;
     deploymentModelHostCredentials?: boolean;
     deploymentModelCredentialCipher?: string;
@@ -242,6 +359,7 @@ describe("model setup gate", () => {
       prisma,
       env: {
         agentRuntime: options.agentRuntime,
+        maxUploadSizeBytes: options.maxUploadSizeBytes,
         defaultProvider: "openrouter",
         defaultModel: "test-model",
         deploymentModelConfigured: options.deploymentModelConfigured,
@@ -272,6 +390,18 @@ describe("model setup gate", () => {
     );
     return response;
   }
+
+  it.each([undefined, 25 * 1024 * 1024])(
+    "advertises the effective upload limit in me (%s)",
+    async (maxUploadSizeBytes) => {
+      const { actor, handler } = modelGateDeps({ agentRuntime: "scripted", maxUploadSizeBytes });
+      const response = await call(handler, actor, "me", null);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({
+        json: { maxUploadSizeBytes: maxUploadSizeBytes ?? 10 * 1024 * 1024 },
+      });
+    },
+  );
 
   it("refuses to start a run when no model is configured", async () => {
     const { actor, handler } = modelGateDeps({ agentRuntime: "pi" });
@@ -437,6 +567,7 @@ describe("thread answer delivery", () => {
             runId: "run-1",
             messageId: "message-1",
             answer: "Paris",
+            clientNonce: "call:call-1:spoken-answer",
           },
         }),
       }),
@@ -451,6 +582,7 @@ describe("thread answer delivery", () => {
         spaceId: "workspace-1",
         threadId: "thread-1",
         runId: "run-1",
+        clientNonce: "call:call-1:spoken-answer",
       }),
     );
     expect(enqueue).toHaveBeenCalledOnce();
@@ -1518,8 +1650,12 @@ describe("computer terminal and file transfer", () => {
     controlBotId: "bot-1",
   };
 
-  function setup(computer: Record<string, unknown> = {}) {
+  function setup(computer: Record<string, unknown> = {}, maxUploadSizeBytes?: number) {
     const sandbox = {
+      execute: vi.fn(async function* () {
+        yield { type: "exit" as const, code: 0 };
+      }),
+      listFiles: vi.fn().mockResolvedValue([]),
       connectTerminal: vi.fn().mockResolvedValue({
         url: "https://screen.example/vnc.html?path=websockify%3Ftoken%3Dterminal-1",
       }),
@@ -1557,6 +1693,7 @@ describe("computer terminal and file transfer", () => {
       sandbox,
       jobs: { enqueue: vi.fn().mockResolvedValue(undefined) },
       env: {
+        maxUploadSizeBytes,
         webOrigin: "http://127.0.0.1:5173",
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "docker",
@@ -1577,6 +1714,73 @@ describe("computer terminal and file transfer", () => {
     };
     return { sandbox, prisma, call };
   }
+
+  it("prepares an unused bot's folders before listing a running Team Computer", async () => {
+    const { sandbox, call } = setup();
+    let prepared = false;
+    sandbox.execute.mockImplementation(async function* () {
+      prepared = true;
+      yield { type: "exit" as const, code: 0 };
+    });
+    sandbox.listFiles.mockImplementation(async () => {
+      if (!prepared) throw new Error("workspace folder does not exist");
+      return [];
+    });
+
+    await expect(call("files", { path: "" })).resolves.toEqual({
+      status: 200,
+      body: { json: [] },
+    });
+    expect(sandbox.execute).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "sandbox-ref-1" }),
+      { argv: ["mkdir", "-p", "shared", "bots/bot-1"] },
+      expect.anything(),
+    );
+    expect(sandbox.listFiles).toHaveBeenCalledWith(
+      expect.anything(),
+      "bots/bot-1",
+      expect.anything(),
+    );
+  });
+
+  it("prepares the bot's folders when boot reuses an already running Team Computer", async () => {
+    const { sandbox, call } = setup();
+    await expect(call("boot", {})).resolves.toMatchObject({ status: 200 });
+    expect(sandbox.execute).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "sandbox-ref-1" }),
+      { argv: ["mkdir", "-p", "shared", "bots/bot-1"] },
+      expect.anything(),
+    );
+  });
+
+  it("clears a reclaimed sandbox before boot attempts provisioning again", async () => {
+    const { sandbox, prisma, call } = setup();
+    sandbox.execute.mockImplementation(async function* () {
+      yield await Promise.reject(
+        Object.assign(new Error("Sandbox is probably not running anymore"), {
+          name: "SandboxNotFoundError",
+        }),
+      );
+    });
+    const findUniqueOrThrow = vi.fn().mockRejectedValue(new ComputerBusyError());
+    prisma.computer.findUniqueOrThrow = findUniqueOrThrow;
+
+    await expect(call("boot", {})).resolves.toMatchObject({ status: 409 });
+    expect(prisma.computer.updateMany).toHaveBeenCalledWith({
+      where: { id: "computer-1", providerRef: "sandbox-ref-1" },
+      data: { state: "stopped", providerRef: null },
+    });
+    expect(findUniqueOrThrow).toHaveBeenCalledWith({ where: { id: "computer-1" } });
+  });
+
+  it("does not discard a live sandbox when folder preparation fails", async () => {
+    const { sandbox, prisma, call } = setup();
+    sandbox.execute.mockImplementation(async function* () {
+      yield { type: "exit" as const, code: 1 };
+    });
+    await expect(call("boot", {})).resolves.toMatchObject({ status: 500 });
+    expect(prisma.computer.updateMany).not.toHaveBeenCalled();
+  });
 
   it("opens a terminal only for the user holding this bot's control lease", async () => {
     const released = setup();
@@ -1630,6 +1834,34 @@ describe("computer terminal and file transfer", () => {
       body: { json: { url: null } },
     });
     expect(sandbox.connectTerminal).not.toHaveBeenCalled();
+  });
+
+  it("enforces the configured computer upload limit and advertises it to the sandbox", async () => {
+    const limit = 1024 * 1024;
+    const { call, sandbox } = setup(controlled, limit);
+    await expect(
+      call("uploadFile", {
+        path: "notes.txt",
+        contentBase64: Buffer.alloc(limit + 1).toString("base64"),
+      }),
+    ).resolves.toMatchObject({
+      status: 400,
+      body: { json: { message: "File exceeds the 1 MiB upload limit." } },
+    });
+    expect(sandbox.writeFile).not.toHaveBeenCalled();
+    await expect(
+      call("uploadFile", {
+        path: "notes.txt",
+        contentBase64: Buffer.alloc(limit).toString("base64"),
+      }),
+    ).resolves.toMatchObject({ status: 200 });
+    await call("downloadFile", { path: "notes.txt" });
+    expect(sandbox.readFile).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      { maxBytes: limit },
+    );
   });
 
   it("uploads into the bot workspace only under control", async () => {
@@ -1829,6 +2061,219 @@ describe("interrupted computer reservation release", () => {
   });
 });
 
+describe("OpenAI-compatible model probes", () => {
+  const actor = {
+    spaceId: "workspace-1",
+    userId: "user-1",
+    email: "user@anviq.test",
+    isDeploymentOwner: true,
+  } satisfies Actor;
+  const baseUrl = "https://127.0.0.1:8000/v1";
+  const stored = JSON.stringify({ kind: "openai_compatible", baseUrl, apiKey: "fake-saved-key" });
+
+  function fixture(options: { credentialUserId?: string; secretUserId?: string } = {}) {
+    const credential = {
+      id: "cred-1",
+      userId: options.credentialUserId ?? actor.userId,
+      provider: "openai-compatible",
+      secretId: "secret-1",
+    };
+    const credentials = [credential];
+    const findCredential = vi.fn(
+      async ({ where }: { where: { userId: string; provider: string } }) =>
+        where.userId === credential.userId && where.provider === credential.provider
+          ? credential
+          : null,
+    );
+    const findCredentials = vi.fn(
+      async ({ where }: { where: { userId: string; provider: string } }) =>
+        credentials.filter(
+          (candidate) => candidate.userId === where.userId && candidate.provider === where.provider,
+        ),
+    );
+    const findSecret = vi.fn(
+      async ({ where }: { where: { userId: string; id: { in: string[] }; spaceId: null } }) =>
+        credentials
+          .filter(
+            (candidate) =>
+              where.userId === (options.secretUserId ?? candidate.userId) &&
+              where.id.in.includes(candidate.secretId) &&
+              where.spaceId === null,
+          )
+          .map((candidate) => ({ id: candidate.secretId, ciphertext: "fake-ciphertext" })),
+    );
+    const load = vi.fn().mockResolvedValue(stored);
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ data: [{ id: "test-model" }] }),
+    );
+    const probe = adapters.probeOpenAiCompatibleModels;
+    vi.spyOn(adapters, "probeOpenAiCompatibleModels").mockImplementation((input, _, signal) =>
+      probe(input, fetch, signal),
+    );
+    const deps = {
+      prisma: {
+        spaceModelPreference: { findFirst: vi.fn().mockResolvedValue(null) },
+        userModelCredential: { findFirst: findCredential, findMany: findCredentials },
+        secret: { findMany: findSecret },
+      },
+      secrets: { load },
+      env: { sandboxProvider: "fake" },
+    } as unknown as RouterDeps;
+    const client = createRouterClient(createRouter(deps), { context: { actor } as never });
+    return { client, fetch, credentials, findCredential, findCredentials, findSecret, load };
+  }
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it.each([undefined, "", "   "])("uses the saved key for a blank key %j", async (apiKey) => {
+    const { client, fetch, findSecret, load } = fixture();
+    const response = await client.models.probeOpenAiCompatible({ baseUrl, apiKey });
+    expect(fetch).toHaveBeenCalledWith(
+      new URL(`${baseUrl}/models`),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: "Bearer fake-saved-key" }),
+      }),
+    );
+    expect(findSecret).toHaveBeenCalledWith({
+      where: { id: { in: ["secret-1"] }, userId: actor.userId, spaceId: null },
+      select: { id: true, ciphertext: true },
+    });
+    expect(load).toHaveBeenCalledWith("fake-ciphertext", "secret-1");
+    expect(response).toEqual({ models: ["test-model"] });
+    expect(JSON.stringify(response)).not.toContain("fake-saved-key");
+  });
+
+  it("uses a typed key without looking up the stored credential", async () => {
+    const { client, fetch, findCredential, findCredentials, findSecret, load } = fixture();
+    await client.models.probeOpenAiCompatible({ baseUrl, apiKey: " fake-typed-key " });
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(URL),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: "Bearer fake-typed-key" }),
+      }),
+    );
+    expect(findCredential).not.toHaveBeenCalled();
+    expect(findCredentials).not.toHaveBeenCalled();
+    expect(findSecret).not.toHaveBeenCalled();
+    expect(load).not.toHaveBeenCalled();
+  });
+
+  it.each(["different endpoint", "unreadable", "matching endpoint"])(
+    "tries the preferred credential first, then another matching credential when preferred is %s",
+    async (preferred) => {
+      const { client, fetch, credentials, findCredentials, findSecret, load } = fixture();
+      credentials.push({
+        id: "cred-2",
+        userId: actor.userId,
+        provider: "openai-compatible",
+        secretId: "secret-2",
+      });
+      load.mockImplementation(async (_, secretId) => {
+        if (secretId === "secret-2") return stored;
+        if (preferred === "unreadable") throw new Error("Secret unavailable");
+        return JSON.stringify({
+          kind: "openai_compatible",
+          baseUrl: preferred === "matching endpoint" ? baseUrl : "https://127.0.0.2:8000/v1",
+          apiKey: "fake-preferred-key",
+        });
+      });
+
+      await client.models.probeOpenAiCompatible({ baseUrl });
+
+      expect(findCredentials).toHaveBeenCalledWith({
+        where: { userId: actor.userId, provider: "openai-compatible" },
+        orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      });
+      expect(findSecret).toHaveBeenCalledExactlyOnceWith({
+        where: { id: { in: ["secret-1", "secret-2"] }, userId: actor.userId, spaceId: null },
+        select: { id: true, ciphertext: true },
+      });
+      expect(fetch.mock.calls[0]?.[1]?.headers).toHaveProperty(
+        "Authorization",
+        preferred === "matching endpoint" ? "Bearer fake-preferred-key" : "Bearer fake-saved-key",
+      );
+      expect(load.mock.calls.map((call) => call[1])).toEqual(
+        preferred === "matching endpoint" ? ["secret-1"] : ["secret-1", "secret-2"],
+      );
+    },
+  );
+
+  it("never uses another user's matching credential after the preferred endpoint differs", async () => {
+    const { client, fetch, credentials, findSecret, load } = fixture();
+    credentials.push({
+      id: "cred-other",
+      userId: "other-user",
+      provider: "openai-compatible",
+      secretId: "secret-other",
+    });
+    load.mockImplementation(async (_, secretId) =>
+      secretId === "secret-other"
+        ? stored
+        : JSON.stringify({
+            kind: "openai_compatible",
+            baseUrl: "https://127.0.0.2:8000/v1",
+            apiKey: "fake-preferred-key",
+          }),
+    );
+
+    await client.models.probeOpenAiCompatible({ baseUrl });
+
+    expect(findSecret).toHaveBeenCalledExactlyOnceWith({
+      where: { id: { in: ["secret-1"] }, userId: actor.userId, spaceId: null },
+      select: { id: true, ciphertext: true },
+    });
+    expect(load).toHaveBeenCalledExactlyOnceWith("fake-ciphertext", "secret-1");
+    expect(fetch.mock.calls[0]?.[1]?.headers).not.toHaveProperty("Authorization");
+  });
+
+  it("does not send the saved key to a different endpoint", async () => {
+    const { client, fetch } = fixture();
+    await client.models.probeOpenAiCompatible({ baseUrl: "https://127.0.0.2:8000/v1" });
+    expect(fetch.mock.calls[0]?.[1]?.headers).not.toHaveProperty("Authorization");
+  });
+
+  it.each([{ credentialUserId: "other-user" }, { secretUserId: "other-user" }])(
+    "does not load another user's credential or secret: %j",
+    async (options) => {
+      const { client, fetch, findCredential, load } = fixture(options);
+      await client.models.probeOpenAiCompatible({ baseUrl });
+      expect(findCredential).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { userId: actor.userId, provider: "openai-compatible" } }),
+      );
+      expect(load).not.toHaveBeenCalled();
+      expect(fetch.mock.calls[0]?.[1]?.headers).not.toHaveProperty("Authorization");
+    },
+  );
+
+  it.each(["unavailable", "corrupt"])(
+    "falls back when the stored secret is %s",
+    async (failure) => {
+      const { client, fetch, load } = fixture();
+      if (failure === "unavailable") load.mockRejectedValue(new Error("Secret unavailable"));
+      else load.mockResolvedValue('{"kind":"openai_compatible"}');
+      await expect(client.models.probeOpenAiCompatible({ baseUrl })).resolves.toEqual({
+        models: ["test-model"],
+      });
+      expect(fetch.mock.calls[0]?.[1]?.headers).not.toHaveProperty("Authorization");
+    },
+  );
+
+  it("still rejects saved keys on public HTTP endpoints", async () => {
+    vi.stubEnv("ANVIQ_OPENAI_COMPAT_ALLOW_PUBLIC", "1");
+    try {
+      const { client, fetch, load } = fixture();
+      const baseUrl = "http://example.invalid/v1";
+      load.mockResolvedValue(
+        JSON.stringify({ kind: "openai_compatible", baseUrl, apiKey: "fake-saved-key" }),
+      );
+      await expect(client.models.probeOpenAiCompatible({ baseUrl })).rejects.toThrow(/HTTPS/);
+      expect(fetch).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
 describe("model credential persistence", () => {
   const actor = {
     spaceId: "workspace-1",
@@ -1933,6 +2378,67 @@ describe("model credential persistence", () => {
         provider: "anthropic",
         modelId: persisted.create.modelId,
       }),
+    });
+  });
+
+  it("updates a saved legacy Azure credential when replacing its key", async () => {
+    const { deps, handler } = persistDeps();
+    const existing = {
+      id: "cred-azure",
+      userId: actor.userId,
+      provider: "azure-openai-responses",
+      label: "Azure",
+      secretId: "old-secret",
+    };
+    const update = vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
+      ...existing,
+      ...data,
+    }));
+    const findFirst = vi.fn(
+      async ({ where }: { where: { provider: string | { in: string[] } } }) => {
+        const provider = where.provider;
+        return provider === existing.provider ||
+          (typeof provider !== "string" && provider.in.includes(existing.provider))
+          ? existing
+          : null;
+      },
+    );
+    Object.assign(deps.prisma.userModelCredential, {
+      findFirst,
+      update,
+      count: vi.fn().mockResolvedValue(0),
+    });
+    // The fixture shares this client with the write transaction.
+    const transaction = deps.prisma.$transaction as unknown as ReturnType<typeof vi.fn>;
+    transaction.mockImplementation(async (fn) =>
+      fn({
+        userModelCredential: deps.prisma.userModelCredential,
+        userVoiceCredential: { count: vi.fn().mockResolvedValue(0) },
+        spaceModelPreference: deps.prisma.spaceModelPreference,
+        secret: {
+          create: vi.fn().mockResolvedValue({ id: "new-secret" }),
+          deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+      }),
+    );
+    Object.assign(deps.prisma, {
+      secret: { findFirst: vi.fn().mockResolvedValue(null) },
+    });
+
+    const response = await call(handler, "models/connect", {
+      provider: "azure",
+      apiKey: "fake-replacement-key",
+      modelId: "gpt-4o",
+    });
+
+    expect(response.status).toBe(200);
+    expect(update).toHaveBeenCalledWith({
+      where: { id: existing.id },
+      data: { label: "azure", secretId: "new-secret" },
+    });
+    expect(deps.prisma.userModelCredential.create).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toMatchObject({
+      json: { id: existing.id, provider: "azure" },
     });
   });
 
@@ -3098,7 +3604,7 @@ describe("bot model auth on save", () => {
       teamChatRules: "",
       webhookSecretId: null,
       spawnKey: null,
-      thread: { id: "thread-1", unread: false, messages: [] },
+      thread: { id: "thread-1", unread: false, messages: [], runs: [] },
       computer: null,
       runs: [],
     };
@@ -3142,6 +3648,7 @@ describe("bot model auth on save", () => {
       description: bot.description,
     }));
     const tx = {
+      $queryRaw: vi.fn(async () => []),
       bot: { update: botUpdate },
       thread: { update: vi.fn(async () => ({ nextEventSeq: 2 })) },
       event: { create: vi.fn(async () => ({ seq: 1 })) },
@@ -3544,6 +4051,20 @@ describe("routines.update", () => {
     });
   });
 
+  it("keeps thinking when the saved Azure provider alias is canonicalized", async () => {
+    const { call, update } = fixture(false, false, {
+      modelProvider: "azure-openai-responses",
+      modelId: "gpt-4o",
+      thinkingLevel: "high",
+    });
+    expect((await call({ modelProvider: "azure", modelId: "gpt-4o" })).response.status).toBe(200);
+    expect(update.mock.calls[0]![0].data).toMatchObject({
+      modelProvider: "azure",
+      modelId: "gpt-4o",
+      thinkingLevel: "high",
+    });
+  });
+
   it("keeps an explicitly supplied thinking level when changing models", async () => {
     const { call, update } = fixture(false, false, ownModel);
     expect((await call({ modelId: "new-model", thinkingLevel: "low" })).response.status).toBe(200);
@@ -3563,13 +4084,150 @@ describe("routines.update", () => {
   });
 });
 
+describe("threads.answerCall and threads.declineCall", () => {
+  function fixture(
+    status = "ringing",
+    updated = 1,
+    expiresAt = new Date(Date.now() + 45_000).toISOString(),
+  ) {
+    const appended: { type: string; payload: Record<string, unknown> }[] = [];
+    const tx = {
+      $queryRaw: vi.fn(async () => []),
+      bot: {
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ id: "bot-1", thread: { id: "thread-1" }, computer: null }),
+      },
+      message: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "message-1",
+          botId: "bot-1",
+          thread: { spaceId: "space-1" },
+          blocks: [
+            {
+              kind: "call_request",
+              callId: "call-1",
+              reason: "Send the report",
+              opening: "Hi, it's about the report.",
+              status,
+              expiresAt,
+            },
+          ],
+        }),
+        updateMany: vi.fn().mockResolvedValue({ count: updated }),
+      },
+      thread: { update: vi.fn(async () => ({ nextEventSeq: 2 })) },
+      event: {
+        create: vi.fn(
+          async ({ data }: { data: { type: string; payload: Record<string, unknown> } }) => {
+            appended.push(data);
+            return { seq: 1 };
+          },
+        ),
+      },
+      routine: {
+        create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
+          id: "routine-1",
+          ...data,
+        })),
+      },
+    };
+    const prisma = {
+      ...tx,
+      $transaction: vi.fn(async (fn: (client: typeof tx) => unknown) => fn(tx)),
+    } as unknown as PrismaClient;
+    const enqueue = vi.fn().mockResolvedValue(undefined);
+    const deps = {
+      prisma,
+      events: {
+        notify: vi.fn().mockResolvedValue(undefined),
+        append: vi.fn(async (event: { type: string; payload: Record<string, unknown> }) => {
+          appended.push(event);
+          return { seq: 1 };
+        }),
+      },
+      jobs: { enqueue },
+      env: { sandboxProvider: "fake", phoneCallsEnabled: true },
+    } as unknown as RouterDeps;
+    const actor = {
+      spaceId: "space-1",
+      userId: "user-1",
+      email: "user@anviq.test",
+      isDeploymentOwner: true,
+    } satisfies Actor;
+    const handler = new RPCHandler(createRouter(deps));
+    const call = (path: string, json: Record<string, unknown>) =>
+      handler.handle(
+        new Request(`http://127.0.0.1/rpc/threads/${path}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ json: { botId: "bot-1", callId: "call-1", ...json } }),
+        }),
+        { prefix: "/rpc", context: { actor } },
+      );
+    return { prisma, appended, enqueue, call };
+  }
+
+  it("answers a ringing call with the bot's opening", async () => {
+    const { call, appended } = fixture();
+    const { response } = await call("answerCall", {});
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      json: { opening: "Hi, it's about the report.", reason: "Send the report" },
+    });
+    expect(appended[0]?.payload).toMatchObject({
+      messageId: "message-1",
+      blocks: [expect.objectContaining({ status: "answered" })],
+    });
+  });
+
+  it("refuses to answer a call that is no longer ringing", async () => {
+    const { call } = fixture("missed");
+    const { response } = await call("answerCall", {});
+    expect(response.status).toBe(409);
+  });
+
+  it("marks a declined call without scheduling another", async () => {
+    const { call, appended, prisma } = fixture();
+    const { response } = await call("declineCall", { outcome: "declined" });
+    expect(response.status).toBe(200);
+    expect(appended[0]?.payload).toMatchObject({
+      blocks: [expect.objectContaining({ status: "declined" })],
+    });
+    expect(prisma.routine.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects expired answers and records a missed call", async () => {
+    const { call, appended } = fixture("ringing", 1, new Date(0).toISOString());
+    expect((await call("answerCall", {})).response.status).toBe(409);
+    expect(appended[0]?.payload).toMatchObject({
+      blocks: [expect.objectContaining({ status: "missed" })],
+    });
+  });
+
+  it("checks ownership within the active space", async () => {
+    const { call, prisma } = fixture();
+    vi.mocked(prisma.bot.findFirst).mockResolvedValue(null);
+    expect((await call("answerCall", {})).response.status).not.toBe(200);
+    expect(prisma.bot.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: "bot-1", userId: "user-1", spaceId: "space-1" }),
+      }),
+    );
+    expect(prisma.message.updateMany).not.toHaveBeenCalled();
+  });
+});
+
 describe("threads.endCall", () => {
-  function fixture(duplicateMarker?: boolean) {
+  function fixture(duplicateMarker?: boolean, userSpoke = true) {
     const created: { blocks?: unknown; clientNonce?: string }[] = [];
     const events: { type: string; payload: Record<string, unknown> }[] = [];
     const tx = {
+      $queryRaw: vi.fn(async () => []),
       thread: { update: vi.fn().mockResolvedValue({ nextMessageSeq: 3, nextEventSeq: 5 }) },
       message: {
+        findUnique: vi.fn().mockResolvedValue(null),
+        findFirst: vi.fn().mockResolvedValue(userSpoke ? { id: "utterance-1" } : null),
         create: vi.fn(async ({ data }: { data: { blocks: unknown; clientNonce?: string } }) => {
           if (duplicateMarker) throw Object.assign(new Error("unique"), { code: "P2002" });
           created.push({ blocks: data.blocks, clientNonce: data.clientNonce });
@@ -3595,6 +4253,8 @@ describe("threads.endCall", () => {
           .fn()
           .mockResolvedValue({ id: "bot-1", thread: { id: "thread-1" }, computer: null }),
       },
+      // No bot-placed call behind this one: only the caller's own hang-up runs.
+      message: { findUnique: vi.fn().mockResolvedValue(null) },
       taughtSkill: { findFirst: vi.fn().mockResolvedValue(null) },
       $transaction: vi.fn(async (run: (client: typeof tx) => unknown) => run(tx)),
     } as unknown as PrismaClient;
@@ -3603,7 +4263,7 @@ describe("threads.endCall", () => {
       prisma,
       events: { notify: vi.fn().mockResolvedValue(undefined) },
       jobs: { enqueue },
-      env: { sandboxProvider: "fake" },
+      env: { sandboxProvider: "fake", phoneCallsEnabled: true },
     } as unknown as RouterDeps;
     const actor = {
       spaceId: "space-1",
@@ -3617,12 +4277,12 @@ describe("threads.endCall", () => {
       created,
       events,
       enqueue,
-      call: () =>
+      call: (extra: Record<string, unknown> = {}) =>
         handler.handle(
           new Request("http://127.0.0.1/rpc/threads/endCall", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ json: { botId: "bot-1", callId: "call-1" } }),
+            body: JSON.stringify({ json: { botId: "bot-1", callId: "call-1", ...extra } }),
           }),
           { prefix: "/rpc", context: { actor } },
         ),
@@ -3655,6 +4315,42 @@ describe("threads.endCall", () => {
     );
     expect(String(tx.run.create.mock.calls[0]?.[0]?.data?.clientNonce)).toMatch(/^call:call-1:/);
     expect(enqueue).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the connected time the caller reported on the card", async () => {
+    const { call, created } = fixture();
+    const { response } = await call({ durationSeconds: 83 });
+    expect(response.status).toBe(200);
+    expect(created[0]?.blocks).toEqual([
+      { kind: "voice_call", callId: "call-1", title: "", farewell: "", durationSeconds: 83 },
+    ]);
+  });
+
+  it("rejects a negative connected time", async () => {
+    const { call, created } = fixture();
+    const { response } = await call({ durationSeconds: -1 });
+    expect(response.status).toBe(400);
+    expect(created).toEqual([]);
+  });
+
+  it("is a no-op for a late hang-up with no user call utterance", async () => {
+    const { call, created, events, tx, enqueue } = fixture(false, false);
+    const { response } = await call();
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ json: { ok: true } });
+    expect(tx.message.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          threadId: "thread-1",
+          role: "user",
+          clientNonce: { startsWith: "call:call-1:" },
+        }),
+      }),
+    );
+    expect(created).toEqual([]);
+    expect(events).toEqual([]);
+    expect(tx.run.create).not.toHaveBeenCalled();
+    expect(enqueue).not.toHaveBeenCalled();
   });
 
   it("is a no-op when a concurrent hang-up already wrote the marker", async () => {
@@ -4073,5 +4769,154 @@ describe("link favicons", () => {
       code: "UNAUTHORIZED",
     });
     expect(favicon).not.toHaveBeenCalled();
+  });
+});
+
+describe("memory documents", () => {
+  const actor = { userId: "user-1", spaceId: "space-1", email: "user@anviq.test" };
+
+  function memoryClient(
+    doc: { id: string; path: string; scope: string; botId: string | null } | null,
+    session: typeof actor | null = actor,
+  ) {
+    const memoryDocument = { findFirst: vi.fn(async () => doc) };
+    const memory = { remove: vi.fn(async () => ({ removed: true })) };
+    const deps = {
+      prisma: { memoryDocument },
+      memory,
+      env: { webOrigin: "https://example.test" },
+    } as unknown as RouterDeps;
+    const client = createRouterClient(createRouter(deps), { context: { actor: session } as never });
+    return { client, memoryDocument, memory };
+  }
+
+  it("deletes a memory document owned by the caller through the memory store", async () => {
+    const { client, memoryDocument, memory } = memoryClient({
+      id: "doc-1",
+      path: "projects/retired.md",
+      scope: "bot",
+      botId: "bot-1",
+    });
+    await expect(client.memory.remove({ documentId: "doc-1" })).resolves.toEqual({ ok: true });
+    expect(memoryDocument.findFirst).toHaveBeenCalledWith({
+      where: { id: "doc-1", spaceId: "space-1", userId: "user-1" },
+    });
+    expect(memory.remove).toHaveBeenCalledWith(
+      { id: "doc-1", scope: "bot", botId: "bot-1", path: "projects/retired.md" },
+      expect.objectContaining({ spaceId: "space-1", userId: "user-1" }),
+    );
+  });
+
+  it("requires a session before looking up or deleting a document", async () => {
+    const { client, memoryDocument, memory } = memoryClient(null, null);
+    await expect(client.memory.remove({ documentId: "doc-1" })).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+    expect(memoryDocument.findFirst).not.toHaveBeenCalled();
+    expect(memory.remove).not.toHaveBeenCalled();
+  });
+
+  it("does not report success when the memory adapter fails", async () => {
+    const { client, memory } = memoryClient({
+      id: "doc-1",
+      path: "projects/retired.md",
+      scope: "user",
+      botId: null,
+    });
+    memory.remove.mockRejectedValueOnce(new Error("Memory unavailable"));
+    await expect(client.memory.remove({ documentId: "doc-1" })).rejects.toThrow(
+      "Memory unavailable",
+    );
+  });
+
+  it("keeps MEMORY.md and does not reach another user's document", async () => {
+    const index = memoryClient({ id: "doc-1", path: "MEMORY.md", scope: "user", botId: null });
+    await expect(index.client.memory.remove({ documentId: "doc-1" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
+    expect(index.memory.remove).not.toHaveBeenCalled();
+
+    const foreign = memoryClient(null);
+    await expect(foreign.client.memory.remove({ documentId: "doc-2" })).rejects.toBeTruthy();
+    expect(foreign.memory.remove).not.toHaveBeenCalled();
+  });
+});
+
+describe("routine watch creation boundaries", () => {
+  const actor = {
+    spaceId: "space-1",
+    userId: "user-1",
+    email: "user@anviq.test",
+    isDeploymentOwner: true,
+  } satisfies Actor;
+
+  function fixture() {
+    const create = vi.fn();
+    const update = vi.fn();
+    const findBot = vi.fn(async () => ({ id: "bot-1", computer: { scope: "team" } }));
+    const findRoutine = vi.fn(async () => ({
+      id: "routine-1",
+      botId: "bot-1",
+      crons: [],
+      watch: null,
+    }));
+    const client = createRouterClient(
+      createRouter({
+        prisma: {
+          bot: { findFirst: findBot },
+          routine: { findFirst: findRoutine, create, update },
+        },
+        env: { sandboxProvider: "fake" },
+      } as unknown as RouterDeps),
+      { context: { actor } as never },
+    );
+    return { client, create, update, findBot, findRoutine };
+  }
+
+  it("rejects team file escapes on create and update before writing", async () => {
+    const { client, create, update } = fixture();
+    const watch = { kind: "files" as const, paths: ["/etc"], everyMinutes: 5, loud: false };
+    await expect(
+      client.routines.create({ botId: "bot-1", name: "Check", prompt: "Check changes", watch }),
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: expect.stringContaining("inside the bot's folder"),
+    });
+    await expect(client.routines.update({ routineId: "routine-1", watch })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: expect.stringContaining("inside the bot's folder"),
+    });
+    expect(create).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("uses the owner boundary before creating or changing a command watch", async () => {
+    const { client, create, update, findBot, findRoutine } = fixture();
+    findBot.mockResolvedValueOnce(null as never);
+    const watch = {
+      kind: "command" as const,
+      command: "echo changed",
+      everyMinutes: 5,
+      loud: false,
+    };
+    await expect(
+      client.routines.create({ botId: "bot-1", name: "Check", prompt: "Check changes", watch }),
+    ).rejects.toBeDefined();
+    expect(findBot).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ spaceId: actor.spaceId, userId: actor.userId }),
+      }),
+    );
+    findRoutine.mockResolvedValueOnce(null as never);
+    await expect(client.routines.update({ routineId: "routine-1", watch })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    expect(findRoutine).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ spaceId: actor.spaceId, userId: actor.userId }),
+      }),
+    );
+    expect(create).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 });

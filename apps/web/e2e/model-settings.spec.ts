@@ -1,10 +1,91 @@
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { expect, test } from "@playwright/test";
-import { captureScreenshot, completeOnboarding, openUserSettings, rpc, signup } from "./helpers";
+import {
+  captureScreenshot,
+  chooseOption,
+  completeOnboarding,
+  openUserSettings,
+  rpc,
+  signup,
+} from "./helpers";
 
 const LOCAL_MODEL_ID = "anviq-e2e-local";
 const LOCAL_MODEL_REPLY = "OpenAI-compatible endpoint verified end to end.";
+
+test("model settings cleanup frames", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const stamp = Date.now();
+  await signup(page, `model-cleanup-${stamp}@anviq.test`, "password12", "Model Preview");
+  await completeOnboarding(page);
+
+  // Keep the account and persistence real; the scripted test runtime accepts fake keys.
+  // Hide the deployment default so the first frame exercises the empty-provider state.
+  let providerConnected = false;
+  await page.route("**/rpc/me", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as { json: Record<string, unknown> };
+    body.json.needsModel = !providerConnected;
+    await route.fulfill({ response, json: body });
+  });
+  await openUserSettings(page, "models");
+  await page.getByPlaceholder("Search providers").fill("openrouter");
+  await page.getByRole("button", { name: /^OpenRouter( |$)/ }).click();
+  const backups = page.getByTestId("model-backups");
+  await expect(backups.getByRole("heading", { name: "Backup models" })).toBeVisible();
+  await expect(backups.getByLabel("Add connected model")).toBeVisible();
+  await expect(page.getByLabel("API key")).toBeVisible();
+  await captureScreenshot(page, testInfo, "model-settings-cleanup-1-not-connected");
+
+  await page.getByLabel("API key").fill("fake-cleanup-api-key");
+  providerConnected = true;
+  await page.getByRole("button", { name: "Connect API key", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Disconnect", exact: true })).toBeVisible();
+  await expect(backups.getByRole("heading", { name: "Backup models" })).toBeVisible();
+  await expect(backups.getByLabel("Add connected model")).toBeVisible();
+  const model = page.getByRole("combobox", { name: "Model", exact: true });
+  await expect(model).toBeVisible();
+  await captureScreenshot(page, testInfo, "model-settings-cleanup-2-connected");
+
+  await model.click();
+  await expect(page.getByRole("listbox", { name: "Model options" })).toBeVisible();
+  await captureScreenshot(page, testInfo, "model-settings-cleanup-3-model-dropdown-open");
+
+  // The popup must paint above the settings scroll pane, including its lower edge.
+  const popup = page.locator('[data-slot="popover-content"]');
+  await expect(popup).toBeVisible();
+  expect(
+    await popup.evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.bottom - 2);
+      return hit !== null && element.contains(hit);
+    }),
+  ).toBe(true);
+  const search = page.getByRole("combobox", { name: "Search models" });
+  await expect(search).toBeFocused();
+  await search.fill("gpt");
+  const firstModel = await page
+    .getByRole("listbox", { name: "Model options" })
+    .getByRole("option")
+    .first()
+    .locator("span")
+    .first()
+    .innerText();
+  await search.press("Home");
+  await search.press("Enter");
+  await expect(model).toContainText(firstModel);
+  await expect(popup).toBeHidden();
+  await expect(model).toBeFocused();
+  await model.press("ArrowDown");
+  await expect(search).toBeFocused();
+  await search.press("Escape");
+  await expect(popup).toBeHidden();
+  await expect(model).toBeFocused();
+  await model.click();
+  await expect(search).toBeFocused();
+  await page.getByPlaceholder("Search providers").click();
+  await expect(popup).toBeHidden();
+});
 
 test("custom connections persist reasoning support and bot thinking", async ({
   page,
@@ -22,7 +103,7 @@ test("custom connections persist reasoning support and bot thinking", async ({
   await expect(page.getByRole("checkbox", { name: "Supports images" })).toBeHidden();
   await page.getByText("Advanced", { exact: true }).click();
   await page.getByRole("checkbox", { name: "Supports thinking" }).check();
-  await page.getByRole("combobox", { name: "Reasoning effort", exact: true }).selectOption("low");
+  await chooseOption(page.getByRole("combobox", { name: "Reasoning effort", exact: true }), "Low");
   await page.getByLabel("Maximum output tokens").fill("8192");
   await page.getByLabel("Context limit").fill("65536");
   await page.getByRole("checkbox", { name: "Supports images" }).check();
@@ -59,24 +140,28 @@ test("custom connections persist reasoning support and bot thinking", async ({
   await openUserSettings(page, "models");
   await page.getByText("Advanced", { exact: true }).click();
   await expect(page.getByRole("checkbox", { name: "Supports thinking" })).toBeChecked();
-  await expect(page.getByRole("combobox", { name: "Reasoning effort", exact: true })).toHaveValue(
-    "low",
+  await expect(page.getByRole("combobox", { name: "Reasoning effort", exact: true })).toHaveText(
+    "Low",
   );
   await expect(page.getByLabel("Maximum output tokens")).toHaveValue("8192");
   await expect(page.getByLabel("Context limit")).toHaveValue("65536");
   await expect(page.getByRole("checkbox", { name: "Supports images" })).toBeChecked();
   await expect(page.getByLabel("Maximum images per request")).toHaveValue("1");
   await page.getByLabel("Maximum images per request").fill("");
+  // "Default" is the empty option, so choosing it clears the saved level.
+  await chooseOption(
+    page.getByRole("combobox", { name: "Reasoning effort", exact: true }),
+    "Default",
+  );
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText("Saved.", { exact: true })).toBeVisible();
-  const clearedCredentials = await rpc<Array<{ modelId?: string; maxImagesPerPrompt?: number }>>(
-    page,
-    "models/credentials",
-    {},
-  );
-  expect(
-    clearedCredentials.find((entry) => entry.modelId === "arbitrary-model")?.maxImagesPerPrompt,
-  ).toBeUndefined();
+  const clearedCredentials = await rpc<
+    Array<{ modelId?: string; maxImagesPerPrompt?: number; thinkingLevel?: string | null }>
+  >(page, "models/credentials", {});
+  const cleared = clearedCredentials.find((entry) => entry.modelId === "arbitrary-model");
+  expect(cleared).toBeDefined();
+  expect(cleared?.maxImagesPerPrompt).toBeUndefined();
+  expect(cleared?.thinkingLevel ?? null).toBeNull();
   await page.getByRole("button", { name: "Close model settings" }).click();
   await page.locator("main").getByRole("button", { name: "Chief", exact: true }).click();
   const settings = page.getByTestId("bot-settings");
@@ -253,7 +338,7 @@ test("model settings connect, replace, and cancel provider authentication", asyn
   await page.getByLabel("Maximum output tokens").fill("8192");
   await captureScreenshot(page, testInfo, "builtin-provider-max-tokens");
   await page.getByRole("button", { name: "Connect API key" }).click();
-  await expect(page.getByText(/Connected and using Scripted runtime/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Disconnect", exact: true })).toBeVisible();
   const connected = await rpc<Array<{ provider: string; maxTokens?: number }>>(
     page,
     "models/credentials",
@@ -266,7 +351,7 @@ test("model settings connect, replace, and cancel provider authentication", asyn
     await page.getByText("Advanced", { exact: true }).click();
   }
   await outputLimit.fill("16384");
-  await page.getByRole("button", { name: "Save limits", exact: true }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText("Saved.", { exact: true })).toBeVisible();
   const updated = await rpc<Array<{ provider: string; maxTokens?: number }>>(
     page,
@@ -300,7 +385,9 @@ test("model settings connect, replace, and cancel provider authentication", asyn
 
   await page.getByLabel("Replace API key").fill("fake-scripted-key-two");
   await page.getByRole("button", { name: "Replace API key" }).click();
-  await expect(page.getByText(/Connected and using Scripted runtime/)).toBeVisible();
+  // A saved replacement clears the field and re-enables the controls.
+  await expect(page.getByLabel("Replace API key")).toHaveValue("");
+  await expect(page.getByRole("button", { name: "Disconnect", exact: true })).toBeEnabled();
 
   const codexCredential = {
     id: "cred-codex",
@@ -403,7 +490,7 @@ test("model settings connect, replace, and cancel provider authentication", asyn
     .first()
     .click();
   await page.getByRole("button", { name: /Sign in with ChatGPT Plus\/Pro/ }).click();
-  await expect(page.getByText(/Connected and using/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Disconnect", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign in again", exact: true })).toBeVisible();
 
   // Disconnect removes the credential and its Connected marker.
@@ -540,10 +627,10 @@ test("catalog models keep a space default thinking level per saved model", async
   await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toBeHidden();
 
   await providerSearch.fill("anthropic");
-  await page.getByRole("button", { name: /^Anthropic / }).click();
+  await page.getByRole("button", { name: /^Anthropic( |$)/ }).click();
   await page.getByLabel("API key").fill("fake-anthropic-key");
   await page.getByRole("button", { name: "Connect API key" }).click();
-  await expect(page.getByText(/Connected and using/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Disconnect", exact: true })).toBeVisible();
 
   const thinking = page.getByRole("combobox", { name: "Thinking", exact: true });
   await expect(thinking).toBeVisible();
@@ -566,7 +653,7 @@ test("catalog models keep a space default thinking level per saved model", async
   await page.reload();
   await openUserSettings(page, "models");
   await providerSearch.fill("anthropic");
-  await page.getByRole("button", { name: /^Anthropic / }).click();
+  await page.getByRole("button", { name: /^Anthropic( |$)/ }).click();
   await expect(page.getByRole("combobox", { name: "Thinking", exact: true })).toHaveValue("high");
 
   // The stored level is bound to the saved model: staging another model resets the

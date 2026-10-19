@@ -13,6 +13,8 @@ export const UI_APPEARANCE_STORAGE_KEY = "anviq.uiAppearance";
  */
 export type ColorTokens = {
   background: string;
+  /** Modals: a step lighter than the page so they read as raised above it. */
+  dialog: string;
   foreground: string;
   card: string;
   cardForeground: string;
@@ -43,6 +45,7 @@ export type ColorTokens = {
   faviconPlate: string;
   success: string;
   warning: string;
+  statusWorking: string;
   overlay: string;
   scrollbar: string;
   scrollbarHover: string;
@@ -50,6 +53,7 @@ export type ColorTokens = {
 
 export const darkTokens = {
   background: "#0B0C0E",
+  dialog: "#0E0F11",
   foreground: "#ECECEE",
   card: "#141518",
   cardForeground: "#ECECEE",
@@ -68,17 +72,18 @@ export const darkTokens = {
   destructive: "#EF4444",
   destructiveForeground: "#FFFFFF",
   border: "#1E2026",
-  input: "#18191E",
+  input: "#27292F",
   ring: "#3B82F6",
   sidebar: "#111215",
   sidebarForeground: "#ECECEE",
   sidebarBorder: "#1C1D22",
-  sidebarAccent: "#1A1B20",
+  sidebarAccent: "#222429",
   sidebarAccentForeground: "#ECECEE",
   link: "#3B82F6",
   faviconPlate: "#FFFFFF",
   success: "#4ECB71",
   warning: "#E9C46A",
+  statusWorking: "#3B82F6",
   overlay: "rgba(4, 4, 5, 0.72)",
   scrollbar: "#1E2026",
   scrollbarHover: "#2E313A",
@@ -86,6 +91,7 @@ export const darkTokens = {
 
 export const lightTokens = {
   background: "#FAFAF8",
+  dialog: "#FFFFFF",
   foreground: "#1A1A1A",
   card: "#FFFFFF",
   cardForeground: "#1A1A1A",
@@ -103,7 +109,7 @@ export const lightTokens = {
   accentForeground: "#1A1A1A",
   destructive: "#DC2626",
   destructiveForeground: "#FFFFFF",
-  border: "#F0F0ED",
+  border: "#DCDCD6",
   input: "#EAEAE6",
   ring: "#6C6C70",
   sidebar: "#ECECE9",
@@ -115,6 +121,7 @@ export const lightTokens = {
   faviconPlate: "#FFFFFF",
   success: "#228B3B",
   warning: "#B7791F",
+  statusWorking: "#2563EB",
   overlay: "rgba(20, 20, 22, 0.45)",
   scrollbar: "#C8C8C4",
   scrollbarHover: "#A8A8A4",

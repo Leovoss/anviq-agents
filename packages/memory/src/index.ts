@@ -3,6 +3,7 @@ import type {
   MemoryCommitRequest,
   MemoryExportRequest,
   MemoryReadRequest,
+  MemoryRemoveRequest,
   MemoryRevision,
   MemorySearchRequest,
   MemorySearchResult,
@@ -11,7 +12,8 @@ import type {
   PortableFile,
 } from "@anviq/adapter-kit";
 import { MEMORY_REVISION_CONFLICT_ERROR } from "@anviq/adapter-kit";
-import { Prisma, type PrismaClient, withTransactionRetry } from "@anviq/db";
+import type { PrismaClient } from "@anviq/db";
+import { Prisma, withTransactionRetry } from "@anviq/db";
 
 export class MarkdownMemoryStore implements MemoryStore {
   constructor(private readonly prisma: PrismaClient) {}
@@ -117,6 +119,24 @@ export class MarkdownMemoryStore implements MemoryStore {
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       ),
     );
+  }
+
+  async remove(
+    request: MemoryRemoveRequest,
+    context: AdapterContext,
+  ): Promise<{ removed: boolean }> {
+    // Revisions cascade with the document row.
+    const { count } = await this.prisma.memoryDocument.deleteMany({
+      where: {
+        ...(request.id ? { id: request.id } : {}),
+        spaceId: context.spaceId,
+        userId: context.userId,
+        scope: request.scope,
+        botId: request.botId ?? null,
+        path: request.path,
+      },
+    });
+    return { removed: count > 0 };
   }
 
   async *exportMarkdown(

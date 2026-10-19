@@ -27,7 +27,8 @@
     "dev": {
       "cache": false,
       "env": ["PUBLIC_POSTHOG_HOST", "PUBLIC_POSTHOG_KEY"],
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": ["ANVIQ_HOST", "ANVIQ_DEV_HOST", "ANVIQ_ALLOWED_HOSTS"]
     }
   }
 }

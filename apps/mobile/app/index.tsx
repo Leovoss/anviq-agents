@@ -5,24 +5,37 @@ import { botColors } from "@anviq/ui-tokens";
 import { MenuView } from "@expo/ui/community/menu";
 import { Redirect, useFocusEffect, useNavigation, useRouter } from "expo-router";
 import type { ReactNode } from "react";
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   ActivityIndicator,
   Alert,
   AppState,
   FlatList,
+  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { KeyboardController } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BotAvatar } from "../components/bot-avatar";
+import type { BotOrganizationUpdate } from "../components/bot-organize-modal";
 import { BotOrganizeModal } from "../components/bot-organize-modal";
 import { GroupAvatar } from "../components/group-avatar";
+import { InboxSwipeRow } from "../components/inbox-swipe-row";
 import { NativeSymbol } from "../components/native-symbol";
 import { WorkingIndicator } from "../components/WorkingIndicator";
 import {
@@ -31,6 +44,7 @@ import {
   formatActivityRelativeTime,
 } from "../lib/activity";
 import { loadActivityMode, saveActivityMode } from "../lib/activity-mode";
+import { readableGutter } from "../lib/adaptive-layout";
 import type {
   MobileBot,
   MobileBotSection,
@@ -40,6 +54,7 @@ import type {
   MobileSpaceNavigation,
 } from "../lib/api";
 import {
+  captureApiRequestContext,
   currentApiBase,
   loadSessionToken,
   rpc,
@@ -49,6 +64,7 @@ import {
 } from "../lib/api";
 import { mobileTokens, resolveMobileAppearance } from "../lib/appearance";
 import { mobileBotAvatarPresentation } from "../lib/bot-avatar";
+import { confirmDeleteSection } from "../lib/confirm-delete-section";
 import { allowFocusPrompt, scheduleFocusPrompt } from "../lib/focus-prompt";
 import { t, useI18n } from "../lib/i18n";
 import { botTag, filterBots, formatThreadTime, userInitials } from "../lib/inbox";
@@ -62,17 +78,36 @@ import {
   selectInboxSpace,
   spaceInboxItems,
 } from "../lib/inbox-spaces";
+import type { InboxChatKind, InboxRowAction } from "../lib/inbox-swipe";
+import {
+  applyUnreadOverrides,
+  chatTarget,
+  createLatestQueue,
+  INBOX_ROW_ACTIONS,
+  inboxRowActionList,
+  unreadOverrideKey,
+} from "../lib/inbox-swipe";
 import { dismissThreadNotifications, resumeLiveNotifications } from "../lib/live-notifications";
 import { native, useThemedStyles } from "../lib/native";
 import { iosAtLeast } from "../lib/native-controls";
 import { previewSnippet } from "../lib/preview";
 import { registerPushToken } from "../lib/push";
+import { loadSavedInbox, saveInbox } from "../lib/saved-chats";
 import { querySpaceSearch } from "../lib/search";
 import { mobileSearchDestination } from "../lib/search-destination";
 import { dedupeSearchHits, searchHitListKey, searchHitRowPreview } from "../lib/search-list";
+import { promptSectionName } from "../lib/section-name-prompt";
+import {
+  currentReadySessionGeneration,
+  currentSessionGeneration,
+  subscribeSessionGeneration,
+} from "../lib/session";
 import { errorText } from "../lib/user-error";
 
 const FALLBACK_COLOR = botColors[3];
+// Swipe actions and the context menu are iOS list behaviour; other platforms keep the long-press
+// sheet.
+const SWIPE_ROWS = Platform.OS === "ios";
 
 type InboxItem = InboxSpaceItem | { type: "search"; hit: SearchHit };
 
@@ -84,7 +119,13 @@ async function openMobileSpace(spaceId: string | undefined, open: () => void) {
   open();
 }
 
-export default function Home() {
+export default function HomeSession() {
+  const generation = useSyncExternalStore(subscribeSessionGeneration, currentSessionGeneration);
+  const ready = useSyncExternalStore(subscribeSessionGeneration, currentReadySessionGeneration);
+  return <Home key={`${generation}:${ready}`} />;
+}
+
+function Home() {
   const tokens = mobileTokens();
   const appearance = resolveMobileAppearance();
   const styles = useThemedStyles(createHomeStyles);
@@ -115,7 +156,7 @@ export default function Home() {
   const [groups, setGroups] = useState<MobileGroup[]>([]);
   const [botSections, setBotSections] = useState<MobileBotSection[]>([]);
   const [spaces, setSpaces] = useState<MobileSpace[]>([]);
-  const [me, setMe] = useState<MobileMe | null>(null);
+  const [me, setMe] = useState<Pick<MobileMe, "userId" | "spaceId" | "name"> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [hasSession, setHasSession] = useState(false);
@@ -124,6 +165,9 @@ export default function Home() {
   const [searching, setSearching] = useState(false);
   const [searchHits, setSearchHits] = useState<SearchHit[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [unreadOverrides, setUnreadOverrides] = useState<ReadonlyMap<string, boolean>>(
+    () => new Map(),
+  );
   const [organizeTarget, setOrganizeTarget] = useState<{
     kind: "bot" | "group";
     id: string;
@@ -135,6 +179,7 @@ export default function Home() {
   });
   const activityRequestId = useRef(0);
   const inboxRequestId = useRef(0);
+  const inboxLoaded = useRef(false);
   const creatingBotRef = useRef(false);
   const spaceActionRef = useRef<{ busy: boolean; recoveryId: string | null }>({
     busy: false,
@@ -167,24 +212,53 @@ export default function Home() {
   const loadBots = useCallback(async () => {
     if (spaceActionRef.current.busy || spaceActionRef.current.recoveryId) return;
     const requestId = ++inboxRequestId.current;
+    const apiBase = currentApiBase();
+    const generation = currentSessionGeneration();
     setError(null);
     try {
       const [navigation, nextMe] = await Promise.all([
         rpc<MobileSpaceNavigation>("spaces/list"),
         rpc<MobileMe>("me"),
       ]);
-      if (requestId !== inboxRequestId.current) return;
+      if (
+        requestId !== inboxRequestId.current ||
+        generation !== currentSessionGeneration() ||
+        apiBase !== currentApiBase()
+      )
+        return;
       if (!(await selectInitialSpace(nextMe.spaceId))) {
         throw new Error(t("Could not save the default space"));
       }
-      if (requestId !== inboxRequestId.current) return;
+      if (
+        requestId !== inboxRequestId.current ||
+        generation !== currentSessionGeneration() ||
+        apiBase !== currentApiBase()
+      )
+        return;
       setBots((current) => retainInboxValue(current, navigation.current.bots));
       setBotSections((current) => retainInboxValue(current, navigation.current.botSections));
       setGroups((current) => retainInboxValue(current, navigation.current.groups));
       setSpaces((current) => retainInboxValue(current, navigation.spaces));
       setMe((current) => retainInboxValue(current, nextMe));
+      inboxLoaded.current = true;
+      saveInbox(
+        {
+          apiBase,
+          userId: nextMe.userId,
+          spaceId: navigation.current.id,
+          sessionGeneration: generation,
+          selectionId: selectedSpaceId(),
+        },
+        navigation,
+        nextMe,
+      );
     } catch (err) {
-      if (requestId !== inboxRequestId.current) return;
+      if (
+        requestId !== inboxRequestId.current ||
+        generation !== currentSessionGeneration() ||
+        apiBase !== currentApiBase()
+      )
+        return;
       setError(errorText(err, t("Could not load bots")));
     }
   }, []);
@@ -208,6 +282,23 @@ export default function Home() {
   useEffect(() => {
     if (!hasSession) return;
     void registerPushToken().catch(() => undefined);
+  }, [hasSession]);
+
+  // Show the inbox saved on this device until the first live load replaces it.
+  useEffect(() => {
+    if (!hasSession) return;
+    let cancelled = false;
+    void loadSavedInbox().then((saved) => {
+      if (cancelled || !saved || inboxLoaded.current) return;
+      setBots(saved.bots);
+      setBotSections(saved.botSections);
+      setGroups(saved.groups);
+      setSpaces(saved.spaces);
+      setMe(saved.me);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [hasSession]);
 
   useFocusEffect(
@@ -294,14 +385,16 @@ export default function Home() {
     };
   }, [query, searching]);
 
-  const visible = useMemo(() => filterBots(bots, query), [bots, query]);
+  const visible = useMemo(
+    () => filterBots(applyUnreadOverrides("bot", bots, unreadOverrides), query),
+    [bots, query, unreadOverrides],
+  );
   const visibleGroups = useMemo(() => {
+    const shown = applyUnreadOverrides("group", groups, unreadOverrides);
     const needle = query.trim().toLowerCase();
-    if (!needle) return groups;
-    return groups.filter((group) =>
-      `${group.name} ${group.preview}`.toLowerCase().includes(needle),
-    );
-  }, [groups, query]);
+    if (!needle) return shown;
+    return shown.filter((group) => `${group.name} ${group.preview}`.toLowerCase().includes(needle));
+  }, [groups, query, unreadOverrides]);
   const listData = useMemo((): InboxItem[] => {
     if (query.trim() && searching) {
       return dedupeSearchHits(searchHits).map((hit) => ({ type: "search" as const, hit }));
@@ -334,7 +427,7 @@ export default function Home() {
               },
             ]
           : [];
-    return spaceInboxItems(sidebarSpaces, collapsedRosterParents);
+    return spaceInboxItems(sidebarSpaces, collapsedRosterParents, me?.spaceId);
   }, [
     botSections,
     collapsedRosterParents,
@@ -354,6 +447,11 @@ export default function Home() {
       : groups.find((group) => group.id === organizeTarget.id)
     : null;
   const insets = useSafeAreaInsets();
+  // An unfolded or tablet window keeps the inbox in a centred column.
+  const columnInset = readableGutter(
+    useWindowDimensions().width,
+    Math.max(insets.left, insets.right),
+  );
   // Liquid Glass uses the native bar: glass bar items, a native menu, and bottom search.
   const nativeHeader = iosAtLeast(26);
   const navigation = useNavigation();
@@ -491,6 +589,19 @@ export default function Home() {
     [createQuickBot, router],
   );
 
+  const openCreateChooser = useCallback(() => {
+    Alert.alert(
+      t("Create"),
+      undefined,
+      [
+        { text: t("New bot"), onPress: () => runCreateAction("bot") },
+        { text: t("New group"), onPress: () => runCreateAction("group") },
+        { text: t("New space"), onPress: () => runCreateAction("space") },
+      ],
+      { cancelable: true },
+    );
+  }, [runCreateAction, t]);
+
   useLayoutEffect(() => {
     if (!nativeHeader) return;
     const signedIn = ready && hasSession;
@@ -610,6 +721,168 @@ export default function Home() {
   const organizeGroup = useCallback((group: MobileGroup | SpaceGroup) => {
     setOrganizeTarget({ kind: "group", id: group.id });
   }, []);
+  // One path for the long-press sheet and the swipe actions.
+  const [sendReadState] = useState(() => createLatestQueue<boolean>());
+  const updateChat = useCallback(
+    async (
+      kind: InboxChatKind,
+      chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup,
+      update: BotOrganizationUpdate,
+    ) => {
+      await rpc(`${kind}s/update`, { ...chatTarget(kind, chat.id), ...update });
+      if (kind === "bot" && update.notifyOnFinish !== undefined) {
+        await resumeLiveNotifications(
+          currentApiBase(),
+          await loadSessionToken(),
+          selectedSpaceId() ?? "",
+        ).catch(() => undefined);
+        if (!update.notifyOnFinish && "threadId" in chat) {
+          await dismissThreadNotifications({ threadId: chat.threadId }).catch(() => undefined);
+        }
+      }
+      await loadBots();
+    },
+    [loadBots],
+  );
+  const runRowAction = useCallback(
+    async (
+      kind: InboxChatKind,
+      chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup,
+      action: InboxRowAction,
+    ) => {
+      if (action === "read" || action === "unread") {
+        const key = unreadOverrideKey(kind, chat.id);
+        // Queued changes belong to the session and Space the chat was swiped in.
+        const spaceId = selectedSpaceId();
+        const session = currentSessionGeneration();
+        setUnreadOverrides((current) => new Map(current).set(key, action === "unread"));
+        await sendReadState(
+          key,
+          action === "unread",
+          async (unread) => {
+            const context = await captureApiRequestContext();
+            if (context.sessionGeneration !== session) return;
+            const headers = { ...context.headers };
+            if (spaceId) headers["x-anviq-space-id"] = spaceId;
+            else delete headers["x-anviq-space-id"];
+            await rpc(
+              unread ? "threads/markUnread" : "threads/markRead",
+              chatTarget(kind, chat.id),
+              { requestContext: { ...context, headers } },
+            );
+            const mark = <T extends { id: string; unread: boolean }>(chats: T[]) =>
+              chats.map((item) => (item.id === chat.id ? { ...item, unread } : item));
+            if (kind === "bot") setBots(mark);
+            else setGroups(mark);
+            await loadBots();
+          },
+          // The override stays until the last queued change for this chat is done.
+          () =>
+            setUnreadOverrides((current) => {
+              const next = new Map(current);
+              next.delete(key);
+              return next;
+            }),
+        ).catch((err) => {
+          // A change from a session that has since ended is dropped quietly.
+          if (session !== currentSessionGeneration()) return;
+          Alert.alert(t("Could not update chat"), errorText(err, t("Try again.")));
+        });
+        return;
+      }
+      if (action === "archive") {
+        try {
+          await rpc(`${kind}s/archive`, chatTarget(kind, chat.id));
+        } catch (err) {
+          Alert.alert(
+            kind === "bot" ? t("Could not archive bot") : t("Could not update chat"),
+            errorText(err, t("Try again.")),
+          );
+        }
+        await loadBots();
+        return;
+      }
+      await updateChat(kind, chat, { pinned: action === "pin" }).catch((err) =>
+        Alert.alert(t("Could not update chat"), errorText(err, t("Try again."))),
+      );
+    },
+    [loadBots, sendReadState, t, updateChat],
+  );
+  const botAction = useCallback(
+    (action: InboxRowAction, bot: MobileBot | SpaceBot) => void runRowAction("bot", bot, action),
+    [runRowAction],
+  );
+  const groupAction = useCallback(
+    (action: InboxRowAction, group: MobileGroup | SpaceGroup) =>
+      void runRowAction("group", group, action),
+    [runRowAction],
+  );
+  const createSection = useCallback(
+    async (kind: InboxChatKind, chatId: string, name: string) => {
+      await rpc("botSections/create", { [`${kind}Id`]: chatId, name });
+      await loadBots();
+    },
+    [loadBots],
+  );
+  const renameSection = useCallback(
+    async (sectionId: string, name: string) => {
+      await rpc("botSections/update", { sectionId, name });
+      await loadBots();
+    },
+    [loadBots],
+  );
+  // The iOS row menu changes the chat in place, so failures use the native alert.
+  const organizeFromMenu = useCallback(
+    (
+      kind: InboxChatKind,
+      chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup,
+      update: BotOrganizationUpdate,
+    ) =>
+      void updateChat(kind, chat, update).catch((err) =>
+        Alert.alert(t("Could not update chat"), errorText(err, t("Try again."))),
+      ),
+    [t, updateChat],
+  );
+  const editSectionFromMenu = useCallback(
+    (
+      kind: InboxChatKind,
+      chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup,
+      mode: "create" | "rename",
+    ) => {
+      const current =
+        mode === "rename" ? botSections.find((section) => section.id === chat.sectionId) : null;
+      if (mode === "rename" && !current) return;
+      promptSectionName({
+        title: current ? t("Rename section") : t("New section"),
+        cancelLabel: t("Cancel"),
+        submitLabel: current ? t("Save") : t("Create"),
+        defaultValue: current?.name,
+        onSubmit: (name) =>
+          void (
+            current ? renameSection(current.id, name) : createSection(kind, chat.id, name)
+          ).catch((err) =>
+            Alert.alert(t("Could not update chat"), errorText(err, t("Try again."))),
+          ),
+      });
+    },
+    [botSections, createSection, renameSection, t],
+  );
+
+  const deleteSection = useCallback(
+    (section: { id: string; name: string }) => {
+      confirmDeleteSection(section, t, () => {
+        void (async () => {
+          try {
+            await rpc("botSections/remove", { sectionId: section.id });
+            await loadBots();
+          } catch (err) {
+            Alert.alert(t("Could not delete section"), errorText(err, t("Try again.")));
+          }
+        })();
+      });
+    },
+    [loadBots, t],
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: InboxItem }) =>
@@ -659,14 +932,46 @@ export default function Home() {
             ) : null}
           </View>
         ) : (
-          <Text style={styles.sectionHeading}>{item.title}</Text>
+          <View style={styles.sectionHeadingRow}>
+            <Text style={[styles.sectionHeading, { flex: 1 }]}>{item.title}</Text>
+            {item.sectionId ? (
+              <MenuView
+                actions={[
+                  {
+                    id: "delete",
+                    title: t("Delete section"),
+                    image: "trash",
+                    attributes: { destructive: true },
+                  },
+                ]}
+                colorScheme={appearance}
+                onPressAction={() => {
+                  if (item.sectionId) deleteSection({ id: item.sectionId, name: item.title });
+                }}
+              >
+                <View
+                  accessibilityLabel={t("Section actions for {name}", { name: item.title })}
+                  accessibilityRole="button"
+                  style={styles.spaceActions}
+                >
+                  <NativeSymbol ios="ellipsis" android="ellipsis-horizontal" size={20} />
+                </View>
+              </MenuView>
+            ) : null}
+          </View>
         )
       ) : item.type === "group" ? (
         <GroupRow
           group={item.group}
           day={day}
           onPress={openGroup}
-          onLongPress={item.group.spaceId === me?.spaceId ? organizeGroup : undefined}
+          onLongPress={
+            !SWIPE_ROWS && item.group.spaceId === me?.spaceId ? organizeGroup : undefined
+          }
+          onAction={SWIPE_ROWS && item.group.spaceId === me?.spaceId ? groupAction : undefined}
+          sections={botSections}
+          onOrganize={organizeFromMenu}
+          onEditSection={editSectionFromMenu}
         />
       ) : (
         <BotRow
@@ -677,20 +982,30 @@ export default function Home() {
           collapsed={collapsedRosterParents.has(item.bot.id)}
           onToggleChildren={toggleRosterParent}
           onPress={openBot}
-          onLongPress={item.bot.spaceId === me?.spaceId ? organizeBot : undefined}
+          onLongPress={!SWIPE_ROWS && item.bot.spaceId === me?.spaceId ? organizeBot : undefined}
+          onAction={SWIPE_ROWS && item.bot.spaceId === me?.spaceId ? botAction : undefined}
+          sections={botSections}
+          onOrganize={organizeFromMenu}
+          onEditSection={editSectionFromMenu}
         />
       ),
     [
       appearance,
+      botAction,
+      botSections,
       chooseInboxSpace,
       collapsedRosterParents,
       confirmDeleteSpace,
+      deleteSection,
       day,
+      editSectionFromMenu,
+      groupAction,
       me?.spaceId,
       openBot,
       openGroup,
       openSearchHit,
       organizeBot,
+      organizeFromMenu,
       organizeGroup,
       spaceBusy,
       spaceRecoveryId,
@@ -712,7 +1027,15 @@ export default function Home() {
   return (
     <View style={styles.screen}>
       {nativeHeader ? null : (
-        <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) + 8 }]}>
+        <View
+          style={[
+            styles.header,
+            {
+              paddingTop: Math.max(insets.top, 20) + 8,
+              paddingHorizontal: 16 + columnInset,
+            },
+          ]}
+        >
           <View style={styles.circleButton}>
             <HeaderButton accessibilityLabel={t("Account")} onPress={() => router.push("/account")}>
               <Text style={styles.profileInitials}>{initials}</Text>
@@ -750,28 +1073,36 @@ export default function Home() {
             >
               <NativeSymbol ios="square.stack.3d.up" android="layers-outline" size={17} />
             </HeaderButton>
-            <MenuView
-              actions={[
-                { id: "bot", title: t("New bot"), image: "person.crop.circle.badge.plus" },
-                { id: "group", title: t("New group"), image: "person.2" },
-                { id: "space", title: t("New space"), image: "square.grid.2x2" },
-              ]}
-              colorScheme={appearance}
-              onPressAction={({ nativeEvent }) => {
-                const action = nativeEvent.event;
-                if (action === "bot" || action === "group" || action === "space") {
-                  runCreateAction(action);
-                }
-              }}
-            >
-              <View
-                accessibilityLabel={t("Create")}
-                accessibilityRole="button"
-                style={styles.headerButton}
-              >
+            {Platform.OS === "android" ? (
+              // A plain button: the native Android menu trigger collapses to zero width when the
+              // installed app binary is older than the JS update, which hid the only way to create.
+              <HeaderButton accessibilityLabel={t("Create")} onPress={openCreateChooser}>
                 <NativeSymbol ios="plus" android="add" size={18} />
-              </View>
-            </MenuView>
+              </HeaderButton>
+            ) : (
+              <MenuView
+                actions={[
+                  { id: "bot", title: t("New bot"), image: "person.crop.circle.badge.plus" },
+                  { id: "group", title: t("New group"), image: "person.2" },
+                  { id: "space", title: t("New space"), image: "square.grid.2x2" },
+                ]}
+                colorScheme={appearance}
+                onPressAction={({ nativeEvent }) => {
+                  const action = nativeEvent.event;
+                  if (action === "bot" || action === "group" || action === "space") {
+                    runCreateAction(action);
+                  }
+                }}
+              >
+                <View
+                  accessibilityLabel={t("Create")}
+                  accessibilityRole="button"
+                  style={styles.headerButton}
+                >
+                  <NativeSymbol ios="plus" android="add" size={18} />
+                </View>
+              </MenuView>
+            )}
           </View>
         </View>
       )}
@@ -790,6 +1121,7 @@ export default function Home() {
         indicatorStyle={appearance === "dark" ? "white" : "black"}
         contentContainerStyle={[
           styles.list,
+          { paddingHorizontal: columnInset },
           // iOS moves the active search bar to the bottom and removes the navigation inset.
           nativeHeader && searching ? { paddingTop: insets.top + 12 } : undefined,
         ]}
@@ -853,7 +1185,10 @@ export default function Home() {
                 ? t("No matching bots")
                 : searching
                   ? t("Search conversations, files, and routines")
-                  : t("Tap + to create a bot")}
+                  : // Before any load (an offline launch with nothing saved) the bots are unknown.
+                    me
+                    ? t("Tap + to create a bot")
+                    : null}
           </Text>
         }
         ListFooterComponent={
@@ -868,34 +1203,11 @@ export default function Home() {
           bot={organizeChat}
           sections={botSections}
           onClose={() => setOrganizeTarget(null)}
-          onUpdate={async (update) => {
-            await rpc(`${organizeTarget.kind}s/update`, {
-              [`${organizeTarget.kind}Id`]: organizeChat.id,
-              ...update,
-            });
-            if (organizeTarget.kind === "bot" && update.notifyOnFinish !== undefined) {
-              await resumeLiveNotifications(
-                currentApiBase(),
-                await loadSessionToken(),
-                selectedSpaceId() ?? "",
-              ).catch(() => undefined);
-              if (!update.notifyOnFinish && "threadId" in organizeChat) {
-                await dismissThreadNotifications({ threadId: organizeChat.threadId }).catch(
-                  () => undefined,
-                );
-              }
-            }
-            await loadBots();
-          }}
-          onCreateSection={async (name) => {
-            await rpc("botSections/create", {
-              [`${organizeTarget.kind}Id`]: organizeChat.id,
-              name,
-            });
-            await loadBots();
-          }}
-          onRenameSection={async (sectionId, name) => {
-            await rpc("botSections/update", { sectionId, name });
+          onUpdate={(update) => updateChat(organizeTarget.kind, organizeChat, update)}
+          onCreateSection={(name) => createSection(organizeTarget.kind, organizeChat.id, name)}
+          onRenameSection={renameSection}
+          onDeleteSection={async (sectionId) => {
+            await rpc("botSections/remove", { sectionId });
             await loadBots();
           }}
         />
@@ -1000,6 +1312,8 @@ function ConversationRow({
   onToggleChildren,
   onPress,
   onLongPress,
+  actions = [],
+  onAction,
   accessibilityLabel,
   accessibilityHint,
 }: {
@@ -1016,6 +1330,8 @@ function ConversationRow({
   onToggleChildren?: () => void;
   onPress: () => void;
   onLongPress?: () => void;
+  actions?: InboxRowAction[];
+  onAction?: (action: InboxRowAction) => void;
   accessibilityLabel: string;
   accessibilityHint?: string;
 }) {
@@ -1024,18 +1340,24 @@ function ConversationRow({
   const toggleLabel = collapsed
     ? t("Expand {name}", { name: title })
     : t("Collapse {name}", { name: title });
+  const rowActions = [
+    ...(hasChildren ? [{ name: "toggleChildren", label: toggleLabel }] : []),
+    ...actions.map((action) => ({ name: action, label: t(INBOX_ROW_ACTIONS[action].label) })),
+  ];
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
-      // Screen readers treat the row as one element, so the chevron is offered as a row action.
+      // Screen readers treat the row as one element, so the chevron and swipe actions are offered
+      // as row actions.
       accessibilityState={hasChildren ? { expanded: !collapsed } : undefined}
-      accessibilityActions={
-        hasChildren ? [{ name: "toggleChildren", label: toggleLabel }] : undefined
-      }
+      accessibilityActions={rowActions.length > 0 ? rowActions : undefined}
       onAccessibilityAction={(event) => {
-        if (event.nativeEvent.actionName === "toggleChildren") onToggleChildren?.();
+        const name = event.nativeEvent.actionName;
+        const action = actions.find((item) => item === name);
+        if (name === "toggleChildren") onToggleChildren?.();
+        else if (action) onAction?.(action);
       }}
       onPress={onPress}
       onLongPress={onLongPress}
@@ -1150,6 +1472,21 @@ const SearchRow = memo(function SearchRow({
   );
 });
 
+/** What the iOS row menu needs to organize a chat in place. */
+type RowMenuProps = {
+  sections: readonly MobileBotSection[];
+  onOrganize: (
+    kind: InboxChatKind,
+    chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup,
+    update: BotOrganizationUpdate,
+  ) => void;
+  onEditSection: (
+    kind: InboxChatKind,
+    chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup,
+    mode: "create" | "rename",
+  ) => void;
+};
+
 const BotRow = memo(function BotRow({
   bot,
   day,
@@ -1159,6 +1496,10 @@ const BotRow = memo(function BotRow({
   onToggleChildren,
   onPress,
   onLongPress,
+  onAction,
+  sections,
+  onOrganize,
+  onEditSection,
 }: {
   bot: MobileBot | SpaceBot;
   day: number;
@@ -1168,7 +1509,8 @@ const BotRow = memo(function BotRow({
   onToggleChildren?: (botId: string) => void;
   onPress: (bot: MobileBot | SpaceBot) => void;
   onLongPress?: (bot: MobileBot | SpaceBot) => void;
-}) {
+  onAction?: (action: InboxRowAction, bot: MobileBot | SpaceBot) => void;
+} & RowMenuProps) {
   const { t } = useI18n();
   const preview = previewSnippet(bot.preview, 40) || bot.title || t("No messages yet");
   const time = bot.updatedAt ? formatThreadTime(bot.updatedAt, new Date(day)) : "";
@@ -1183,14 +1525,15 @@ const BotRow = memo(function BotRow({
     bot.name,
     tag,
     working ? t("Working…") : null,
-    bot.notifyOnFinish ? null : t("notifications silenced"),
+    bot.notifyOnFinish === false ? t("notifications silenced") : null,
     bot.unread ? t("unread") : null,
     time,
     preview,
   ]
     .filter(Boolean)
     .join(", ");
-  return (
+  const runAction = (action: InboxRowAction) => onAction?.(action, bot);
+  const row = (
     <ConversationRow
       title={bot.name}
       preview={preview}
@@ -1203,20 +1546,44 @@ const BotRow = memo(function BotRow({
       onToggleChildren={onToggleChildren ? () => onToggleChildren(bot.id) : undefined}
       accessibilityLabel={label}
       accessibilityHint={
-        onLongPress ? t("Long press to pin, move, or silence notifications") : undefined
+        onLongPress || onAction ? t("Long press to pin, move, or silence notifications") : undefined
       }
       onPress={() => onPress(bot)}
       onLongPress={onLongPress ? () => onLongPress(bot) : undefined}
+      actions={onAction ? inboxRowActionList(bot) : undefined}
+      onAction={runAction}
       indicator={working ? <WorkingIndicator compact tint={tint} /> : null}
       avatar={
         <BotAvatar
           color={bot.color || FALLBACK_COLOR}
           identity={bot.id}
           status={bot.status}
-          muted={!bot.notifyOnFinish}
+          muted={bot.notifyOnFinish === false}
         />
       }
     />
+  );
+  return onAction ? (
+    <InboxSwipeRow
+      rowKey={`bot:${bot.id}`}
+      unread={bot.unread}
+      pinned={bot.pinned}
+      notifyOnFinish={bot.notifyOnFinish}
+      sectionId={bot.sectionId}
+      sections={sections}
+      preview={{
+        title: bot.name,
+        message: bot.preview,
+        avatar: <BotAvatar color={bot.color || FALLBACK_COLOR} identity={bot.id} size={32} />,
+      }}
+      onAction={runAction}
+      onOrganize={(update) => onOrganize("bot", bot, update)}
+      onEditSection={(mode) => onEditSection("bot", bot, mode)}
+    >
+      {row}
+    </InboxSwipeRow>
+  ) : (
+    row
   );
 });
 
@@ -1225,17 +1592,23 @@ const GroupRow = memo(function GroupRow({
   day,
   onPress,
   onLongPress,
+  onAction,
+  sections,
+  onOrganize,
+  onEditSection,
 }: {
   group: MobileGroup | SpaceGroup;
   day: number;
   onPress: (group: MobileGroup | SpaceGroup) => void;
   onLongPress?: (group: MobileGroup | SpaceGroup) => void;
-}) {
+  onAction?: (action: InboxRowAction, group: MobileGroup | SpaceGroup) => void;
+} & RowMenuProps) {
   const { t } = useI18n();
   const preview =
     previewSnippet(group.preview, 40) || group.members.map((member) => member.name).join(", ");
   const time = group.updatedAt ? formatThreadTime(group.updatedAt, new Date(day)) : "";
-  return (
+  const runAction = (action: InboxRowAction) => onAction?.(action, group);
+  const row = (
     <ConversationRow
       title={group.name}
       preview={preview}
@@ -1244,11 +1617,36 @@ const GroupRow = memo(function GroupRow({
       accessibilityLabel={[group.name, group.unread ? t("unread") : null, time, preview]
         .filter(Boolean)
         .join(", ")}
-      accessibilityHint={onLongPress ? t("Long press to pin or move to a section") : undefined}
+      accessibilityHint={
+        onLongPress || onAction ? t("Long press to pin or move to a section") : undefined
+      }
       onPress={() => onPress(group)}
       onLongPress={onLongPress ? () => onLongPress(group) : undefined}
+      actions={onAction ? inboxRowActionList(group) : undefined}
+      onAction={runAction}
       avatar={<GroupAvatar members={group.members} size={54} />}
     />
+  );
+  return onAction ? (
+    <InboxSwipeRow
+      rowKey={`group:${group.id}`}
+      unread={group.unread}
+      pinned={group.pinned}
+      sectionId={group.sectionId}
+      sections={sections}
+      preview={{
+        title: group.name,
+        message: group.preview,
+        avatar: <GroupAvatar members={group.members} size={32} />,
+      }}
+      onAction={runAction}
+      onOrganize={(update) => onOrganize("group", group, update)}
+      onEditSection={(mode) => onEditSection("group", group, mode)}
+    >
+      {row}
+    </InboxSwipeRow>
+  ) : (
+    row
   );
 });
 
@@ -1440,6 +1838,7 @@ function createHomeStyles() {
       paddingHorizontal: 20,
       justifyContent: "center",
     },
+    sectionHeadingRow: { flexDirection: "row", alignItems: "center", paddingRight: 16 },
     sectionHeading: {
       color: native.secondaryLabel,
       fontSize: 14,

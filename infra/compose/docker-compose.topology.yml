@@ -33,6 +33,7 @@ services:
     command: ["pnpm", "--filter", "@anviq/sandbox-supervisor", "start"]
     user: root
     environment:
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
       NODE_ENV: production
       DATA_DIR: /data
       SUPERVISOR_HOST: "0.0.0.0"
@@ -71,6 +72,7 @@ services:
       - -lc
       - pnpm --filter @anviq/db exec prisma migrate deploy && pnpm --filter @anviq/api start
     environment: &app-environment
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
       NODE_ENV: production
       DATABASE_URL: postgres://anviq:topology-only-password@postgres:5432/anviq
       DATA_DIR: /data

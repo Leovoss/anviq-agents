@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import type {
   AgentContextStrategy,
   AgentRuntime,
@@ -26,6 +25,7 @@ import {
   createConnectorStack,
   createJobReconciler,
   createMessagingContextLoader,
+  createMessagingTeamChatHistory,
   createMessagingTeamChatSender,
   createRunExecutor,
   createRunSandbox,
@@ -98,6 +98,7 @@ import { ORPCError, onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { storeInboundAttachment } from "./artifacts.js";
 import { createBillingService } from "./billing.js";
 import { mountBillingRoutes } from "./billing-webhook.js";
 import type { AppEnv } from "./env.js";
@@ -109,7 +110,9 @@ import {
   teamChatSenderCanWakeMessageRoutines,
   wakeMessageRoutines,
 } from "./messaging-inbound.js";
+import { createMessagingReceipts } from "./messaging-receipts.js";
 import { mountMessagingWebhookRoutes } from "./messaging-webhook.js";
+import { monitoringRoutes } from "./monitoring.js";
 import { mountApiRequestBodyLimits } from "./request-body-limit.js";
 import { createRouter } from "./router.js";
 import { mountScreenTarget } from "./screen-proxy.js";
@@ -399,6 +402,14 @@ export async function createApp(
     signupsEnabled: env.signupsEnabled,
     signupAllowlist: env.signupAllowlist,
     email,
+    logger: {
+      level: "error",
+      log: (_level, _message, ...args) =>
+        getLogger().error(
+          "auth.request.failed",
+          args.find((arg) => arg instanceof Error),
+        ),
+    },
     onEmailError: (error) => getLogger().error("transactional email delivery failed", error),
     extraOrigins: MOBILE_AUTH_ORIGINS,
     beforeDeleteUser: async (userId) => {
@@ -453,6 +464,7 @@ export async function createApp(
   // resolution alike, so a list call warms the run path in this process.
   const codexCatalog = new CodexCatalogCache();
   const executor = createRunExecutor({
+    maxUploadSizeBytes: env.maxUploadSizeBytes,
     contextStrategy,
     prisma,
     runtime,
@@ -492,6 +504,9 @@ export async function createApp(
     events,
     onTicketChange: ticketChanges,
     ticketBoardEnabled,
+    phoneCallsEnabled: env.phoneCallsEnabled,
+    phoneCallRingSeconds: env.phoneCallRingSeconds,
+    phoneCallCooldownMinutes: env.phoneCallCooldownMinutes,
     messaging: messaging ? createMessagingContextLoader(prisma) : undefined,
     web: createWebProvider(),
     cloudAgent,
@@ -558,6 +573,8 @@ export async function createApp(
       openSignup: env.messagingOpenSignup,
     },
     env: {
+      phoneCallsEnabled: env.phoneCallsEnabled,
+      phoneCallRingSeconds: env.phoneCallRingSeconds,
       ticketBoardEnabled,
       agentRuntime: env.agentRuntime,
       defaultProvider: env.defaultProvider,
@@ -593,8 +610,14 @@ export async function createApp(
       credentials: true,
     }),
   );
+  // Session and account replies must never be stored by a client or an HTTP cache.
+  for (const path of ["/api/auth/*", "/rpc/*"]) {
+    app.use(path, async (c, next) => {
+      await next();
+      c.header("cache-control", "no-store");
+    });
+  }
   app.get("/api/auth/capabilities", (c) => {
-    c.header("cache-control", "no-store");
     return c.json({
       sso: env.oidc
         ? { name: env.oidc.name, availability: auth.ssoAvailability() ?? "checking" }
@@ -615,14 +638,15 @@ export async function createApp(
         }),
     );
   }
-  mountApiRequestBodyLimits(app);
+  app.route("/", monitoringRoutes(env.browserMonitoring));
+  mountApiRequestBodyLimits(app, env.maxUploadSizeBytes);
   mountScreenTarget(app, prisma, env.screenProxySecret);
   app.on(["GET", "POST"], "/api/auth/*", async (c) => {
     const path = new URL(c.req.url).pathname.replace("/api/auth", "");
     if (isBlockedAuthPath(path)) {
       return c.json({ error: "Not available in version 1" }, 404);
     }
-    return auth.handler(c.req.raw);
+    return auth.handler(emptyAuthBodyAsJson(c.req.raw));
   });
   mountLocalSettings(app, { token: env.desktopStackToken, prisma, rpc });
   const requestSession = async (request: Request) => {
@@ -684,6 +708,7 @@ export async function createApp(
   /** Constructed even before start() succeeds so stop() can cancel in-flight startup. */
   let teamChatBridgeInstance: TeamChatBridge | undefined;
   const pendingTeamChatInbound = new PendingTeamChatInbound();
+  const receipts = messaging ? createMessagingReceipts(messaging) : undefined;
   if (messaging) {
     const inboundDeps = {
       prisma,
@@ -695,21 +720,7 @@ export async function createApp(
         signupsEnabled: env.signupsEnabled,
         signupAllowlist: env.signupAllowlist,
       },
-      typing: (threadId) => {
-        // Keep conversation addresses out of trace ids — those reach logs
-        // and telemetry, a different trust boundary than the database.
-        const operationId = `messaging.typing:${randomUUID()}`;
-        return messaging.sendTyping(threadId, {
-          operationId,
-          traceId: operationId,
-          spaceId: "",
-          userId: "",
-          // Cosmetic side call: the wait is bounded so a stalled vendor
-          // response never holds our callback chain (the Chat SDK adapter
-          // API cannot cancel the underlying request itself).
-          signal: AbortSignal.timeout(2000),
-        });
-      },
+      acknowledge: receipts?.acknowledge,
     } satisfies Parameters<typeof createMessagingInboundHandler>[0];
     const inbound = createMessagingInboundHandler(inboundDeps);
     const handleTeamChatInbound = async (
@@ -828,9 +839,17 @@ export async function createApp(
         events,
         jobs,
         send: createMessagingTeamChatSender(messaging),
+        fetchThreadHistory: createMessagingTeamChatHistory(messaging),
+        storeAttachment: ({ spaceId, userId, ...input }) =>
+          storeInboundAttachment(
+            { prisma, artifacts, maxUploadSizeBytes: env.maxUploadSizeBytes },
+            { spaceId, userId },
+            input,
+          ),
         providerId: "slack",
         botId: env.teamChatBotId,
         judge,
+        acknowledge: receipts?.acknowledge,
       });
       teamChatBridgeInstance = bridge;
       try {
@@ -982,6 +1001,7 @@ export async function createApp(
       messagingStopped = true;
       clearMessagingRetryDelay?.();
       clearTeamChatRetryDelay?.();
+      receipts?.stop();
       pendingTeamChatInbound.reject(new Error("Team chat bridge stopped before startup"));
       // Cancel in-flight start() before awaiting the retry task so stop() cannot
       // sit on DB/reconcile work that bridge.start() is still running.
@@ -1055,6 +1075,24 @@ export async function actorFromMembership(membership: Promise<Actor>): Promise<A
     if (error instanceof IsolationError) return null;
     throw error;
   }
+}
+
+/**
+ * Some clients POST auth actions with an empty body (older phone sign-out, the web deletion code);
+ * Better Auth rejects that before the endpoint runs.
+ */
+function emptyAuthBodyAsJson(request: Request) {
+  if (
+    request.method !== "POST" ||
+    request.headers.get("content-length") !== "0" ||
+    request.headers.has("transfer-encoding")
+  ) {
+    return request;
+  }
+  const headers = new Headers(request.headers);
+  headers.set("content-type", "application/json");
+  headers.delete("content-length");
+  return new Request(request, { headers, body: "{}" });
 }
 
 function sessionHeaders(request: Request) {
