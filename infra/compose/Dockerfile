@@ -12,7 +12,6 @@ COPY --chmod=755 apps/desktop/package.json apps/desktop/
 COPY --chmod=755 apps/mobile/package.json apps/mobile/
 COPY --chmod=755 apps/web/package.json apps/web/
 COPY --chmod=755 apps/worker/package.json apps/worker/
-COPY --chmod=755 apps/www/package.json apps/www/
 COPY --chmod=755 packages/adapter-kit/package.json packages/adapter-kit/
 COPY --chmod=755 packages/adapters/package.json packages/adapters/
 COPY --chmod=755 packages/auth/package.json packages/auth/

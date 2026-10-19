@@ -45,6 +45,8 @@ const rules = [
   [/^\s*"owner": "inbox-zero",\n/m, ""],
   [/,\n\s*"eas": \{\n\s*"projectId": "[0-9a-f-]{36}"\n\s*\}/, ""],
   [/,\n\s*"updates": \{\n\s*"url": "https:\/\/u\.expo\.dev\/[0-9a-f-]{36}"\n\s*\}/, ""],
+  // apps/www is dropped, so the Dockerfile must not copy its manifest.
+  [/^COPY --chmod=755 apps\/www\/package\.json apps\/www\/\n/m, ""],
   // Packaging tools build file and bundle names from productName, so it stays a single word.
   [/("productName"\s*:\s*)"Rakazo"/g, '$1"Anviq"'],
   [/(productName\)\.toBe\()"Rakazo"/g, '$1"Anviq"'],
