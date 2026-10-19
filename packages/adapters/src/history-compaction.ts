@@ -1,7 +1,7 @@
 import type { AgentRunRequest, AgentRuntime, JobPublisher } from "@anviq/adapter-kit";
 import { historyCompactJob } from "@anviq/adapter-kit";
 import type { MessageBlock } from "@anviq/contracts";
-import { blocksToAgentHistoryText } from "@anviq/core";
+import { blocksToAgentHistoryText, escapePromptData } from "@anviq/core";
 import type { PrismaClient } from "@anviq/db";
 import { recordUsage } from "@anviq/db";
 import { getLogger, unwrapJobPayload } from "@anviq/logging";
@@ -82,10 +82,6 @@ export function selectCompactedHistory(options: {
   }
 
   return { history: uncompacted, summary, usedLocalSummary: true };
-}
-
-function escapePromptData(value: string): string {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
 export function formatCompactedSummary(summary: string, historyCompactedUpToSeq: number): string {

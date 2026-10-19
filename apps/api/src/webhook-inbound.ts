@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { JobPublisher, SecretStore } from "@anviq/adapter-kit";
 import { runContinueJob, SecretStoreUnavailableError } from "@anviq/adapter-kit";
 import { inboundRoutineModelPin } from "@anviq/adapters";
+import { escapePromptData } from "@anviq/core";
 import type { PrismaClient } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
 
@@ -49,10 +50,6 @@ export type InboundTarget = {
   bot: Pick<WebhookTarget["bot"], "id" | "spaceId" | "userId">;
   threadId: string;
 };
-
-function escapePromptData(value: string): string {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-}
 
 /** Fence inbound delivery JSON as untrusted data so agents do not treat it as instructions. */
 export function formatUntrustedDeliveryPayload(label: string, payload: unknown): string {
