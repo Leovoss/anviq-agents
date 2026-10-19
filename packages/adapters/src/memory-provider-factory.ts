@@ -1,6 +1,11 @@
 import type { DurableMemoryScope, SecretStore, SemanticMemoryProvider } from "@anviq/adapter-kit";
 import type { PrismaClient } from "@anviq/db";
-import { createMemoryEngine, type MemoryEngine } from "@anviq/memory-engine";
+import {
+  createMemoryEngine,
+  type MemoryEngine,
+  type MirrorMode,
+  type MirrorResult,
+} from "@anviq/memory-engine";
 import { ANVIQ_MEMORY_PROVIDER_ID, AnviqMemoryProvider } from "./anviq-memory-provider.js";
 import {
   classifySerenityConnectionSettings,
@@ -173,7 +178,7 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
   constructor(
     private readonly prisma: Pick<
       PrismaClient,
-      "spaceMemoryConfig" | "deploymentSettings" | "$queryRawUnsafe"
+      "spaceMemoryConfig" | "deploymentSettings" | "bot" | "$queryRawUnsafe"
     >,
     private readonly secrets: SecretStore,
   ) {
@@ -188,6 +193,15 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
 
   async purgeSpace(spaceId: string): Promise<void> {
     await this.engine.purgeSpace(spaceId);
+  }
+
+  syncMirror(options: { dir: string; mode: MirrorMode }): Promise<MirrorResult> {
+    return this.engine.syncFolder({
+      ...options,
+      resolveSpaceId: async (botId) =>
+        (await this.prisma.bot.findUnique({ where: { id: botId }, select: { spaceId: true } }))
+          ?.spaceId,
+    });
   }
 
   async resolve(spaceId: string): Promise<ConfiguredMemoryProvider | null> {

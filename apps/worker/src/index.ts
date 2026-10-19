@@ -60,6 +60,7 @@ import {
 import { SERVICE_NAMES } from "@anviq/logging";
 import { createRootLogger } from "@anviq/logging/axiom";
 import { MarkdownMemoryStore } from "@anviq/memory";
+import { startMemoryMirror } from "./memory-mirror.js";
 
 const logger = createRootLogger(SERVICE_NAMES.worker);
 
@@ -163,6 +164,7 @@ async function main() {
   await connector.start();
   integrationSettings.warmDirectories();
   const memoryProviders = new SpaceMemoryProviderResolver(prisma, secrets);
+  startMemoryMirror(memoryProviders, process.env, dataDir, logger);
   const home = new LocalAgentHomeStore(dataDir);
   const artifacts = new LocalArtifactStore(dataDir);
   const inMemoryJobs = process.env.WAKEUP_DRIVER === "memory" ? new InMemoryJobQueue() : undefined;

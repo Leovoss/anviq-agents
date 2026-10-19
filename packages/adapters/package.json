@@ -29,7 +29,7 @@
     "@anviq/core": "workspace:*",
     "@anviq/db": "workspace:*",
     "@anviq/logging": "workspace:*",
-    "@anviq/memory-engine": "github:Leovoss/anviq-memory#ec7b7f169a41c433cacff150f6c1e1239fed1918",
+    "@anviq/memory-engine": "github:Leovoss/anviq-memory#c6f440dc364651e013c6906521214f7aee4e31e3",
     "chat": "4.40.0",
     "chat-adapter-lark": "0.3.1",
     "chat-adapter-sendblue": "0.2.0",

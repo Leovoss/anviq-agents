@@ -1,0 +1,30 @@
+# Shares the memory mirror folder with Syncthing so notes can be opened in Obsidian.
+# Use it next to the images file, after MEMORY_MIRROR_MODE is set in .env and the worker has
+# created the folder:
+#   docker compose --env-file .env -f docker-compose.images.yml -f docker-compose.syncthing.yml up -d
+#
+# The web UI listens on 127.0.0.1:8384 of the host only. Reach it with an SSH tunnel.
+# Only the sync port 22000 is published. Only the memory-mirror folder of the data volume is mounted.
+services:
+  syncthing:
+    image: syncthing/syncthing:2.1.6
+    restart: unless-stopped
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+    ports:
+      - "127.0.0.1:8384:8384"
+      - "22000:22000/tcp"
+      - "22000:22000/udp"
+    volumes:
+      - syncthing-config:/var/syncthing/config
+      - type: volume
+        source: appdata
+        target: /var/syncthing/memory
+        volume:
+          subpath: memory-mirror
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  syncthing-config:
