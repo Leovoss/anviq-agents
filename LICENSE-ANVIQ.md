@@ -21,6 +21,10 @@ licensed under either license.
 - `infra/compose/docker-compose.traefik.yml`
 - `docs/upstream-sync.md`
 - `README.md`, `NOTICE`, `LICENSE-ANVIQ.md`
+- `packages/adapters/src/anviq-memory-provider.ts` and its test,
+  `apps/web/src/pages/memory-providers/BuiltInSettingsForm.tsx`
+- The `@anviq/memory-engine` dependency, which is proprietary Anviq code from
+  https://github.com/Leovoss/anviq-memory under its own license
 - Anviq logo and icon files:
   `apps/web/public/` (`favicon.*`, `icon-*.png`, `apple-touch-icon.png`),
   `apps/desktop/assets/` (`icon*`),

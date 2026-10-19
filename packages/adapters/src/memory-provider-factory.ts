@@ -1,5 +1,7 @@
 import type { DurableMemoryScope, SecretStore, SemanticMemoryProvider } from "@anviq/adapter-kit";
 import type { PrismaClient } from "@anviq/db";
+import { createMemoryEngine, type MemoryEngine } from "@anviq/memory-engine";
+import { ANVIQ_MEMORY_PROVIDER_ID, AnviqMemoryProvider } from "./anviq-memory-provider.js";
 import {
   classifySerenityConnectionSettings,
   createSerenityProvider,
@@ -54,11 +56,23 @@ interface MemoryProviderAdapter {
   create(
     settings: Record<string, string>,
     credentials: Record<string, string>,
+    engine: MemoryEngine,
   ): SemanticMemoryProvider;
   decodeLegacyCredentials?(plaintext: string): Record<string, string> | null;
 }
 
-const MEMORY_PROVIDER_ADAPTERS: ReadonlyMap<string, MemoryProviderAdapter> = new Map([
+const MEMORY_PROVIDER_ADAPTERS: ReadonlyMap<string, MemoryProviderAdapter> = new Map<
+  string,
+  MemoryProviderAdapter
+>([
+  [
+    ANVIQ_MEMORY_PROVIDER_ID,
+    {
+      requiresDeploymentOwner: () => false,
+      prepare: async () => ({ settings: {}, credentials: {} }),
+      create: (_settings, _credentials, engine) => new AnviqMemoryProvider(engine),
+    },
+  ],
   [
     SUPERMEMORY_PROVIDER_ID,
     {
@@ -124,8 +138,9 @@ export function createMemoryProvider(
   provider: string,
   settings: Record<string, string>,
   credentials: Record<string, string>,
+  engine: MemoryEngine,
 ): SemanticMemoryProvider {
-  return memoryProviderAdapter(provider).create(settings, credentials);
+  return memoryProviderAdapter(provider).create(settings, credentials, engine);
 }
 
 export function toStringRecord(value: unknown): Record<string, string> {
@@ -150,17 +165,37 @@ function decodeCredentials(provider: string, plaintext: string): Record<string, 
 }
 
 export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
+  private readonly engine: MemoryEngine;
+
   constructor(
-    private readonly prisma: Pick<PrismaClient, "spaceMemoryConfig" | "deploymentSettings">,
+    private readonly prisma: Pick<
+      PrismaClient,
+      "spaceMemoryConfig" | "deploymentSettings" | "$queryRawUnsafe"
+    >,
     private readonly secrets: SecretStore,
-  ) {}
+  ) {
+    this.engine = createMemoryEngine(async (sql, params = []) => ({
+      rows: await prisma.$queryRawUnsafe(sql, ...params),
+    }));
+  }
 
   async resolve(spaceId: string): Promise<ConfiguredMemoryProvider | null> {
     const config = await this.prisma.spaceMemoryConfig.findUnique({
       where: { spaceId },
       include: { secret: true },
     });
-    if (!config) return null;
+    if (!config) {
+      return {
+        provider: createMemoryProvider(ANVIQ_MEMORY_PROVIDER_ID, {}, {}, this.engine),
+        defaultScope: "isolated",
+      };
+    }
+    if (config.provider === ANVIQ_MEMORY_PROVIDER_ID) {
+      return {
+        provider: createMemoryProvider(config.provider, {}, {}, this.engine),
+        defaultScope: config.defaultMemoryScope === "shared" ? "shared" : "isolated",
+      };
+    }
     const settings = toStringRecord(config.settings);
     if (memoryProviderRequiresDeploymentOwner(config.provider, settings)) {
       const deployment = await this.prisma.deploymentSettings.findUnique({
@@ -182,7 +217,7 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
       await this.secrets.load(config.secret.ciphertext, config.secret.id),
     );
     return {
-      provider: createMemoryProvider(config.provider, settings, credentials),
+      provider: createMemoryProvider(config.provider, settings, credentials, this.engine),
       defaultScope: config.defaultMemoryScope === "shared" ? "shared" : "isolated",
     };
   }

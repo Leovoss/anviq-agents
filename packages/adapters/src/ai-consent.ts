@@ -25,7 +25,8 @@ export function aiRecipient(input: {
   modelId?: string;
   baseUrl?: string;
 }): Omit<AiRecipient, "allowed"> | null {
-  if (input.provider === "scripted") return null;
+  if (input.provider === "scripted" || (input.provider === "anviq" && input.use === "memory"))
+    return null;
   const endpoint = input.baseUrl ?? (input.provider === "local" ? localBaseUrl() : undefined);
   const origin = endpoint ? new URL(endpoint).origin : undefined;
   const name = recipientName(input.provider, input.use);

@@ -1,5 +1,6 @@
 import type { SpaceMemoryConfig } from "@anviq/contracts";
 import type { ComponentType } from "react";
+import { BuiltInSettingsForm } from "./BuiltInSettingsForm";
 import { SerenitySettingsForm } from "./SerenitySettingsForm";
 import { SupermemorySettingsForm } from "./SupermemorySettingsForm";
 
@@ -22,6 +23,13 @@ export interface MemoryProviderSettingsRegistration {
 }
 
 export const MEMORY_PROVIDER_SETTINGS: readonly MemoryProviderSettingsRegistration[] = [
+  {
+    id: "anviq",
+    name: "Built in",
+    description: "Stored in this server's database. No external service.",
+    SettingsForm: BuiltInSettingsForm,
+    connectedLabel: () => "Built in",
+  },
   {
     id: "supermemory",
     name: "Supermemory",
