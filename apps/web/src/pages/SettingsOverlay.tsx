@@ -8,6 +8,7 @@ import {
   CreditCard,
   Gauge,
   Monitor,
+  PackageOpen,
   Settings,
   ShieldCheck,
   Volume2,
@@ -28,6 +29,7 @@ import {
   UsageSettingsPanel,
 } from "./AccountSettingsOverlay";
 import { BillingSettingsPanel } from "./BillingSettingsPanel";
+import { ImportSettingsPanel } from "./ImportSettingsPanel";
 import { MemorySettingsOverlay } from "./MemorySettingsOverlay";
 import { ModelSettingsOverlay } from "./ModelSettingsOverlay";
 import { VoiceSettingsOverlay } from "./VoiceSettingsOverlay";
@@ -37,6 +39,7 @@ export type SettingsSection =
   | "models"
   | "memory"
   | "voice"
+  | "import"
   | "confirmations"
   | "usage"
   | "computer"
@@ -48,6 +51,7 @@ const SPACE_SECTIONS: ReadonlySet<SettingsSection> = new Set([
   "models",
   "memory",
   "voice",
+  "import",
   "confirmations",
 ]);
 
@@ -203,6 +207,7 @@ export function SettingsOverlay({
     { id: "models", label: t`Models`, icon: Cpu },
     { id: "memory", label: t`Memory`, icon: Brain },
     { id: "voice", label: t`Voice`, icon: Volume2 },
+    { id: "import", label: t`Import`, icon: PackageOpen },
     { id: "confirmations", label: t`Confirmations`, icon: ShieldCheck },
     { id: "usage", label: t`Usage`, icon: Gauge },
     ...(showComputer ? [{ id: "computer" as const, label: t`Computer`, icon: Monitor }] : []),
@@ -351,6 +356,7 @@ export function SettingsOverlay({
                     isDeploymentOwner={isDeploymentOwner}
                   />
                 ) : null}
+                {section === "import" ? <ImportSettingsPanel /> : null}
                 {section === "confirmations" ? <ApprovalRulesSettings /> : null}
                 {section === "usage" ? (
                   <UsageSettingsPanel usage={usage} panelRef={usageRef} />

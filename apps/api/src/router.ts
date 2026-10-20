@@ -247,6 +247,7 @@ import {
   listSpaceArtifacts,
 } from "./artifacts.js";
 import type { BillingService } from "./billing.js";
+import { createBotImportService } from "./bot-import.js";
 import {
   executionBlocksUserTakeover,
   resolveBusyBotName,
@@ -802,6 +803,12 @@ export function createRouter(deps: RouterDeps) {
     dataDir: deps.dataDir,
   });
   const agentSkills = createAgentSkillsService(deps.prisma);
+  const botImport = createBotImportService({
+    prisma: deps.prisma,
+    memory: deps.memory,
+    agentSkills,
+    createBot: (actor, input) => repos.createBot(actor, input),
+  });
 
   const authed = os.use(async ({ context, next }) => {
     if (!context.actor) throw new ORPCError("UNAUTHORIZED");
@@ -3356,6 +3363,13 @@ export function createRouter(deps: RouterDeps) {
         }
         return { ok: true as const };
       }),
+    },
+    botImport: {
+      run: authed.botImport.run.handler(async ({ context, input }) =>
+        botImport.run(context.actor, input).catch((error: unknown) => {
+          throw mapSpaceLifecycleError(error);
+        }),
+      ),
     },
     memory: {
       list: authed.memory.list.handler(async ({ context, input }) => {
