@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  ANVIQ_CLOUD_URL,
   DEFAULT_LOCAL_WEB_URL,
   desktopStackImageTag,
   isAnviqHealth,
@@ -128,6 +129,17 @@ describe("saved setup", () => {
       mode: "existing",
       serverUrl: "http://192.168.1.20:3100",
     });
+  });
+
+  it("saves Anviq Agents Cloud as an existing server under the exact origin setup matches", () => {
+    // The setup window recognizes a saved Cloud choice by comparing against this constant.
+    expect(normalizeServerUrl(ANVIQ_CLOUD_URL)).toBe(ANVIQ_CLOUD_URL);
+    expect(parseSetupInput({ mode: "existing", serverUrl: ANVIQ_CLOUD_URL })).toEqual({
+      mode: "existing",
+      serverUrl: ANVIQ_CLOUD_URL,
+    });
+    expect(parseSetupInput({ mode: "new", serverUrl: ANVIQ_CLOUD_URL })).toBeNull();
+    expect(servesBundledRenderer(ANVIQ_CLOUD_URL, false)).toBe(false);
   });
 });
 

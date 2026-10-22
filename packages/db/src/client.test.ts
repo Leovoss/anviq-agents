@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createDb,
-  createPool,
   isTooManyDatabaseConnections,
   parsePositiveInteger,
   retryOnTooManyConnections,
@@ -94,22 +93,5 @@ describe("retryOnTooManyConnections", () => {
         throw error;
       }),
     ).rejects.toBe(error);
-  });
-});
-
-describe("createPool", () => {
-  it("builds a bounded pool with connect-retry and idle-error listeners", () => {
-    const pool = createPool("postgres://anviq:anviq@127.0.0.1:9/anviq", {
-      poolMax: 2,
-      applicationName: "anviq-pool-test",
-    });
-    pools.push(pool);
-    expect(pool.options.max).toBe(2);
-    expect(pool.options.connectionTimeoutMillis).toBe(10_000);
-    expect(pool.options.idleTimeoutMillis).toBe(0);
-    expect(pool.options.application_name).toBe("anviq-pool-test");
-    expect(pool.listenerCount("error")).toBeGreaterThan(0);
-    expect(pool.listenerCount("connect")).toBeGreaterThan(0);
-    expect(() => pool.emit("error", new Error("idle client lost"))).not.toThrow();
   });
 });

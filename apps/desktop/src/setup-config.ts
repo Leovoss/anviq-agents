@@ -4,6 +4,8 @@ import type { DesktopSetup, DesktopStackProbeResponse } from "@anviq/contracts";
 
 /** Managed desktop origin; development keeps its usual web/API ports. */
 export const DEFAULT_LOCAL_WEB_URL = "http://127.0.0.1:45173";
+/** Hosted Anviq Agents; setup saves it as an `existing` server so it opens like any other. */
+export const ANVIQ_CLOUD_URL = "https://app.anviq.net";
 export const PROBE_RESPONSE_LIMIT_BYTES = 64 * 1024;
 
 export const SETUP_FILE_NAME = "setup.json";
