@@ -22,6 +22,11 @@ msgstr " (अपठित)"
 msgid "{0, plural, one {# bot has its own model:} other {# bots have their own model:}}"
 msgstr ""
 
+#. placeholder {0}: result.bots
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# bot} other {# bots}}"
+msgstr ""
+
 #. placeholder {0}: servers.length
 #: src/pages/PluginsOverlay.tsx
 msgid "{0, plural, one {# connector} other {# connectors}}"
@@ -37,9 +42,26 @@ msgstr ""
 msgid "{0, plural, one {# more} other {# more}}"
 msgstr ""
 
+#. placeholder {0}: result.memory
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# note} other {# notes}}"
+msgstr ""
+
+#. placeholder {0}: result.routines
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# routine} other {# routines}}"
+msgstr ""
+
+#. placeholder {0}: result.skills
 #. placeholder {0}: skillCount(install)
 #: src/components/integrations/skills-dialog.tsx
+#: src/pages/ImportSettingsPanel.tsx
 msgid "{0, plural, one {# skill} other {# skills}}"
+msgstr ""
+
+#. placeholder {0}: result.skipped.length
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr ""
 
 #. placeholder {0}: pinned.length
@@ -1282,6 +1304,10 @@ msgstr "फ़ाइल चुनें"
 msgid "Choose folder"
 msgstr "फ़ोल्डर चुनें"
 
+#: src/pages/ImportSettingsPanel.tsx
+msgid "Choose Grok Bot export"
+msgstr ""
+
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
 msgid "Choose how to use Anviq Agents"
@@ -1883,6 +1909,10 @@ msgstr "{name} डाउनलोड नहीं हो सका। पुन�
 msgid "Could not enable tools"
 msgstr ""
 
+#: src/pages/ImportSettingsPanel.tsx
+msgid "Could not import"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not install connector"
 msgstr "कनेक्टर इंस्टॉल नहीं हो सका"
@@ -1996,6 +2026,10 @@ msgstr "मॉडल सर्वर तक नहीं पहुँच सक�
 #: src/pages/Auth.tsx
 msgid "Could not reach the server"
 msgstr "सर्वर से संपर्क नहीं हो सका"
+
+#: src/pages/ImportSettingsPanel.tsx
+msgid "Could not read the export"
+msgstr ""
 
 #: src/pages/shell/agent-import.tsx
 msgid "Could not read these files"
@@ -3105,6 +3139,8 @@ msgstr "इस मॉडल के लिए चित्र इनपुट क
 msgid "Image upload area"
 msgstr "छवि अपलोड क्षेत्र"
 
+#: src/pages/ImportSettingsPanel.tsx
+#: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/composer.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 msgid "Import"

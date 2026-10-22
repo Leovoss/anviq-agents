@@ -23,6 +23,11 @@ msgstr "（未讀）"
 msgid "{0, plural, one {# bot has its own model:} other {# bots have their own model:}}"
 msgstr "{0, plural, one {# 個機器人使用自己的模型：} other {# 個機器人使用自己的模型：}}"
 
+#. placeholder {0}: result.bots
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# bot} other {# bots}}"
+msgstr ""
+
 #. placeholder {0}: servers.length
 #: src/pages/PluginsOverlay.tsx
 msgid "{0, plural, one {# connector} other {# connectors}}"
@@ -38,9 +43,26 @@ msgstr ""
 msgid "{0, plural, one {# more} other {# more}}"
 msgstr ""
 
+#. placeholder {0}: result.memory
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# note} other {# notes}}"
+msgstr ""
+
+#. placeholder {0}: result.routines
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# routine} other {# routines}}"
+msgstr ""
+
+#. placeholder {0}: result.skills
 #. placeholder {0}: skillCount(install)
 #: src/components/integrations/skills-dialog.tsx
+#: src/pages/ImportSettingsPanel.tsx
 msgid "{0, plural, one {# skill} other {# skills}}"
+msgstr ""
+
+#. placeholder {0}: result.skipped.length
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr ""
 
 #. placeholder {0}: pinned.length
@@ -1283,6 +1305,10 @@ msgstr "選擇檔案"
 msgid "Choose folder"
 msgstr "選擇資料夾"
 
+#: src/pages/ImportSettingsPanel.tsx
+msgid "Choose Grok Bot export"
+msgstr ""
+
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
 msgid "Choose how to use Anviq Agents"
@@ -1884,6 +1910,10 @@ msgstr "無法下載 {name}。請重試。"
 msgid "Could not enable tools"
 msgstr ""
 
+#: src/pages/ImportSettingsPanel.tsx
+msgid "Could not import"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not install connector"
 msgstr "無法安裝連接器"
@@ -1997,6 +2027,10 @@ msgstr "無法連線到模型伺服器。"
 #: src/pages/Auth.tsx
 msgid "Could not reach the server"
 msgstr "無法連線伺服器"
+
+#: src/pages/ImportSettingsPanel.tsx
+msgid "Could not read the export"
+msgstr ""
 
 #: src/pages/shell/agent-import.tsx
 msgid "Could not read these files"
@@ -3106,6 +3140,8 @@ msgstr "此模型尚未設定圖片輸入。"
 msgid "Image upload area"
 msgstr "圖片上傳區域"
 
+#: src/pages/ImportSettingsPanel.tsx
+#: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/composer.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 msgid "Import"

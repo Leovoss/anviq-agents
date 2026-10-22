@@ -34,6 +34,7 @@ import {
   TicketSchema,
   UpdateTicketInput,
 } from "./board.js";
+import { BotImportInput, BotImportResultSchema } from "./bot-import.js";
 import {
   BotSecretMetadata,
   BotSecretPutInput,
@@ -664,6 +665,10 @@ export const appContract = {
       .output(z.array(ComputerCommandSchema.extend({ createdAt: z.string() }))),
     screenUrl: oc.input(botId).output(z.object({ url: z.string().nullable() })),
     heartbeat: oc.input(botId).output(z.object({ ok: z.literal(true) })),
+  },
+  /** Brings bots, routines, skills and memory over from another service's export. */
+  botImport: {
+    run: oc.input(BotImportInput).output(BotImportResultSchema),
   },
   memory: {
     list: oc

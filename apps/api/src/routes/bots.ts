@@ -45,6 +45,7 @@ import {
   undoAgentImport,
 } from "../agent-import.js";
 import { deleteAgentSecret, listAgentSecrets, putAgentSecret } from "../agent-secrets.js";
+import { createBotImportService } from "../bot-import.js";
 import { requireIdentityConfirmation } from "../identity-confirmation.js";
 import type { RouterDeps } from "../router.js";
 import { loadMessagePage } from "../thread-message-pages.js";
@@ -239,9 +240,30 @@ export async function enqueueBotIntroRun(deps: RouterDeps, actor: Actor, bot: Bo
 }
 
 export function botsRoutes(ctx: RouterContext) {
-  const { deps, repos, botModelValidation, removeBot, agentImportServices, groupRepos, authed } =
-    ctx;
+  const {
+    deps,
+    repos,
+    botModelValidation,
+    removeBot,
+    agentImportServices,
+    groupRepos,
+    agentSkills,
+    authed,
+  } = ctx;
+  const botImport = createBotImportService({
+    prisma: deps.prisma,
+    memory: deps.memory,
+    agentSkills,
+    createBot: (actor, input) => repos.createBot(actor, input),
+  });
   return {
+    botImport: {
+      run: authed.botImport.run.handler(async ({ context, input }) =>
+        botImport.run(context.actor, input).catch((error: unknown) => {
+          throw mapSpaceLifecycleError(error);
+        }),
+      ),
+    },
     bots: {
       list: authed.bots.list.handler(async ({ context }) => repos.listBots(context.actor)),
       listArchived: authed.bots.listArchived.handler(async ({ context }) =>

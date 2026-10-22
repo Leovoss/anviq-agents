@@ -4,6 +4,7 @@ const SETTINGS_SECTIONS = [
   "models",
   "memory",
   "voice",
+  "import",
   "confirmations",
   "vault",
   "messaging",

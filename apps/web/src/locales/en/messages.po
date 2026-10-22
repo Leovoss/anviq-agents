@@ -22,6 +22,11 @@ msgstr " (unread)"
 msgid "{0, plural, one {# bot has its own model:} other {# bots have their own model:}}"
 msgstr "{0, plural, one {# bot has its own model:} other {# bots have their own model:}}"
 
+#. placeholder {0}: result.bots
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# bot} other {# bots}}"
+msgstr "{0, plural, one {# bot} other {# bots}}"
+
 #. placeholder {0}: servers.length
 #: src/pages/PluginsOverlay.tsx
 msgid "{0, plural, one {# connector} other {# connectors}}"
@@ -37,10 +42,27 @@ msgstr "{0, plural, one {# file} other {# files}}"
 msgid "{0, plural, one {# more} other {# more}}"
 msgstr "{0, plural, one {# more} other {# more}}"
 
+#. placeholder {0}: result.memory
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# note} other {# notes}}"
+msgstr "{0, plural, one {# note} other {# notes}}"
+
+#. placeholder {0}: result.routines
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# routine} other {# routines}}"
+msgstr "{0, plural, one {# routine} other {# routines}}"
+
+#. placeholder {0}: result.skills
 #. placeholder {0}: skillCount(install)
 #: src/components/integrations/skills-dialog.tsx
+#: src/pages/ImportSettingsPanel.tsx
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr "{0, plural, one {# skill} other {# skills}}"
+
+#. placeholder {0}: result.skipped.length
+#: src/pages/ImportSettingsPanel.tsx
+msgid "{0, plural, one {# skipped} other {# skipped}}"
+msgstr "{0, plural, one {# skipped} other {# skipped}}"
 
 #. placeholder {0}: pinned.length
 #: src/pages/model-settings/space-bots-model.tsx
@@ -1282,6 +1304,10 @@ msgstr "Choose file"
 msgid "Choose folder"
 msgstr "Choose folder"
 
+#: src/pages/ImportSettingsPanel.tsx
+msgid "Choose Grok Bot export"
+msgstr "Choose Grok Bot export"
+
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
 msgid "Choose how to use Anviq Agents"
@@ -1883,6 +1909,10 @@ msgstr "Could not download {name}. Try again."
 msgid "Could not enable tools"
 msgstr "Could not enable tools"
 
+#: src/pages/ImportSettingsPanel.tsx
+msgid "Could not import"
+msgstr "Could not import"
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not install connector"
 msgstr "Could not install connector"
@@ -1996,6 +2026,10 @@ msgstr "Could not reach the model server."
 #: src/pages/Auth.tsx
 msgid "Could not reach the server"
 msgstr "Could not reach the server"
+
+#: src/pages/ImportSettingsPanel.tsx
+msgid "Could not read the export"
+msgstr "Could not read the export"
 
 #: src/pages/shell/agent-import.tsx
 msgid "Could not read these files"
@@ -3105,6 +3139,8 @@ msgstr "Image input is not configured for this model."
 msgid "Image upload area"
 msgstr "Image upload area"
 
+#: src/pages/ImportSettingsPanel.tsx
+#: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/composer.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 msgid "Import"
