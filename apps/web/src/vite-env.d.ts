@@ -2,6 +2,8 @@
 
 interface ImportMetaEnv {
   readonly VITE_DEFAULT_UI_LOCALE?: string;
+  /** Build id (`YYYYMMDDHHMMSS`) of a production build; empty on the dev server. */
+  readonly ANVIQ_BUILD?: string;
 }
 
 interface ImportMeta {

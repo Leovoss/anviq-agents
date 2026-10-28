@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import type { JobPublisher, SecretStore } from "@anviq/adapter-kit";
 import { runContinueJob, SecretStoreUnavailableError } from "@anviq/adapter-kit";
 import { inboundRoutineModelPin } from "@anviq/adapters";
-import { escapePromptData } from "@anviq/core";
+import { escapePromptData, inboundRoutineBlock } from "@anviq/core";
 import type { PrismaClient } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
 
@@ -280,9 +280,7 @@ export async function deliverWebhookEvent(
   const promptText =
     input.routines.length > 0
       ? [
-          ...input.routines.map(
-            (routine) => `Run routine "${routine.name}":\n${routine.prompt.trim()}`,
-          ),
+          ...input.routines.map(inboundRoutineBlock),
           "",
           input.source === "github"
             ? "Inbound GitHub event metadata:"

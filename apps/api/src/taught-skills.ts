@@ -46,6 +46,7 @@ import {
   type PrismaClient,
   type ThreadEvents,
 } from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import { ORPCError } from "@orpc/server";
 
 type TaughtSkillRow = {
@@ -160,11 +161,14 @@ async function ensureGraphicalComputer(
       }
       throw error;
     }
+    const computerId = bot.computer.id;
     try {
-      await provisionComputer(deps, bot.computer.id, {
-        ...ctx,
-        screenLeaseId: screenLeaseIdForRun(lease, manualRunId),
-      });
+      await getLogger().withContext({ reason: "teaching" }, () =>
+        provisionComputer(deps, computerId, {
+          ...ctx,
+          screenLeaseId: screenLeaseIdForRun(lease, manualRunId),
+        }),
+      );
     } catch (error) {
       if (error instanceof ComputerBusyError) {
         throw new ORPCError("CONFLICT", { message: "Computer is busy" });

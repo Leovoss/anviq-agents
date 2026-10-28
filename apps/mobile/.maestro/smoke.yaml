@@ -14,6 +14,9 @@ name: Anviq Agents mobile smoke
 - assertVisible: "Sign in to Anviq Agents"
 - tapOn: "Email"
 - inputText: ${ANVIQ_E2E_EMAIL}
+- tapOn:
+    text: "Use password"
+    optional: true
 - tapOn: "Password"
 - inputText: ${ANVIQ_E2E_PASSWORD}
 - hideKeyboard

@@ -1,0 +1,13 @@
+[Unit]
+Description=Check host storage, backup health and SSH access rules
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/anviq/backup.env
+ExecStart=/usr/local/sbin/anviq-host-check
+StateDirectory=anviq/alerts
+StateDirectoryMode=0700
+ProtectSystem=strict
+ReadWritePaths=/var/lib/anviq/alerts
+ProtectHome=true
+PrivateTmp=true
