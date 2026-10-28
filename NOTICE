@@ -11,5 +11,6 @@ further changes are made on top of upstream releases. All changes are
 recorded in the git history of this repository. Upstream commits keep
 their original authors.
 
-Files created by Anviq LLC are listed in LICENSE-ANVIQ.md and are not
-covered by the Apache License.
+Files created by Anviq LLC, and Anviq LLC's changes to upstream files,
+are described in LICENSE-ANVIQ.md and are not covered by the Apache
+License.

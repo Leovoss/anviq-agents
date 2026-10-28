@@ -1,3 +1,4 @@
+// Copyright 2026 Anviq LLC. All rights reserved.
 import path from "node:path";
 import type { SpaceMemoryProviderResolver } from "@anviq/adapters";
 import { parsePositiveInteger } from "@anviq/db";

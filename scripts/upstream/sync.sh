@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Copyright 2026 Anviq LLC. All rights reserved.
 # Rebuilds the renamed mirror of an upstream ref and tells you how to merge it.
 # Usage: scripts/upstream/sync.sh [upstream-ref]   (default: upstream/main)
 set -euo pipefail

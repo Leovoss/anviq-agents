@@ -1,3 +1,4 @@
+// Copyright 2026 Anviq LLC. All rights reserved.
 import { Button } from "@anviq/ui-web";
 import { Trans } from "@lingui/react/macro";
 import type { MemoryProviderSettingsFormProps } from "./registry";

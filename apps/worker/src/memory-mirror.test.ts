@@ -1,3 +1,4 @@
+// Copyright 2026 Anviq LLC. All rights reserved.
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { startMemoryMirror } from "./memory-mirror.js";

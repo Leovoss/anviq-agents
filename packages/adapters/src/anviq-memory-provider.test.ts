@@ -1,3 +1,4 @@
+// Copyright 2026 Anviq LLC. All rights reserved.
 import type { AdapterContext } from "@anviq/adapter-kit";
 import type { MemoryEngine } from "@anviq/memory-engine";
 import { describe, expect, it, vi } from "vitest";

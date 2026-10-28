@@ -1,3 +1,4 @@
+// Copyright 2026 Anviq LLC. All rights reserved.
 // Applies the Anviq rename to a checkout of upstream rakazo.
 // Usage: node rebrand.mjs <worktree-dir>
 import { execFileSync } from "node:child_process";
