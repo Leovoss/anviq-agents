@@ -395,6 +395,8 @@ export interface KeyProvider {
   describe(): AdapterDescriptor<{ rotate: boolean }>;
   /** Master key that new wraps use. Older ids stay valid for unwrap. */
   activeKeyId(): string;
+  /** The master key new wraps use for one space, when it differs per space. */
+  activeKeyIdFor?(spaceId: string): Promise<string>;
   wrap(dataKey: Uint8Array, context: KeyWrapContext): Promise<WrappedDataKey>;
   unwrap(wrapped: WrappedDataKey, context: KeyWrapContext): Promise<Uint8Array>;
 }
