@@ -163,7 +163,9 @@ export type SpaceSource =
   | "tasks"
   | "agent_skills"
   | "scratchpad_items"
-  | "ticket_comments";
+  | "ticket_comments"
+  | "routines"
+  | "tickets";
 
 export interface SpaceKeyStore {
   forSpace(spaceId: string): Promise<SpaceKeyRecord[]>;
@@ -197,6 +199,8 @@ export const ROW_OWNER: Record<SpaceSource, string> = {
   agent_skills: "userId",
   scratchpad_items: "userId",
   ticket_comments: "ticketId",
+  routines: "userId",
+  tickets: "boardId",
 };
 
 export interface Queryable {
@@ -215,6 +219,8 @@ const ROW_CONTEXT: Record<SpaceSource, string> = {
   agent_skills: `SELECT "spaceId", "userId" AS owner FROM agent_skills WHERE id = $1`,
   scratchpad_items: `SELECT "spaceId", "userId" AS owner FROM scratchpad_items WHERE id = $1`,
   ticket_comments: `SELECT "spaceId", "ticketId" AS owner FROM ticket_comments WHERE id = $1`,
+  routines: `SELECT "spaceId", "userId" AS owner FROM routines WHERE id = $1`,
+  tickets: `SELECT "spaceId", "boardId" AS owner FROM tickets WHERE id = $1`,
 };
 
 /**

@@ -323,14 +323,19 @@ describePostgres("content encryption (PostgreSQL)", () => {
         where: { id: botId },
         data: {
           instructions: "Always greet with quokka facts",
+          description: "Tracks the quokka colony",
           instructionHistory: [{ id: "v1", instructions: "Old quokka rules" }],
         },
       });
       expect(
         await stored(`SELECT instructions, "instructionHistory" FROM bots WHERE id = $1`, botId),
       ).not.toContain("quokka");
+      expect(await stored(`SELECT description FROM bots WHERE id = $1`, botId)).not.toContain(
+        "colony",
+      );
       const bot = await prisma.bot.findUnique({ where: { id: botId } });
       expect(bot?.instructions).toBe("Always greet with quokka facts");
+      expect(bot?.description).toBe("Tracks the quokka colony");
       expect(bot?.instructionHistory).toEqual([{ id: "v1", instructions: "Old quokka rules" }]);
 
       const task = await prisma.task.create({
@@ -382,10 +387,32 @@ describePostgres("content encryption (PostgreSQL)", () => {
         "Remember the dingo meeting",
       );
 
+      const routine = await prisma.routine.create({
+        data: { spaceId, botId, userId, name: "Daily", prompt: "Count the quokka colony" },
+      });
+      expect(await stored(`SELECT prompt FROM routines WHERE id = $1`, routine.id)).not.toContain(
+        "colony",
+      );
+      expect((await prisma.routine.findUnique({ where: { id: routine.id } }))?.prompt).toBe(
+        "Count the quokka colony",
+      );
+
       const board = await prisma.board.create({ data: { spaceId } });
       const ticket = await prisma.ticket.create({
-        data: { boardId: board.id, spaceId, number: 1, title: "Fix the build" },
+        data: {
+          boardId: board.id,
+          spaceId,
+          number: 1,
+          title: "Fix the numbat build",
+          description: "Compile errors in the numbat module",
+        },
       });
+      expect(
+        await stored(`SELECT title, description FROM tickets WHERE id = $1`, ticket.id),
+      ).not.toContain("numbat");
+      const reread = await prisma.ticket.findUnique({ where: { id: ticket.id } });
+      expect(reread?.title).toBe("Fix the numbat build");
+      expect(reread?.description).toBe("Compile errors in the numbat module");
       const comment = await prisma.ticketComment.create({
         data: { ticketId: ticket.id, spaceId, body: "The platypus failed again" },
       });

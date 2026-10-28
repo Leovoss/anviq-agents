@@ -23,7 +23,9 @@ interface TableSpec {
     | "task"
     | "agentSkill"
     | "scratchpadItem"
-    | "ticketComment";
+    | "ticketComment"
+    | "routine"
+    | "ticket";
   column: string;
   json: boolean;
   /** Preserve @updatedAt so a migration does not reorder recently edited documents. */
@@ -123,6 +125,17 @@ const TABLES: TableSpec[] = [
       Prisma.sql`UPDATE bots SET "instructionHistory" = ${JSON.stringify(value)}::jsonb WHERE id = ${id}`,
   },
   {
+    model: "Bot",
+    delegate: "bot",
+    column: "description",
+    json: false,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, description AS value, "spaceId", "userId" AS owner FROM bots
+      WHERE id > ${cursor} AND description IS NOT NULL ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE bots SET description = ${value as string} WHERE id = ${id}`,
+  },
+  {
     model: "Task",
     delegate: "task",
     column: "prompt",
@@ -154,6 +167,39 @@ const TABLES: TableSpec[] = [
       WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
     writePlaintext: (id, value) =>
       Prisma.sql`UPDATE scratchpad_items SET notes = ${value as string} WHERE id = ${id}`,
+  },
+  {
+    model: "Routine",
+    delegate: "routine",
+    column: "prompt",
+    json: false,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, prompt AS value, "spaceId", "userId" AS owner FROM routines
+      WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE routines SET prompt = ${value as string} WHERE id = ${id}`,
+  },
+  {
+    model: "Ticket",
+    delegate: "ticket",
+    column: "title",
+    json: false,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, title AS value, "spaceId", "boardId" AS owner FROM tickets
+      WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE tickets SET title = ${value as string} WHERE id = ${id}`,
+  },
+  {
+    model: "Ticket",
+    delegate: "ticket",
+    column: "description",
+    json: false,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, description AS value, "spaceId", "boardId" AS owner FROM tickets
+      WHERE id > ${cursor} AND description IS NOT NULL ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE tickets SET description = ${value as string} WHERE id = ${id}`,
   },
   {
     model: "TicketComment",

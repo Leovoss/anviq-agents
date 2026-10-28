@@ -11,20 +11,20 @@ directory, so a copied database dump, backup or disk does not reveal it.
 | Thread events (they repeat message content) | `events.payload` |
 | Compacted history summaries | `threads.historyCompactionSummary` |
 | Memory documents and their revisions | `memory_documents.content`, `memory_revisions.content` |
-| Bot instructions and their history | `bots.instructions`, `bots.instructionHistory` |
-| Task prompts | `tasks.prompt` |
+| Bot instructions, descriptions and history | `bots.instructions`, `bots.description`, `bots.instructionHistory` |
+| Task and routine prompts | `tasks.prompt`, `routines.prompt` |
 | Agent skills | `agent_skills.content` |
 | Scratchpad notes | `scratchpad_items.notes` |
-| Ticket comments | `ticket_comments.body` |
+| Tickets and their comments | `tickets.title`, `tickets.description`, `ticket_comments.body` |
 | Uploaded and generated files | `DATA_DIR/artifacts/<space>/<file>` |
 | Bot computer homes kept in [object storage](./self-host.md#bot-homes-in-object-storage) (always, whatever `CONTENT_ENCRYPTION` says) | `homes/<id>/<revision>` in the bucket |
 | Credentials (unchanged scheme) | `secrets`, `bot_secrets`, `integration_provider_configs` |
 
 Not yet encrypted, planned next: external conversation messages, outbound
-messaging bodies, steering messages, taught skill playbooks and recordings, and
-the text that search reads on the database side: routine prompts, bot
-descriptions, and ticket titles and descriptions. Names and other metadata stay
-plaintext: bot, group, file and thread names, memory paths, timestamps, ids,
+messaging bodies, steering messages, and taught skill playbooks and recordings.
+Search over bot descriptions, routine prompts and tickets reads the person's own
+rows and matches them after decryption, so it works the same either way. Names and
+other metadata stay plaintext: bot, group, file and thread names, memory paths, timestamps, ids,
 block kinds and statuses.
 
 ## Turning it off
