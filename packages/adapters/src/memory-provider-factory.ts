@@ -206,12 +206,21 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
     }));
   }
 
+  // Nothing to purge before the built-in store has ever been used, and creating its schema
+  // on a delete path would need privileges the database role may not have.
+  private async hasBuiltInStore(): Promise<boolean> {
+    const rows = await this.prisma.$queryRawUnsafe<Array<{ found: string | null }>>(
+      "SELECT to_regclass('anviq_memory.memories')::text AS found",
+    );
+    return Boolean(rows[0]?.found);
+  }
+
   async purgeBot(botId: string): Promise<void> {
-    await this.engine.purgeBot(botId);
+    if (await this.hasBuiltInStore()) await this.engine.purgeBot(botId);
   }
 
   async purgeSpace(spaceId: string): Promise<void> {
-    await this.engine.purgeSpace(spaceId);
+    if (await this.hasBuiltInStore()) await this.engine.purgeSpace(spaceId);
   }
 
   syncMirror(options: { dir: string; mode: MirrorMode }): Promise<MirrorResult> {

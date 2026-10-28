@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Locator, test } from "@playwright/test";
 import { captureScreenshot, completeOnboarding, openUserSettings, signup } from "./helpers";
 
 test("changing language updates settings overflow without resizing", async ({ page }, testInfo) => {
@@ -87,6 +87,14 @@ test("narrow settings reveals the active section and offers scroll controls", as
   await expect(usage).toHaveAttribute("aria-current", "page");
 });
 
+async function showMemoryProviderChoice(memory: Locator) {
+  const disconnect = memory.getByRole("button", { name: "Disconnect", exact: true });
+  const provider = memory.getByLabel("Provider");
+  await expect(disconnect.or(provider)).toBeVisible();
+  if (await disconnect.isVisible()) await disconnect.click();
+  await expect(provider).toBeVisible();
+}
+
 test("settings shell is two-pane and deep-links Models Memory Voice Usage", async ({
   page,
 }, testInfo) => {
@@ -160,7 +168,7 @@ test("settings shell is two-pane and deep-links Models Memory Voice Usage", asyn
   await expect(settings.getByRole("heading", { name: "Memory", exact: true })).toBeVisible();
   await expect(settings.getByTestId("memory-settings")).toBeVisible();
   const memory = settings.getByTestId("memory-settings");
-  await expect(memory.getByLabel("Provider")).toBeVisible();
+  await showMemoryProviderChoice(memory);
   await memory.getByLabel("Provider").selectOption("serenity");
   await expect(memory.getByLabel("MCP endpoint")).toBeVisible();
   await expect(memory.getByLabel("Bearer token")).toBeVisible();
@@ -189,6 +197,7 @@ test("Honcho memory settings empty and filled", async ({ page }, testInfo) => {
   await completeOnboarding(page);
   const settings = await openUserSettings(page, "memory");
   const memory = settings.getByTestId("memory-settings");
+  await showMemoryProviderChoice(memory);
   await memory.getByLabel("Provider").selectOption("honcho");
   await expect(memory.getByLabel("API key", { exact: true })).toBeVisible();
   await expect(memory.getByLabel("Workspace", { exact: true })).toBeVisible();

@@ -93,7 +93,7 @@ test("first run offers Anviq Agents Cloud first, with local and existing instanc
   await expect(setup.locator(".card")).toHaveCount(0);
 
   // Cloud is the default: one click opens the hosted app, with nothing to fill in.
-  await expect(setup.getByRole("radio", { name: /Anviq Cloud/ })).toBeChecked();
+  await expect(setup.getByRole("radio", { name: /Anviq Agents Cloud/ })).toBeChecked();
   await expect(setup.locator("#panel-new")).toBeHidden();
   await expect(setup.locator("#panel-existing")).toBeHidden();
   await expect(setup.getByRole("button", { name: "Check connection" })).toBeHidden();
@@ -146,7 +146,7 @@ test("first run offers Anviq Agents Cloud first, with local and existing instanc
 test("Anviq Agents Cloud saves the hosted address and is reselected when saved", async () => {
   app = await launch();
   const setup = await app.firstWindow();
-  await expect(setup.getByRole("radio", { name: /Anviq Cloud/ })).toBeChecked();
+  await expect(setup.getByRole("radio", { name: /Anviq Agents Cloud/ })).toBeChecked();
   await expect(setup.getByRole("button", { name: "Continue" })).toBeEnabled();
 
   // Capture the request instead of reaching the hosted server, so CI stays offline.
@@ -184,7 +184,7 @@ test("Anviq Agents Cloud saves the hosted address and is reselected when saved",
     }));
   }, cloudUrl);
   await setup.reload();
-  await expect(setup.getByRole("radio", { name: /Anviq Cloud/ })).toBeChecked();
+  await expect(setup.getByRole("radio", { name: /Anviq Agents Cloud/ })).toBeChecked();
   await expect(setup.locator("#panel-existing")).toBeHidden();
 });
 
