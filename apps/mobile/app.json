@@ -41,7 +41,8 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png"
+          "icon": "./assets/notification-icon.png",
+          "color": "#0B0C0E"
         }
       ],
       [
@@ -54,8 +55,7 @@
       ],
       "expo-sharing",
       "./plugins/with-worklets-headers",
-      "./plugins/with-scene-lifecycle",
-      "./plugins/with-lan-cleartext"
+      "./plugins/with-scene-lifecycle"
     ],
     "ios": {
       "bundleIdentifier": "com.anviq.app",

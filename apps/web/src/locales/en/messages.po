@@ -755,6 +755,15 @@ msgstr "Answered: {answer}"
 msgid "Anthropic API"
 msgstr "Anthropic API"
 
+#: src/components/ModelCredits.tsx
+#: src/pages/Onboarding.tsx
+msgid "Anviq Agents credits"
+msgstr "Anviq Agents credits"
+
+#: src/pages/memory-providers/HonchoSettingsForm.tsx
+msgid "anviq-shared and IDs starting with bot- are reserved for Anviq Agents."
+msgstr "anviq-shared and IDs starting with bot- are reserved for Anviq Agents."
+
 #: src/pages/Paywall.tsx
 msgid "Any model, with your own key"
 msgstr "Any model, with your own key"
@@ -4439,15 +4448,6 @@ msgstr "Pull request"
 msgid "Queued"
 msgstr "Queued"
 
-#: src/components/ModelCredits.tsx
-#: src/pages/Onboarding.tsx
-msgid "Anviq Agents credits"
-msgstr "Anviq Agents credits"
-
-#: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "anviq-shared and IDs starting with bot- are reserved for Anviq Agents."
-msgstr "anviq-shared and IDs starting with bot- are reserved for Anviq Agents."
-
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"
 msgstr "React"
@@ -4814,14 +4814,14 @@ msgstr "Retry now"
 msgid "Retry screen"
 msgstr "Retry screen"
 
+#: src/pages/McpOAuthCallback.tsx
+msgid "Return to Anviq Agents"
+msgstr "Return to Anviq Agents"
+
 #. placeholder {0}: call.botName
 #: src/components/call/CallCard.tsx
 msgid "Return to call with {0}"
 msgstr "Return to call with {0}"
-
-#: src/pages/McpOAuthCallback.tsx
-msgid "Return to Anviq Agents"
-msgstr "Return to Anviq Agents"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
@@ -6034,6 +6034,14 @@ msgstr "Use {oauthEnvReference} for the access token."
 msgid "Use a found model"
 msgstr "Use a found model"
 
+#: src/components/ModelCredits.tsx
+msgid "Use Anviq Agents credits"
+msgstr "Use Anviq Agents credits"
+
+#: src/pages/memory-providers/BuiltInSettingsForm.tsx
+msgid "Use built-in memory"
+msgstr "Use built-in memory"
+
 #: src/lib/model-connection-preflight.ts
 msgid "Use Connect to verify the key."
 msgstr "Use Connect to verify the key."
@@ -6061,10 +6069,6 @@ msgstr "Use my subscription or API key"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr "Use Protected input for passwords."
-
-#: src/components/ModelCredits.tsx
-msgid "Use Anviq Agents credits"
-msgstr "Use Anviq Agents credits"
 
 #: src/pages/model-settings/space-bots-model.tsx
 msgid "Use space default"

@@ -364,12 +364,31 @@ export function BotShapePreview({
   );
 }
 
+/** The Anviq anvil with two eyes. `eyeClassName` must match the circle behind it. */
+export function AnviqMark({
+  className,
+  eyeClassName = "fill-card",
+}: {
+  className?: string;
+  eyeClassName?: string;
+}) {
+  return (
+    <svg viewBox="24 86 254 140" className={className} aria-hidden="true">
+      <path
+        className="fill-primary"
+        d="M50 86H252C268 86 278 94 278 107V117C278 129 270 137 256 141L211 155C194 160 185 172 185 187C185 202 196 214 217 226H85C71 215 64 204 64 190C64 176 71 164 85 154L116 132H50C35 132 24 122 24 109C24 96 35 86 50 86Z"
+      />
+      <rect className={eyeClassName} x="108" y="148" width="20" height="48" rx="10" />
+      <rect className={eyeClassName} x="144" y="148" width="20" height="48" rx="10" />
+    </svg>
+  );
+}
+
 export function Wordmark({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <div className="flex h-11 w-11 items-center justify-center gap-1.5 rounded-full bg-card">
-        <span className="h-4 w-[7px] rounded-full bg-primary" />
-        <span className="h-4 w-[7px] rounded-full bg-primary" />
+      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-card">
+        <AnviqMark className="h-[18px] w-[32px]" />
       </div>
       <span className="font-[Aeonik,ui-sans-serif] text-[28px] tracking-tight text-foreground">
         Anviq Agents

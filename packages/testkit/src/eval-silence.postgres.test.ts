@@ -1,6 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { SpaceMemoryProviderResolver } from "@anviq/adapters";
 import { describe, expect, it, vi } from "vitest";
 import type { Evidence } from "./evals/cases.js";
 import { createEvalJudge } from "./evals/judge.js";
@@ -11,6 +12,13 @@ import type { ModelEmulatorStep } from "./model-emulator.js";
 import { startModelEmulator } from "./model-emulator.js";
 
 const databaseAvailable = process.env.VERIFY_DATABASE === "1" && Boolean(process.env.DATABASE_URL);
+// The eval notes facts with the Markdown `remember` tool, which the built-in memory replaces.
+class MarkdownMemoryOnly extends SpaceMemoryProviderResolver {
+  override async resolve() {
+    return null;
+  }
+}
+
 const releaseReply = "New release v2.2.0 adds CSV import validation.";
 
 describe.skipIf(!databaseAvailable)("routine silence eval through the product", () => {
@@ -165,6 +173,7 @@ describe.skipIf(!databaseAvailable)("routine silence eval through the product", 
                 webOrigin: "http://127.0.0.1:5173",
                 dataDir,
                 sandboxProvider: "fake",
+                memoryProviders: new MarkdownMemoryOnly(undefined as never, undefined as never),
                 agentRuntime: "pi",
                 wakeupDriver: "memory",
                 signupsEnabled: "true",

@@ -210,9 +210,23 @@ export function OnboardingPage() {
   });
 
   useEffect(() => {
-    void Promise.all([rpc.me(), rpc.models.list().catch(() => [])])
-      .then(([me, models]) => {
+    void Promise.all([
+      rpc.me(),
+      rpc.models.list().catch(() => []),
+      rpc.memory.providerConfig().catch(() => undefined),
+    ])
+      .then(([me, models, memoryConfig]) => {
         setBillingEnabled(me.billingEnabled);
+        if (memoryConfig === null) {
+          void rpc.memory
+            .connectProvider({
+              provider: "anviq",
+              settings: {},
+              credentials: {},
+              defaultMemoryScope: "isolated",
+            })
+            .catch(() => undefined);
+        }
         setCatalog(models);
         const next = me.needsModel ? "model" : "bot";
         setAfterSurvey(next);

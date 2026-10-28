@@ -1,0 +1,16 @@
+# Route the web service through an existing Traefik that uses the Docker provider.
+# Use it next to the images file when the host already owns ports 80 and 443:
+#   docker compose --env-file .env -f docker-compose.images.yml -f docker-compose.traefik.yml up -d
+#
+# Traefik reaches the container over the `anviq_app` network, so it needs no published port.
+# Set ANVIQ_HOST to the public hostname. TRAEFIK_CERT_RESOLVER names the resolver configured in
+# Traefik and defaults to `letsencrypt`.
+services:
+  web:
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: anviq_app
+      traefik.http.routers.anviq.rule: Host(`${ANVIQ_HOST:?Set ANVIQ_HOST in .env}`)
+      traefik.http.routers.anviq.entrypoints: websecure
+      traefik.http.routers.anviq.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      traefik.http.services.anviq.loadbalancer.server.port: "5173"

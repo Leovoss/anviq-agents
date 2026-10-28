@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Locator, test } from "@playwright/test";
 import {
   activeBotId,
   captureScreenshot,
@@ -97,6 +97,15 @@ test("narrow settings reveals the active section and offers scroll controls", as
   await expect(usage).toHaveAttribute("aria-current", "page");
 });
 
+async function showMemoryProviderChoice(memory: Locator) {
+  const disconnect = memory.getByRole("button", { name: "Disconnect", exact: true });
+  const connect = memory.getByRole("button", { name: "Connect memory provider", exact: true });
+  await expect(disconnect.or(connect)).toBeVisible();
+  if (await disconnect.isVisible()) await disconnect.click();
+  await connect.click();
+  await expect(memory.getByLabel("Provider")).toBeVisible();
+}
+
 test("settings shell is two-pane and deep-links Models Memory Voice Usage", async ({
   page,
 }, testInfo) => {
@@ -167,8 +176,7 @@ test("settings shell is two-pane and deep-links Models Memory Voice Usage", asyn
   await expect(settings).toHaveAttribute("data-settings-section", "memory");
   await expect(settings.getByTestId("memory-settings")).toBeVisible();
   const memory = settings.getByTestId("memory-settings");
-  await memory.getByRole("button", { name: "Connect memory provider", exact: true }).click();
-  await expect(memory.getByLabel("Provider")).toBeVisible();
+  await showMemoryProviderChoice(memory);
   await memory.getByLabel("Provider").selectOption("serenity");
   await expect(memory.getByLabel("MCP endpoint")).toBeVisible();
   await expect(memory.getByLabel("Bearer token")).toBeVisible();
@@ -196,9 +204,7 @@ test("Honcho memory settings empty and filled", async ({ page }, testInfo) => {
   await completeOnboarding(page);
   const settings = await openUserSettings(page, "memory");
   const memory = settings.getByTestId("memory-settings");
-  await expect(memory.getByLabel("Provider")).toHaveCount(0);
-  await captureScreenshot(page, testInfo, "memory-default");
-  await memory.getByRole("button", { name: "Connect memory provider", exact: true }).click();
+  await showMemoryProviderChoice(memory);
   await memory.getByLabel("Provider").selectOption("honcho");
   await expect(memory.getByLabel("API key", { exact: true })).toBeVisible();
   await expect(memory.getByLabel("Workspace", { exact: true })).toBeVisible();

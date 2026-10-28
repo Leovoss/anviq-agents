@@ -78,17 +78,25 @@ describe("mobile app config", () => {
     });
   });
 
-  it.each([
-    "http://app.example.com",
-    "https://localhost:3100",
-    "https://192.168.1.20",
-    "https://[::1]",
-    "not a url",
-  ])("skips passkey domains for %s", (url) => {
+  it.each(["https://localhost:3100", "https://192.168.1.20", "https://[::1]", "not a url"])(
+    "skips passkey domains for %s",
+    (url) => {
+      vi.stubEnv("EAS_BUILD_PROFILE", "development");
+      vi.stubEnv("EXPO_PUBLIC_API_URL", url);
+      vi.stubEnv("GOOGLE_SERVICES_JSON", undefined);
+
+      expect(appConfig(context(config))).toBe(config);
+    },
+  );
+
+  it("allows cleartext traffic for an http server without passkey domains", () => {
     vi.stubEnv("EAS_BUILD_PROFILE", "development");
-    vi.stubEnv("EXPO_PUBLIC_API_URL", url);
+    vi.stubEnv("EXPO_PUBLIC_API_URL", "http://app.example.com");
     vi.stubEnv("GOOGLE_SERVICES_JSON", undefined);
 
-    expect(appConfig(context(config))).toBe(config);
+    expect(appConfig(context(config))).toEqual({
+      ...config,
+      plugins: [...(config.plugins ?? []), "./plugins/with-lan-cleartext"],
+    });
   });
 });

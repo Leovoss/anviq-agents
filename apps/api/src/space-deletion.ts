@@ -38,6 +38,7 @@ export type SpaceDeletionDeps = {
   jobs: JobPublisher;
   artifacts: ArtifactStore;
   dataDir: string;
+  memoryProviders?: Parameters<typeof destroyBot>[0]["memoryProviders"];
   messagingInstallations?: Parameters<typeof destroyBot>[0]["messagingInstallations"];
 };
 
@@ -163,6 +164,9 @@ export async function deleteSpaceWithContent(
       claimRenewal = null;
     }
     const deleted = await deleteClaimedSpaceForMember(deps.prisma, claimedInput);
+    await deps.memoryProviders?.purgeSpace?.(spaceId).catch((error) => {
+      getLogger().error("space memory purge failed", error);
+    });
     // Rows are gone; leftover stored files are unreachable, so cleanup failures only log.
     const cleanup = await Promise.allSettled([
       ...deleted.artifactKeys.map((storageKey) => deps.artifacts.remove(storageKey, context())),

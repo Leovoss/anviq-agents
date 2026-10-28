@@ -755,6 +755,15 @@ msgstr "回答済み: {answer}"
 msgid "Anthropic API"
 msgstr "Anthropic API"
 
+#: src/components/ModelCredits.tsx
+#: src/pages/Onboarding.tsx
+msgid "Anviq Agents credits"
+msgstr "Anviq Agentsクレジット"
+
+#: src/pages/memory-providers/HonchoSettingsForm.tsx
+msgid "anviq-shared and IDs starting with bot- are reserved for Anviq Agents."
+msgstr "anviq-sharedおよびbot-で始まるIDはAnviq Agents用に予約されています。"
+
 #: src/pages/Paywall.tsx
 msgid "Any model, with your own key"
 msgstr "自分のキーで、あらゆるモデルを"
@@ -4439,15 +4448,6 @@ msgstr "プルリクエスト"
 msgid "Queued"
 msgstr "待機中"
 
-#: src/components/ModelCredits.tsx
-#: src/pages/Onboarding.tsx
-msgid "Anviq Agents credits"
-msgstr "Anviq Agentsクレジット"
-
-#: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "anviq-shared and IDs starting with bot- are reserved for Anviq Agents."
-msgstr "anviq-sharedおよびbot-で始まるIDはAnviq Agents用に予約されています。"
-
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"
 msgstr "リアクション"
@@ -4814,14 +4814,14 @@ msgstr "今すぐ再試行"
 msgid "Retry screen"
 msgstr "画面を再試行"
 
+#: src/pages/McpOAuthCallback.tsx
+msgid "Return to Anviq Agents"
+msgstr "Anviq Agentsに戻る"
+
 #. placeholder {0}: call.botName
 #: src/components/call/CallCard.tsx
 msgid "Return to call with {0}"
 msgstr "{0}との通話に戻る"
-
-#: src/pages/McpOAuthCallback.tsx
-msgid "Return to Anviq Agents"
-msgstr "Anviq Agentsに戻る"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
@@ -6034,6 +6034,14 @@ msgstr "アクセストークンには{oauthEnvReference}を使用してくだ�
 msgid "Use a found model"
 msgstr "見つかったモデルを使用"
 
+#: src/components/ModelCredits.tsx
+msgid "Use Anviq Agents credits"
+msgstr "Anviq Agentsクレジットを使用"
+
+#: src/pages/memory-providers/BuiltInSettingsForm.tsx
+msgid "Use built-in memory"
+msgstr ""
+
 #: src/lib/model-connection-preflight.ts
 msgid "Use Connect to verify the key."
 msgstr "「接続」でキーを確認してください。"
@@ -6061,10 +6069,6 @@ msgstr "自分のサブスクリプションまたはAPIキーを使用"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr "パスワードには保護された入力を使用してください。"
-
-#: src/components/ModelCredits.tsx
-msgid "Use Anviq Agents credits"
-msgstr "Anviq Agentsクレジットを使用"
 
 #: src/pages/model-settings/space-bots-model.tsx
 msgid "Use space default"

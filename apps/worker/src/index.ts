@@ -89,6 +89,7 @@ import {
 import { SERVICE_NAMES } from "@anviq/logging";
 import { createRootLogger } from "@anviq/logging/axiom";
 import { MarkdownMemoryStore } from "@anviq/memory";
+import { startMemoryMirror } from "./memory-mirror.js";
 
 const logger = createRootLogger(SERVICE_NAMES.worker);
 
@@ -208,6 +209,7 @@ async function main() {
   ]);
   integrationSettings.warmDirectories();
   const memoryProviders = new SpaceMemoryProviderResolver(prisma, secrets);
+  startMemoryMirror(memoryProviders, process.env, dataDir, logger);
   const home = createAgentHomeStore(dataDir, prisma);
   void home.removeStaleStaging().catch((error) => logger.error("home staging cleanup", error));
   const artifacts = createArtifactStore(dataDir, prisma);

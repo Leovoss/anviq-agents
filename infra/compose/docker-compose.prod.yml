@@ -443,6 +443,9 @@ services:
     environment:
       <<: *app-environment
       GRAPHILE_WORKER_CONCURRENCY:
+      MEMORY_MIRROR_MODE:
+      MEMORY_MIRROR_DIR:
+      MEMORY_MIRROR_INTERVAL_MS:
     volumes:
       - appdata:/data
     networks:

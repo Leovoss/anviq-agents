@@ -195,6 +195,7 @@ describe("SpaceMemoryProviderResolver", () => {
         "supermemory",
         { mode: "local", baseUrl: "http://203.0.113.10:6767" },
         { apiKey: "sm_test_key" },
+        {} as never,
       ),
     ).toThrow(/private-network/);
 
@@ -209,6 +210,7 @@ describe("SpaceMemoryProviderResolver", () => {
       "supermemory",
       { mode: "cloud", baseUrl: "https://memory.example.com" },
       { apiKey: "sm_test_key" },
+      {} as never,
     );
 
     await provider.recall(
@@ -225,5 +227,39 @@ describe("SpaceMemoryProviderResolver", () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe("https://api.supermemory.ai/v4/search");
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
+  });
+});
+
+describe("built-in memory", () => {
+  function builtInResolver(config: object | null) {
+    const prisma = {
+      spaceMemoryConfig: { findUnique: vi.fn(async () => config) },
+      deploymentSettings: { findUnique: vi.fn() },
+      $queryRawUnsafe: vi.fn(async () => []),
+    };
+    const secrets = { load: vi.fn() };
+    return {
+      resolver: new SpaceMemoryProviderResolver(prisma as never, secrets as never),
+      secrets,
+    };
+  }
+
+  it("is used when a space has no configuration", async () => {
+    const { resolver } = builtInResolver(null);
+    const configured = await resolver.resolve("workspace-1");
+    expect(configured?.provider.describe().id).toBe("anviq");
+    expect(configured?.defaultScope).toBe("isolated");
+  });
+
+  it("honours the stored scope without reading credentials", async () => {
+    const { resolver, secrets } = builtInResolver({
+      provider: "anviq",
+      settings: {},
+      defaultMemoryScope: "shared",
+    });
+    const configured = await resolver.resolve("workspace-1");
+    expect(configured?.provider.describe().id).toBe("anviq");
+    expect(configured?.defaultScope).toBe("shared");
+    expect(secrets.load).not.toHaveBeenCalled();
   });
 });

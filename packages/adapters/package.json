@@ -40,6 +40,7 @@
     "@anviq/core": "workspace:*",
     "@anviq/db": "workspace:*",
     "@anviq/logging": "workspace:*",
+    "@anviq/memory-engine": "github:Leovoss/anviq-memory#c6f440dc364651e013c6906521214f7aee4e31e3",
     "@stripe/link-sdk": "0.15.0",
     "chat": "4.43.0",
     "chat-adapter-sendblue": "0.2.0",

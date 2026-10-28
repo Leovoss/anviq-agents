@@ -4,7 +4,15 @@ import {
   MIN_PASSWORD_LENGTH,
   signupRequiresEmailVerification,
 } from "@anviq/core";
-import { Button, Input, InputOTP, InputOTPGroup, InputOTPSlot, Label } from "@anviq/ui-web";
+import {
+  AnviqMark,
+  Button,
+  Input,
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  Label,
+} from "@anviq/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -524,9 +532,8 @@ export function AuthFrame({
   return (
     <div className="flex min-h-full items-center justify-center bg-background px-6 py-16 text-foreground">
       <form onSubmit={onSubmit} className="flex w-[460px] flex-col items-center">
-        <div className="flex h-[74px] w-[74px] items-center justify-center gap-[11px] rounded-full bg-muted">
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
-          <span className="h-5 w-[9px] rounded-full bg-primary" />
+        <div className="flex h-[74px] w-[74px] items-center justify-center rounded-full bg-muted">
+          <AnviqMark className="h-[29px] w-[52px]" eyeClassName="fill-muted" />
         </div>
         <h1 aria-live="polite" className="mb-9 mt-7 text-4xl font-medium tracking-tight">
           {title}

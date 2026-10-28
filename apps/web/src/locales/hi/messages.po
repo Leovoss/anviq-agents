@@ -755,6 +755,15 @@ msgstr "उत्तर: {answer}"
 msgid "Anthropic API"
 msgstr ""
 
+#: src/components/ModelCredits.tsx
+#: src/pages/Onboarding.tsx
+msgid "Anviq Agents credits"
+msgstr ""
+
+#: src/pages/memory-providers/HonchoSettingsForm.tsx
+msgid "anviq-shared and IDs starting with bot- are reserved for Anviq Agents."
+msgstr ""
+
 #: src/pages/Paywall.tsx
 msgid "Any model, with your own key"
 msgstr ""
@@ -4439,15 +4448,6 @@ msgstr "पुल अनुरोध"
 msgid "Queued"
 msgstr "कतार में"
 
-#: src/components/ModelCredits.tsx
-#: src/pages/Onboarding.tsx
-msgid "Anviq Agents credits"
-msgstr ""
-
-#: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "anviq-shared and IDs starting with bot- are reserved for Anviq Agents."
-msgstr ""
-
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"
 msgstr "प्रतिक्रिया दें"
@@ -4814,14 +4814,14 @@ msgstr "अभी पुनः प्रयास करें"
 msgid "Retry screen"
 msgstr ""
 
+#: src/pages/McpOAuthCallback.tsx
+msgid "Return to Anviq Agents"
+msgstr "Anviq Agents पर लौटें"
+
 #. placeholder {0}: call.botName
 #: src/components/call/CallCard.tsx
 msgid "Return to call with {0}"
 msgstr "{0} के साथ कॉल पर लौटें"
-
-#: src/pages/McpOAuthCallback.tsx
-msgid "Return to Anviq Agents"
-msgstr "Anviq Agents पर लौटें"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
@@ -6034,6 +6034,14 @@ msgstr "एक्सेस टोकन के लिए {oauthEnvReference} क
 msgid "Use a found model"
 msgstr "मिला हुआ मॉडल उपयोग करें"
 
+#: src/components/ModelCredits.tsx
+msgid "Use Anviq Agents credits"
+msgstr ""
+
+#: src/pages/memory-providers/BuiltInSettingsForm.tsx
+msgid "Use built-in memory"
+msgstr ""
+
 #: src/lib/model-connection-preflight.ts
 msgid "Use Connect to verify the key."
 msgstr "कुंजी जाँचने के लिए कनेक्ट करें का उपयोग करें।"
@@ -6060,10 +6068,6 @@ msgstr ""
 
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Use Anviq Agents credits"
 msgstr ""
 
 #: src/pages/model-settings/space-bots-model.tsx

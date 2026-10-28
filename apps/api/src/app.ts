@@ -235,6 +235,8 @@ type CreateAppOverrides = Partial<AppEnv> & {
   logger?: Logger;
   runtime?: AgentRuntime;
   contextStrategy?: AgentContextStrategy;
+  /** Test-only: replaces the database-backed memory provider resolver. */
+  memoryProviders?: SpaceMemoryProviderResolver;
   /** Test-only stand-in for desktops connected to this server. */
   userDevices?: UserDeviceGateway;
 };
@@ -258,6 +260,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     logger: loggerOverride,
     runtime: runtimeOverride,
     contextStrategy,
+    memoryProviders: memoryProvidersOverride,
     userDevices: userDevicesOverride,
     ...envOverrides
   } = overrides;
@@ -376,7 +379,8 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     remoteConnectors,
     env.mcpAllowPrivateEndpoint,
   );
-  const memoryProviders = new SpaceMemoryProviderResolver(prisma, secrets);
+  const memoryProviders =
+    memoryProvidersOverride ?? new SpaceMemoryProviderResolver(prisma, secrets);
   const oauthLogins = new PiOAuthLogins(undefined, { prisma, secrets });
   const home = createAgentHomeStore(env.dataDir, prisma);
   void home.removeStaleStaging().catch((error) => getLogger().error("home staging cleanup", error));
@@ -524,6 +528,10 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     beforeDeleteUser: async (userId) => {
       // First, so a provider failure aborts deletion before anything is destroyed.
       await billing?.cancelForDeletedUser(userId);
+      const soleSpaces = await prisma.space.findMany({
+        where: { memberships: { some: { userId }, every: { userId } } },
+        select: { id: true },
+      });
       await deleteAccountContent(
         {
           prisma,
@@ -532,10 +540,12 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
           jobs,
           artifacts,
           dataDir: env.dataDir,
+          memoryProviders,
           messagingInstallations,
         },
         userId,
       );
+      await Promise.all(soleSpaces.map((space) => memoryProviders.purgeSpace(space.id)));
       await removePiUserSessions(env.dataDir, userId);
       await pushTokens
         .remove(userId)

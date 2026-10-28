@@ -2,6 +2,13 @@ import type { DurableMemoryScope, SecretStore, SemanticMemoryProvider } from "@a
 import type { PrismaClient } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
 import {
+  createMemoryEngine,
+  type MemoryEngine,
+  type MirrorMode,
+  type MirrorResult,
+} from "@anviq/memory-engine";
+import { ANVIQ_MEMORY_PROVIDER_ID, AnviqMemoryProvider } from "./anviq-memory-provider.js";
+import {
   createHonchoProvider,
   HONCHO_PROVIDER_ID,
   honchoRequiresPrivateEndpoint,
@@ -47,6 +54,9 @@ export interface ConfiguredMemoryProvider {
 
 export interface MemoryProviderResolver {
   resolve(spaceId: string): Promise<ConfiguredMemoryProvider | null>;
+  /** Remove built-in memories when their owner is deleted. */
+  purgeBot?(botId: string): Promise<void>;
+  purgeSpace?(spaceId: string): Promise<void>;
 }
 
 interface MemoryProviderAdapter {
@@ -63,11 +73,23 @@ interface MemoryProviderAdapter {
   create(
     settings: Record<string, string>,
     credentials: Record<string, string>,
+    engine: MemoryEngine,
   ): SemanticMemoryProvider;
   decodeLegacyCredentials?(plaintext: string): Record<string, string> | null;
 }
 
-const MEMORY_PROVIDER_ADAPTERS: ReadonlyMap<string, MemoryProviderAdapter> = new Map([
+const MEMORY_PROVIDER_ADAPTERS: ReadonlyMap<string, MemoryProviderAdapter> = new Map<
+  string,
+  MemoryProviderAdapter
+>([
+  [
+    ANVIQ_MEMORY_PROVIDER_ID,
+    {
+      requiresPrivateEndpoint: () => false,
+      prepare: async () => ({ settings: {}, credentials: {} }),
+      create: (_settings, _credentials, engine) => new AnviqMemoryProvider(engine),
+    },
+  ],
   [
     SUPERMEMORY_PROVIDER_ID,
     {
@@ -143,8 +165,9 @@ export function createMemoryProvider(
   provider: string,
   settings: Record<string, string>,
   credentials: Record<string, string>,
+  engine: MemoryEngine,
 ): SemanticMemoryProvider {
-  return memoryProviderAdapter(provider).create(settings, credentials);
+  return memoryProviderAdapter(provider).create(settings, credentials, engine);
 }
 
 export function toStringRecord(value: unknown): Record<string, string> {
@@ -169,17 +192,63 @@ function decodeCredentials(provider: string, plaintext: string): Record<string, 
 }
 
 export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
+  private readonly engine: MemoryEngine;
+
   constructor(
-    private readonly prisma: Pick<PrismaClient, "spaceMemoryConfig">,
+    private readonly prisma: Pick<
+      PrismaClient,
+      "spaceMemoryConfig" | "deploymentSettings" | "bot" | "$queryRawUnsafe"
+    >,
     private readonly secrets: SecretStore,
-  ) {}
+  ) {
+    this.engine = createMemoryEngine(async (sql, params = []) => ({
+      rows: await prisma.$queryRawUnsafe(sql, ...params),
+    }));
+  }
+
+  // Nothing to purge before the built-in store has ever been used, and creating its schema
+  // on a delete path would need privileges the database role may not have.
+  private async hasBuiltInStore(): Promise<boolean> {
+    const rows = await this.prisma.$queryRawUnsafe<Array<{ found: string | null }>>(
+      "SELECT to_regclass('anviq_memory.memories')::text AS found",
+    );
+    return Boolean(rows[0]?.found);
+  }
+
+  async purgeBot(botId: string): Promise<void> {
+    if (await this.hasBuiltInStore()) await this.engine.purgeBot(botId);
+  }
+
+  async purgeSpace(spaceId: string): Promise<void> {
+    if (await this.hasBuiltInStore()) await this.engine.purgeSpace(spaceId);
+  }
+
+  syncMirror(options: { dir: string; mode: MirrorMode }): Promise<MirrorResult> {
+    return this.engine.syncFolder({
+      ...options,
+      resolveSpaceId: async (botId) =>
+        (await this.prisma.bot.findUnique({ where: { id: botId }, select: { spaceId: true } }))
+          ?.spaceId,
+    });
+  }
 
   async resolve(spaceId: string): Promise<ConfiguredMemoryProvider | null> {
     const config = await this.prisma.spaceMemoryConfig.findUnique({
       where: { spaceId },
       include: { secret: true },
     });
-    if (!config) return null;
+    if (!config) {
+      return {
+        provider: createMemoryProvider(ANVIQ_MEMORY_PROVIDER_ID, {}, {}, this.engine),
+        defaultScope: "isolated",
+      };
+    }
+    if (config.provider === ANVIQ_MEMORY_PROVIDER_ID) {
+      return {
+        provider: createMemoryProvider(config.provider, {}, {}, this.engine),
+        defaultScope: config.defaultMemoryScope === "shared" ? "shared" : "isolated",
+      };
+    }
     const settings = toStringRecord(config.settings);
     if (memoryProviderRequiresPrivateEndpoint(config.provider, settings)) {
       // Saved configurations cannot bypass an operator's current network policy.
@@ -197,7 +266,7 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
       await this.secrets.load(config.secret.ciphertext, config.secret.id),
     );
     return {
-      provider: createMemoryProvider(config.provider, settings, credentials),
+      provider: createMemoryProvider(config.provider, settings, credentials, this.engine),
       defaultScope: config.defaultMemoryScope === "shared" ? "shared" : "isolated",
     };
   }

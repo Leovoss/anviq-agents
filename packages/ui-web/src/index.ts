@@ -1,5 +1,6 @@
 export { AppMarkStack } from "./app-mark-stack.js";
 export {
+  AnviqMark,
   BOT_AVATAR_COLORS,
   BOT_MASCOT_SHAPES,
   BotAvatar,
