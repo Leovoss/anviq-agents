@@ -12,7 +12,7 @@ export function WelcomePage() {
       </div>
       <main className="flex flex-1 flex-col items-center justify-center gap-11 px-5 pb-[90px]">
         <div className="flex items-center gap-[18px] sm:gap-[26px]">
-          <div className="flex size-16 items-center justify-center rounded-full bg-accent sm:size-[88px]">
+          <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-accent sm:size-[88px]">
             <AnviqMark
               className="h-[24px] w-[44px] sm:h-[33px] sm:w-[60px]"
               eyeClassName="fill-accent"

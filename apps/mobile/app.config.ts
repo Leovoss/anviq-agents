@@ -42,6 +42,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     result = { ...result, android: { ...result.android, googleServicesFile } };
   }
 
+  // Local and CI builds point at an http:// server; release builds are required to use HTTPS above.
+  if (process.env.EXPO_PUBLIC_API_URL?.startsWith("http://")) {
+    result = { ...result, plugins: [...(result.plugins ?? []), "./plugins/with-lan-cleartext"] };
+  }
+
   // Native crash handling autolinks; upload build hooks are optional and require credentials.
   if (process.env.SENTRY_AUTH_TOKEN) {
     result = {
