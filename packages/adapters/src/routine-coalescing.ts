@@ -62,14 +62,22 @@ export async function findPendingRoutineTick(
     attempts: { none: {} },
     effects: { none: {} },
     steeringMessages: { none: {} },
-    task: { status: "queued", prompt: config.prompt },
+    task: { status: "queued" },
   };
-  const candidates = await tx.run.findMany({
+  const found = await tx.run.findMany({
     where: pristine,
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-    select: { id: true, taskId: true, leaseFence: true, updatedAt: true },
+    select: {
+      id: true,
+      taskId: true,
+      leaseFence: true,
+      updatedAt: true,
+      task: { select: { prompt: true } },
+    },
     take: 100,
   });
+  // The prompt is sealed, so it is compared after the candidates are read.
+  const candidates = found.filter((candidate) => candidate.task.prompt === config.prompt);
   if (!candidates.length) return null;
   const runIds = candidates.map((candidate) => candidate.id);
   const [leases, computers] = await Promise.all([
