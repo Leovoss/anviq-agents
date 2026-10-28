@@ -13,7 +13,17 @@ export type ContentMigrationMode = "encrypt" | "reencrypt" | "decrypt";
 
 interface TableSpec {
   model: keyof typeof ENCRYPTED_MODELS;
-  delegate: "message" | "event" | "memoryDocument" | "memoryRevision" | "thread";
+  delegate:
+    | "message"
+    | "event"
+    | "memoryDocument"
+    | "memoryRevision"
+    | "thread"
+    | "bot"
+    | "task"
+    | "agentSkill"
+    | "scratchpadItem"
+    | "ticketComment";
   column: string;
   json: boolean;
   /** Preserve @updatedAt so a migration does not reorder recently edited documents. */
@@ -89,6 +99,72 @@ const TABLES: TableSpec[] = [
       WHERE id > ${cursor} AND "historyCompactionSummary" IS NOT NULL ORDER BY id LIMIT ${limit}`,
     writePlaintext: (id, value) =>
       Prisma.sql`UPDATE threads SET "historyCompactionSummary" = ${value as string} WHERE id = ${id}`,
+  },
+  {
+    model: "Bot",
+    delegate: "bot",
+    column: "instructions",
+    json: false,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, instructions AS value, "spaceId", "userId" AS owner FROM bots
+      WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE bots SET instructions = ${value as string} WHERE id = ${id}`,
+  },
+  {
+    model: "Bot",
+    delegate: "bot",
+    column: "instructionHistory",
+    json: true,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, "instructionHistory" AS value, "spaceId", "userId" AS owner FROM bots
+      WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE bots SET "instructionHistory" = ${JSON.stringify(value)}::jsonb WHERE id = ${id}`,
+  },
+  {
+    model: "Task",
+    delegate: "task",
+    column: "prompt",
+    json: false,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, prompt AS value, "spaceId", "userId" AS owner FROM tasks
+      WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE tasks SET prompt = ${value as string} WHERE id = ${id}`,
+  },
+  {
+    model: "AgentSkill",
+    delegate: "agentSkill",
+    column: "content",
+    json: false,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, content AS value, "spaceId", "userId" AS owner FROM agent_skills
+      WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE agent_skills SET content = ${value as string} WHERE id = ${id}`,
+  },
+  {
+    model: "ScratchpadItem",
+    delegate: "scratchpadItem",
+    column: "notes",
+    json: false,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, notes AS value, "spaceId", "userId" AS owner FROM scratchpad_items
+      WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE scratchpad_items SET notes = ${value as string} WHERE id = ${id}`,
+  },
+  {
+    model: "TicketComment",
+    delegate: "ticketComment",
+    column: "body",
+    json: false,
+    scan: (cursor, limit) => Prisma.sql`
+      SELECT id, body AS value, "spaceId", "ticketId" AS owner FROM ticket_comments
+      WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
+    writePlaintext: (id, value) =>
+      Prisma.sql`UPDATE ticket_comments SET body = ${value as string} WHERE id = ${id}`,
   },
 ];
 

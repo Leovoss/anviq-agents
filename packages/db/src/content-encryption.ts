@@ -81,6 +81,36 @@ export const ENCRYPTED_MODELS: Record<string, ModelSpec> = {
     space: { column: "spaceId" },
     ownerRelation: "user",
   },
+  Bot: {
+    table: "bots",
+    fields: { instructions: {}, instructionHistory: { plainKeys: new Set<string>() } },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  Task: {
+    table: "tasks",
+    fields: { prompt: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  AgentSkill: {
+    table: "agent_skills",
+    fields: { content: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  ScratchpadItem: {
+    table: "scratchpad_items",
+    fields: { notes: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  TicketComment: {
+    table: "ticket_comments",
+    fields: { body: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "ticket",
+  },
 };
 
 /** Rows whose id → space mapping the ring learns from results, for child writes. */

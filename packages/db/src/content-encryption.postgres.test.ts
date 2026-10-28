@@ -34,6 +34,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
   const botId = `enc-bot-${suffix}`;
   const threadId = `enc-thread-${suffix}`;
   const scope = { spaceId, userId, threadId, botId };
+  const sealed = { taskId: "" };
   const clients: Array<ReturnType<typeof createDb>> = [];
   let prisma: PrismaClient;
   let raw: ReturnType<typeof createDb>["pool"];
@@ -313,6 +314,89 @@ describePostgres("content encryption (PostgreSQL)", () => {
       ).toBe("They discussed the wombat budget");
     }));
 
+  it("encrypts bot instructions, task prompts, skills, scratchpad notes and ticket comments", () =>
+    runAsSystem("test fixture", async () => {
+      const stored = async (sql: string, id: string) =>
+        JSON.stringify((await raw.query(sql, [id])).rows);
+
+      await prisma.bot.update({
+        where: { id: botId },
+        data: {
+          instructions: "Always greet with quokka facts",
+          instructionHistory: [{ id: "v1", instructions: "Old quokka rules" }],
+        },
+      });
+      expect(
+        await stored(`SELECT instructions, "instructionHistory" FROM bots WHERE id = $1`, botId),
+      ).not.toContain("quokka");
+      const bot = await prisma.bot.findUnique({ where: { id: botId } });
+      expect(bot?.instructions).toBe("Always greet with quokka facts");
+      expect(bot?.instructionHistory).toEqual([{ id: "v1", instructions: "Old quokka rules" }]);
+
+      const task = await prisma.task.create({
+        data: {
+          spaceId,
+          botId,
+          threadId,
+          userId,
+          prompt: "Summarise the wombat budget",
+          status: "queued",
+        },
+      });
+      sealed.taskId = task.id;
+      expect(await stored(`SELECT prompt FROM tasks WHERE id = $1`, task.id)).not.toContain(
+        "wombat",
+      );
+      expect((await prisma.task.findUnique({ where: { id: task.id } }))?.prompt).toBe(
+        "Summarise the wombat budget",
+      );
+      const edited = await prisma.task.update({
+        where: { id: task.id },
+        data: { prompt: "Summarise the numbat budget" },
+      });
+      expect(edited.prompt).toBe("Summarise the numbat budget");
+
+      const skill = await prisma.agentSkill.create({
+        data: {
+          spaceId,
+          userId,
+          name: `skill-${suffix}`,
+          description: "Quokka skill",
+          content: "Steps: feed the quokka",
+        },
+      });
+      expect(
+        await stored(`SELECT content FROM agent_skills WHERE id = $1`, skill.id),
+      ).not.toContain("feed the quokka");
+      expect((await prisma.agentSkill.findUnique({ where: { id: skill.id } }))?.content).toBe(
+        "Steps: feed the quokka",
+      );
+
+      const item = await prisma.scratchpadItem.create({
+        data: { spaceId, botId, userId, title: "Dingo", notes: "Remember the dingo meeting" },
+      });
+      expect(
+        await stored(`SELECT notes FROM scratchpad_items WHERE id = $1`, item.id),
+      ).not.toContain("dingo meeting");
+      expect((await prisma.scratchpadItem.findUnique({ where: { id: item.id } }))?.notes).toBe(
+        "Remember the dingo meeting",
+      );
+
+      const board = await prisma.board.create({ data: { spaceId } });
+      const ticket = await prisma.ticket.create({
+        data: { boardId: board.id, spaceId, number: 1, title: "Fix the build" },
+      });
+      const comment = await prisma.ticketComment.create({
+        data: { ticketId: ticket.id, spaceId, body: "The platypus failed again" },
+      });
+      expect(
+        await stored(`SELECT body FROM ticket_comments WHERE id = $1`, comment.id),
+      ).not.toContain("platypus");
+      expect((await prisma.ticketComment.findUnique({ where: { id: comment.id } }))?.body).toBe(
+        "The platypus failed again",
+      );
+    }));
+
   it("creates a thread and its first message in one transaction", () =>
     runAsSystem("test fixture", async () => {
       const otherBot = `enc-bot-2-${suffix}`;
@@ -394,7 +478,11 @@ describePostgres("content encryption (PostgreSQL)", () => {
       );
       expect(stored.rows[0].n).toBe(0);
       expect(await rawBlocks(`enc-plain-${suffix}`)).toContain("pelicans");
+      const taskPrompt = async () =>
+        (await raw.query(`SELECT prompt FROM tasks WHERE id = $1`, [sealed.taskId])).rows[0].prompt;
+      expect(await taskPrompt()).toBe("Summarise the numbat budget");
       await migrateContent(db.prisma, { mode: "encrypt" });
+      expect(await taskPrompt()).toMatch(/^rkz1:/);
     }));
 
   it("destroys a space's keys when the space is deleted", () =>
