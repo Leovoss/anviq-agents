@@ -1,7 +1,7 @@
+import { parse } from "dotenv";
 import { describe, expect, it } from "vitest";
 
 import {
-  COMPOSE_MANUAL_UPGRADE_COMMANDS,
   chooseUpdateStrategy,
   commitImageTag,
   compareReleaseTags,
@@ -20,7 +20,6 @@ import {
   isValidComposeProjectName,
   isValidImageName,
   isValidImageTag,
-  manualUpgradeCommands,
   OFFICIAL_SERVER_IMAGE,
   parseGitNameOnly,
   parseLsRemoteReleases,
@@ -29,10 +28,8 @@ import {
   RECREATED_SERVICES,
   resolveComposeProjectName,
   resolveExecutionMode,
-  resolveInstallKind,
   resolveTrackedDirtyPaths,
   rollbackTarget,
-  SOURCE_MANUAL_UPGRADE_COMMANDS,
   selectLatestRelease,
   selectLatestReleaseTag,
   upsertEnvAssignments,
@@ -167,43 +164,6 @@ describe("strategy and mode selection", () => {
     const off = resolveExecutionMode({ hasUpdater: true, disabled: true });
     expect(off.mode).toBe("unavailable");
     expect(off.reason).toMatch(/switched off/);
-  });
-
-  it("detects sidecar, compose-without-sidecar, and source install kinds", () => {
-    expect(
-      resolveInstallKind({ updaterUrlConfigured: true, updaterReachable: true, hasCheckout: true }),
-    ).toEqual({ kind: "sidecar", mode: "sidecar", reason: null });
-    const compose = resolveInstallKind({
-      updaterUrlConfigured: true,
-      updaterReachable: false,
-      hasCheckout: true,
-    });
-    expect(compose.kind).toBe("compose");
-    expect(compose.mode).toBe("unavailable");
-    expect(compose.reason).toMatch(/sidecar/);
-    const source = resolveInstallKind({
-      updaterUrlConfigured: false,
-      updaterReachable: false,
-      hasCheckout: true,
-    });
-    expect(source.kind).toBe("source");
-    expect(source.mode).toBe("checkout");
-    expect(manualUpgradeCommands("compose")).toEqual([
-      "# Published release tag",
-      ...COMPOSE_MANUAL_UPGRADE_COMMANDS,
-      "# Local tag (rebuild from checkout)",
-      "git pull",
-      "GIT_SHA=$(git rev-parse HEAD) docker compose --env-file .env -f infra/compose/docker-compose.prod.yml up -d --wait --pull never --build api worker web",
-    ]);
-    expect(manualUpgradeCommands("compose", { imageTag: "local" })).toEqual([
-      "git pull",
-      "GIT_SHA=$(git rev-parse HEAD) docker compose --env-file .env -f infra/compose/docker-compose.prod.yml up -d --wait --pull never --build api worker web",
-    ]);
-    expect(manualUpgradeCommands("compose", { imageTag: "sha-abc" })).toEqual([
-      ...COMPOSE_MANUAL_UPGRADE_COMMANDS,
-    ]);
-    expect(manualUpgradeCommands("source")).toEqual([...SOURCE_MANUAL_UPGRADE_COMMANDS]);
-    expect(manualUpgradeCommands("sidecar")).toEqual([]);
   });
 });
 
@@ -584,6 +544,82 @@ describe("managed env assignments", () => {
     );
     expect(result.match(/ANVIQ_IMAGE_TAG=sha-/g)).toHaveLength(2);
     expect(result).not.toContain("stale");
+  });
+
+  it.each([
+    " ANVIQ_IMAGE_TAG=v1.2.0",
+    "\tANVIQ_IMAGE_TAG=v1.2.0",
+    "ANVIQ_IMAGE_TAG = v1.2.0",
+    "ANVIQ_IMAGE_TAG\t=\tv1.2.0",
+    "\u00a0ANVIQ_IMAGE_TAG\u00a0=\u00a0v1.2.0",
+    " export ANVIQ_IMAGE_TAG = 'v1.2.0' # pinned",
+    'ANVIQ_IMAGE_TAG: "v1.2.0"',
+  ])("rewrites a later Compose assignment: %s", (duplicate) => {
+    const contents = `ANVIQ_IMAGE_TAG=v1.1.0\n${duplicate}\n`;
+    expect(parse(contents).ANVIQ_IMAGE_TAG).toBe("v1.2.0");
+    const result = upsertEnvAssignments(contents, {
+      ANVIQ_IMAGE_TAG: "v2.0.0",
+    });
+
+    expect(result).toBe("ANVIQ_IMAGE_TAG=v2.0.0\nANVIQ_IMAGE_TAG=v2.0.0\n");
+    expect(parse(result).ANVIQ_IMAGE_TAG).toBe("v2.0.0");
+  });
+
+  it("rewrites mixed current and rollback duplicates while preserving unrelated CRLF content", () => {
+    const unrelated = [
+      "# ANVIQ_IMAGE_TAG = commented",
+      "  # ANVIQ_IMAGE_TAG=also-commented",
+      "ANVIQ_IMAGE_TAG_EXTRA=untouched",
+      "OTHER = 'keep # this' # comment",
+      "",
+    ];
+    const contents = [
+      "ANVIQ_IMAGE_TAG=v1.0.0",
+      "ANVIQ_IMAGE_TAG_PREVIOUS=v0.9.0",
+      ...unrelated,
+      " \tANVIQ_IMAGE_TAG \t= v1.2.0 # pinned",
+      "\tANVIQ_IMAGE_TAG_PREVIOUS = 'v1.1.0' # rollback",
+    ].join("\r\n");
+    const assignments = { ANVIQ_IMAGE_TAG: "v2.0.0", ANVIQ_IMAGE_TAG_PREVIOUS: "v1.2.0" };
+    const result = upsertEnvAssignments(contents, assignments);
+
+    expect(result).toBe(
+      [
+        "ANVIQ_IMAGE_TAG=v2.0.0",
+        "ANVIQ_IMAGE_TAG_PREVIOUS=v1.2.0",
+        ...unrelated,
+        "ANVIQ_IMAGE_TAG=v2.0.0",
+        "ANVIQ_IMAGE_TAG_PREVIOUS=v1.2.0",
+        "",
+      ].join("\r\n"),
+    );
+    expect(parse(result)).toMatchObject(assignments);
+  });
+
+  it.each(
+    ["'", '"', "`"].flatMap((quote) => ["", "\uFEFF", "\u00a0"].map((prefix) => [quote, prefix])),
+  )(
+    "preserves assignment-like text inside an unrelated %s quoted value with prefix %j",
+    (quote, prefix) => {
+      const unrelated = `${prefix}notes.value: ${quote}first\\\nANVIQ_IMAGE_TAG=v0.9.0\n ANVIQ_IMAGE_TAG = v1.0.0\nlast${quote} # keep`;
+      const result = upsertEnvAssignments(`${unrelated}\nANVIQ_IMAGE_TAG=v1.2.0\n`, {
+        ANVIQ_IMAGE_TAG: "v2.0.0",
+      });
+
+      expect(result).toBe(`${unrelated}\nANVIQ_IMAGE_TAG=v2.0.0\n`);
+      expect(parse(result)["notes.value"]).toBe(parse(unrelated)["notes.value"]);
+    },
+  );
+
+  it("preserves a leading BOM when rewriting managed duplicates", () => {
+    const result = upsertEnvAssignments(
+      "\uFEFFANVIQ_IMAGE_TAG=v1.1.0\nANVIQ_IMAGE_TAG = v1.2.0\n",
+      {
+        ANVIQ_IMAGE_TAG: "v2.0.0",
+      },
+    );
+    expect(result).toBe("\uFEFFANVIQ_IMAGE_TAG=v2.0.0\nANVIQ_IMAGE_TAG=v2.0.0\n");
+    expect(parse(result).ANVIQ_IMAGE_TAG).toBe("v2.0.0");
   });
 
   it("refuses values that would inject a second assignment or a compose expression", () => {

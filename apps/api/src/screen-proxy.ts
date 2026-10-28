@@ -1,29 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { hasActiveComputerControl } from "@anviq/adapters";
-import type { ScreenCapabilityScope } from "@anviq/core/node/screen-capability";
-import {
-  issueScreenCapability,
-  openScreenCapability,
-  SCREEN_TARGET_ENDPOINT,
-} from "@anviq/core/node/screen-capability";
+import { openScreenCapability, SCREEN_TARGET_ENDPOINT } from "@anviq/core/node/screen-capability";
 import type { PrismaClient } from "@anviq/db";
 import { runAsSystem } from "@anviq/db";
 import type { Hono } from "hono";
 import { requestBodyLimit } from "./request-body-limit.js";
-
-export function addScreenProxyCapability(
-  url: string,
-  secret: string,
-  origin: string,
-  scope: ScreenCapabilityScope,
-  now = Date.now(),
-) {
-  // Local/desktop providers return non-http schemes (e.g. desktop://). Those never
-  // traverse the web proxy, so seal only http(s) upstream URLs.
-  const protocol = new URL(url).protocol;
-  if (protocol !== "http:" && protocol !== "https:") return url;
-  return issueScreenCapability(url, secret, origin, scope, now);
-}
 
 export function mountScreenTarget(app: Hono, prisma: PrismaClient, secret: string) {
   app.post(SCREEN_TARGET_ENDPOINT, requestBodyLimit(16 * 1024), async (c) => {

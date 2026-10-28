@@ -1,14 +1,15 @@
 import { BUILTIN_AGENT_SKILLS } from "@anviq/adapters";
 import type { Actor, AgentSkill, AgentSkillSource } from "@anviq/contracts";
+import type { SkillSource } from "@anviq/core";
 import {
   buildSkillMd,
   findSkillByName,
   isSkillReadOnly,
   mergeBuiltinSkills,
   parseSkillMd,
-  type SkillSource,
 } from "@anviq/core";
-import { IsolationError, type PrismaClient } from "@anviq/db";
+import type { PrismaClient } from "@anviq/db";
+import { IsolationError } from "@anviq/db";
 import { ORPCError } from "@orpc/server";
 
 type AgentSkillRow = {
@@ -135,6 +136,7 @@ export function createAgentSkillsService(prisma: PrismaClient) {
     async list(actor: Actor): Promise<Omit<AgentSkill, "content">[]> {
       const rows = await prisma.agentSkill.findMany({
         where: { spaceId: actor.spaceId, userId: actor.userId },
+        omit: { files: true },
         orderBy: [{ name: "asc" }, { id: "asc" }],
       });
       return mergeBuiltinSkills(builtinCatalog(), rows.map(mapAgentSkill)).map(
@@ -145,6 +147,7 @@ export function createAgentSkillsService(prisma: PrismaClient) {
     async listWithContent(actor: Actor): Promise<AgentSkill[]> {
       const rows = await prisma.agentSkill.findMany({
         where: { spaceId: actor.spaceId, userId: actor.userId },
+        omit: { files: true },
         orderBy: [{ name: "asc" }, { id: "asc" }],
       });
       return mergeBuiltinSkills(builtinCatalog(), rows.map(mapAgentSkill));

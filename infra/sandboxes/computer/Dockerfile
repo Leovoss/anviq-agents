@@ -17,6 +17,8 @@ FROM debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2
 # Dev tools let bots clone repos and fetch artifacts; containers run uid 1000
 # with no privilege escalation, so nothing can be installed at runtime.
 # Compilers stay in the builder stage; heavier toolchains are a separate call.
+# The bot browser: chromium by default, or BROWSER=brave (installed below).
+ARG BROWSER=chromium
 RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
     x11vnc \
@@ -34,10 +36,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     procps \
     bash \
-    chromium \
+    $([ "$BROWSER" = chromium ] && echo chromium) \
     fonts-liberation \
     fonts-dejavu-core \
     fonts-noto-cjk \
+    fonts-noto-color-emoji \
     locales \
     dbus-x11 \
     xdg-desktop-portal \
@@ -60,10 +63,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && python3 -c 'import openpyxl; print(openpyxl.__version__)' \
   && groupadd --gid 1000 anviq \
   && useradd --uid 1000 --gid anviq --create-home --shell /bin/bash anviq \
-  && mkdir -p /etc/anviq/fluxbox \
+  && mkdir -p /etc/anviq/fluxbox /etc/chromium/policies/managed /etc/brave/policies/managed \
   && printf '%s\n' '#!/bin/sh' 'exec xsetroot -solid "#111113" "$@"' > /usr/bin/fbsetbg \
   && chmod +x /usr/bin/fbsetbg \
   && ln -sfn /bin/true /usr/bin/xmessage
+# Brave replaces Chromium only when built with BROWSER=brave. The default
+# build installs Chromium above, so this step does nothing for it.
+RUN set -eux; \
+    case "$BROWSER" in \
+      chromium) ;; \
+      brave) \
+        keyring=/usr/share/keyrings/brave-browser-archive-keyring.gpg; \
+        curl -fsSLo "$keyring" https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg; \
+        echo "deb [signed-by=$keyring arch=$(dpkg --print-architecture)] https://brave-browser-apt-release.s3.brave.com/ stable main" \
+          > /etc/apt/sources.list.d/brave-browser-release.list; \
+        apt-get update; \
+        apt-get install -y --no-install-recommends brave-browser; \
+        rm -rf /var/lib/apt/lists/*; \
+        mkdir -p /etc/brave/policies/managed; \
+        printf '%s\n' '{' \
+          '  "BraveRewardsDisabled": true,' \
+          '  "BraveWalletDisabled": true,' \
+          '  "BraveAIChatEnabled": false,' \
+          '  "BraveVPNDisabled": true,' \
+          '  "BraveNewsDisabled": true,' \
+          '  "BraveTalkDisabled": true' \
+          '}' > /etc/brave/policies/managed/anviq.json ;; \
+      *) echo "unsupported BROWSER: $BROWSER (use chromium or brave)" >&2; exit 1 ;; \
+    esac
 RUN ln -s "$(dpkg -L libnss-wrapper | grep '/libnss_wrapper.so$')" /usr/local/lib/libnss_wrapper.so
 ARG TARGETARCH
 ARG UV_VERSION=0.12.19
@@ -111,11 +138,17 @@ WORKDIR /home/anviq
 COPY --chmod=755 start.sh /usr/local/bin/anviq-computer
 COPY --chmod=644 user-env.sh /usr/local/lib/anviq-user-env.sh
 COPY --chmod=755 control.py /usr/local/bin/anviq-computer-control
+# Tells the supervisor this control service accepts scrolls aimed at a point and sideways
+# scrolls; it sends those to older images through its fallback instead.
+LABEL anviq.control.aimedScroll="1"
 COPY --from=capture-builder /build/libanviq-xcapture.so /usr/local/lib/libanviq-xcapture.so
 COPY --chmod=755 anviq-browser /usr/local/bin/anviq-browser
 COPY --chmod=755 anviq-focus-or-launch /usr/local/bin/anviq-focus-or-launch
 COPY --chmod=755 anviq-page-browser /usr/local/bin/anviq-page-browser
 COPY --chmod=644 anviq-browser.desktop /usr/share/applications/anviq-browser.desktop
+# Anviq Agents keeps credentials itself; the browser's save prompts would cover pages.
+COPY --chmod=644 browser-policy.json /etc/chromium/policies/managed/anviq-browser.json
+COPY --chmod=644 browser-policy.json /etc/brave/policies/managed/anviq-browser.json
 COPY --chmod=644 fluxbox.init /etc/anviq/fluxbox/init
 COPY --chmod=644 fluxbox.apps /etc/anviq/fluxbox/apps
 COPY --chmod=644 fluxbox.menu /etc/anviq/fluxbox/menu
@@ -140,4 +173,5 @@ ENV LD_PRELOAD=/usr/local/lib/libnss_wrapper.so \
     NSS_WRAPPER_PASSWD=/tmp/anviq-nss/passwd \
     NSS_WRAPPER_GROUP=/tmp/anviq-nss/group
 USER 1000:1000
-CMD ["/usr/local/bin/anviq-computer"]
+# Start Bash without the wrapper; user-env enables it once both files exist.
+CMD ["/usr/bin/env", "-u", "LD_PRELOAD", "/usr/local/bin/anviq-computer"]

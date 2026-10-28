@@ -2,7 +2,6 @@ import type { Actor, MessageBlock } from "@anviq/contracts";
 import type { Prisma, PrismaClient, ThreadEvents } from "@anviq/db";
 import { appendEventInTransaction, IsolationError } from "@anviq/db";
 
-/** Minimal dependency surface for helpers that update a bot's thread cards. */
 export type BotThreadDeps = {
   prisma: PrismaClient;
   events: ThreadEvents;

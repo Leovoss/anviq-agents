@@ -7,7 +7,7 @@ SSH_PORT="${SSH_PORT:-22}"
 [[ "${SSH_PORT}" =~ ^[0-9]+$ ]] && ((SSH_PORT > 0 && SSH_PORT <= 65535)) || { echo "Invalid SSH_PORT" >&2; exit 1; }
 
 if [[ "${EUID}" -ne 0 ]]; then
-  exec sudo --preserve-env=DEPLOY_USER,SSH_PORT,SSH_CONNECTION bash "$0" "$@"
+  exec sudo --preserve-env=DEPLOY_USER,SSH_PORT,SSH_CONNECTION,ANVIQ_DEPLOY_DIR bash "$0" "$@"
 fi
 
 # Validate the guard's session identity before installing packages or writing host settings.
@@ -119,17 +119,42 @@ net.ipv6.conf.default.accept_source_route = 0
 EOF
 sysctl --system >/dev/null
 
+if [[ -z "${ANVIQ_DEPLOY_DIR:-}" && -r /etc/anviq/deploy.env ]]; then
+  ANVIQ_DEPLOY_DIR="$(sed -n 's/^ANVIQ_DEPLOY_DIR=//p' /etc/anviq/deploy.env | tail -1 | tr -d '"')"
+fi
+DEPLOY_DIR="${ANVIQ_DEPLOY_DIR:-/srv/anviq}"
+[[ "${DEPLOY_DIR}" == /* ]] || { echo "ANVIQ_DEPLOY_DIR must be an absolute path" >&2; exit 1; }
+DEPLOY_HOME="$(getent passwd "${DEPLOY_USER}" | cut -d: -f6)"
+
+# The kernel needs a watched path's parent directory to exist; rerun after creating a skipped one.
 install -d -m 750 /etc/audit/rules.d
-cat >/etc/audit/rules.d/50-anviq.rules <<'EOF'
--w /etc/ssh/sshd_config -p wa -k sshd_config
--w /etc/ssh/sshd_config.d/ -p wa -k sshd_config
--w /etc/sudoers -p wa -k sudoers
--w /etc/sudoers.d/ -p wa -k sudoers
--w /etc/passwd -p wa -k identity
--w /etc/group -p wa -k identity
--w /etc/shadow -p wa -k identity
--w /etc/gshadow -p wa -k identity
-EOF
+audit_watches=(
+  "/etc/ssh/sshd_config sshd_config"
+  "/etc/ssh/sshd_config.d/ sshd_config"
+  "/etc/sudoers sudoers"
+  "/etc/sudoers.d/ sudoers"
+  "/etc/passwd identity"
+  "/etc/group identity"
+  "/etc/shadow identity"
+  "/etc/gshadow identity"
+  "${DEPLOY_HOME}/.ssh/authorized_keys ssh_keys"
+  "/root/.ssh ssh_keys"
+  "/etc/anviq anviq_config"
+  "${DEPLOY_DIR}/.env app_secrets"
+  "/usr/local/sbin host_scripts"
+  "/etc/systemd/system persistence"
+  "/etc/cron.d persistence"
+  "/var/spool/cron persistence"
+  "/etc/docker/daemon.json docker_config"
+)
+for watch in "${audit_watches[@]}"; do
+  read -r path key <<<"${watch}"
+  if [[ -d "$(dirname "${path}")" ]]; then
+    printf -- '-w %s -p wa -k %s\n' "${path}" "${key}"
+  else
+    echo "Skipping audit watch on ${path}: its directory does not exist" >&2
+  fi
+done >/etc/audit/rules.d/50-anviq.rules
 augenrules --load >/dev/null
 
 # Keep existing private-network rules. Roll back unless a fresh SSH session confirms.
@@ -147,5 +172,20 @@ install -m 0755 "$(dirname "$0")/firewall-change.sh" /usr/local/sbin/anviq-firew
 systemctl enable --now apparmor auditd fail2ban unattended-upgrades
 systemctl restart fail2ban
 systemctl reload ssh
+
+# Ship the audit trail off the host only when an operator configured a sink; see docs/self-host.md.
+AUDIT_ENV=/etc/anviq/audit-ship.env
+if grep -q '^ANVIQ_AUDIT_SINK_URL=.' "${AUDIT_ENV}" 2>/dev/null; then
+  audit_token="$(sed -n 's/^ANVIQ_AUDIT_TOKEN_FILE=//p' "${AUDIT_ENV}" | tail -1 | tr -d '"')"
+  audit_token="${audit_token:-/etc/anviq/audit-ship.token}"
+  [[ -s "${audit_token}" ]] || { echo "Audit sink is configured but ${audit_token} is missing or empty" >&2; exit 1; }
+  chown root:root "${AUDIT_ENV}" "${audit_token}"
+  chmod 600 "${AUDIT_ENV}" "${audit_token}"
+  install -m 0755 "$(dirname "$0")/audit-ship.py" /usr/local/sbin/anviq-audit-ship
+  install -m 0644 "$(dirname "$0")/../systemd/anviq-audit-ship.service" /etc/systemd/system/anviq-audit-ship.service
+  systemctl daemon-reload
+  systemctl enable anviq-audit-ship.service
+  systemctl restart anviq-audit-ship.service
+fi
 
 echo "Host hardening applied. Confirm the firewall token from a fresh SSH session within three minutes."

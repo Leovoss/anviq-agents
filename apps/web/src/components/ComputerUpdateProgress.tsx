@@ -1,21 +1,7 @@
-import { COMPUTER_UPDATE_STAGES, type ComputerUpdate } from "@anviq/contracts";
+import type { ComputerUpdate } from "@anviq/contracts";
+import { COMPUTER_UPDATE_STAGES } from "@anviq/contracts";
 import { computerUpdateNeedsAttention, computerUpdateStages } from "@anviq/core";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  Button,
-  cn,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Spinner,
-} from "@anviq/ui-web";
+import { Button, cn, Dialog, DialogContent, DialogTitle, Spinner } from "@anviq/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { CheckCircle2, Circle, CircleAlert } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -33,7 +19,6 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
   completed.current = onCompleted;
   const [error, setError] = useState(false);
   const [recovering, setRecovering] = useState(false);
-  const [releaseId, setReleaseId] = useState<string | null>(null);
   useEffect(() => computerUpdates.watch(), []);
   useEffect(() => {
     if (
@@ -166,11 +151,6 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
               </p>
             ) : null}
             <div className="flex justify-end gap-2 border-t border-border px-6 py-4">
-              {selected.status === "interrupted" && selected.canReleaseReservation ? (
-                <Button variant="outline" onClick={() => setReleaseId(selected.id)}>
-                  <Trans>Release computer</Trans>
-                </Button>
-              ) : null}
               {selected.status === "failed" ? (
                 <Button
                   variant="outline"
@@ -204,46 +184,6 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
           </DialogContent>
         ) : null}
       </Dialog>
-      <AlertDialog
-        open={releaseId !== null}
-        onOpenChange={(open) => {
-          if (!open) setReleaseId(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              <Trans>Release interrupted computer?</Trans>
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              <Trans>Make sure nothing is still running on this computer.</Trans>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>
-              <Trans>Cancel</Trans>
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={recovering}
-              onClick={() => {
-                if (!releaseId) return;
-                setRecovering(true);
-                setError(false);
-                void computerUpdates
-                  .releaseInterrupted(releaseId)
-                  .then(() => setReleaseId(null))
-                  .catch(() => {
-                    setReleaseId(null);
-                    setError(true);
-                  })
-                  .finally(() => setRecovering(false));
-              }}
-            >
-              <Trans>Nothing is still running</Trans>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

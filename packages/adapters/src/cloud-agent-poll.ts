@@ -7,10 +7,12 @@ import {
 } from "@anviq/adapter-kit";
 import type { MessageBlock } from "@anviq/contracts";
 import { cloudAgentHttpsUrl } from "@anviq/core";
-import { appendEventInTransaction, type CloudAgent, Prisma } from "@anviq/db";
+import type { CloudAgent } from "@anviq/db";
+import { appendEventInTransaction, Prisma } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
 import { cloudAgentsEnabled } from "./cloud-agent-factory.js";
-import { type CloudAgentDeps, cloudAgentBlock, enqueueCloudAgent } from "./cloud-agent-service.js";
+import type { CloudAgentDeps } from "./cloud-agent-service.js";
+import { cloudAgentBlock, enqueueCloudAgent } from "./cloud-agent-service.js";
 import { cloudAgentLaunchSchema, cloudAgentPromptSchema } from "./cloud-agent-tools.js";
 
 const FOLLOWUP_SETTLE_MS = 5 * 60_000;
