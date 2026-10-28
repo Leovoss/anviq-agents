@@ -1,4 +1,5 @@
 import type { Actor, RoutineHistory, RoutineRun, RoutineRunCursor } from "@anviq/contracts";
+import { ROUTINE_HISTORY_PAGE_SIZE } from "@anviq/contracts";
 import { runFailureError } from "@anviq/core";
 import type { PrismaClient } from "@anviq/db";
 import { Prisma } from "@anviq/db";
@@ -9,6 +10,7 @@ export async function listRoutineRuns(
   actor: Actor,
   routineId: string,
   before?: RoutineRunCursor,
+  limit = ROUTINE_HISTORY_PAGE_SIZE,
 ): Promise<RoutineHistory> {
   const routine = await prisma.routine.findFirst({
     where: {
@@ -48,12 +50,12 @@ export async function listRoutineRuns(
       completedAt: true,
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    take: 21,
+    take: limit + 1,
   });
-  const runs = rows.slice(0, 20);
+  const runs = rows.slice(0, limit);
   const last = runs.at(-1);
   const nextCursor =
-    rows.length > 20 && last ? { id: last.id, createdAt: last.createdAt.toISOString() } : null;
+    rows.length > limit && last ? { id: last.id, createdAt: last.createdAt.toISOString() } : null;
   // Routine runs can finish silently. A chat link is offered only when a message exists.
   const messages = runs.length
     ? await prisma.$queryRaw<Array<{ id: string; runId: string; threadId: string }>>(Prisma.sql`

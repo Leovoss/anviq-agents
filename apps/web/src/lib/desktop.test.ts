@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { AnviqDesktop, AnviqDesktopOAuthCallback } from "./desktop.js";
 import {
-  type AnviqDesktop,
-  type AnviqDesktopOAuthCallback,
   desktopOAuthCode,
   oauthStateOf,
   onDesktopOAuthCallback,

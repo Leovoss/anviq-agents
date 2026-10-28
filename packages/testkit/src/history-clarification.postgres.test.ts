@@ -59,7 +59,7 @@ describe.skipIf(!enabled)("product history clarification eval boundary", () => {
       });
       const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-clarification-"));
       try {
-        const { createApp } = await import("../../../apps/api/src/app.ts");
+        const { createApp } = await import("@anviq/api/app");
         const result = await runTrial(scenario, 1, {
           connection: {
             provider: model.model.provider,

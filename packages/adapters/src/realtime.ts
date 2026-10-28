@@ -1,5 +1,6 @@
 import type { RealtimeFanout } from "@anviq/adapter-kit";
-import { Client, type Notification } from "pg";
+import type { Notification } from "pg";
+import { Client } from "pg";
 
 const POSTGRES_CHANNEL = "anviq_events";
 const MAX_NOTIFY_PAYLOAD_BYTES = 7_900;

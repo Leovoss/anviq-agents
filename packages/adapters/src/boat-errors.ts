@@ -1,7 +1,7 @@
 import { setTimeout as delay } from "node:timers/promises";
-import { SandboxRateLimitError } from "@anviq/adapter-kit";
+import { SandboxRateLimitError, SandboxUnresponsiveError } from "@anviq/adapter-kit";
 import { redactSecrets } from "@anviq/core";
-import { ResponseError } from "@boatdev/sdk";
+import { FetchError, ResponseError } from "@boatdev/sdk";
 import { readBodyCapped } from "./web-ssrf.js";
 
 const MAX_BOAT_ERROR_RESPONSE_BYTES = 16 * 1024;
@@ -33,7 +33,8 @@ const TRANSIENT_STATUSES = new Set([500, 502, 503, 504]);
 /**
  * Keep HTTP failures actionable without changing the SDK's status-based recovery contract.
  * A brief Boat outage is retried once: any call whose request never arrived, and an
- * `idempotent` call that Boat failed on its side.
+ * `idempotent` call that Boat failed on its side. A sandbox that took the request and did not
+ * answer in time would only time out again, so that is never resent.
  */
 export function wrapBoatCall<Args extends unknown[], Result>(
   call: (...args: Args) => Promise<Result>,
@@ -44,9 +45,18 @@ export function wrapBoatCall<Args extends unknown[], Result>(
     try {
       return await call(...args);
     } catch (error) {
+      // The connection to Boat failed without an answer. The request may have arrived, so it
+      // is not resent unless it never left; background work tries again on its next pass.
+      if (error instanceof FetchError && !aborted(error, callerSignal(args[1]))) {
+        throw new SandboxUnresponsiveError("Boat could not be reached", { cause: error });
+      }
       if (!(error instanceof ResponseError)) throw error;
       const wrapped = await boatResponseError(error.response, apiKey);
       if (error.response.status === 429) throw new SandboxRateLimitError({ cause: wrapped });
+      // Boat's proxy reached the sandbox but gave up waiting for its answer.
+      if (wrapped.code === "sandbox_direct_failed" && /\btimeout\b/i.test(wrapped.message)) {
+        throw new SandboxUnresponsiveError(wrapped.message, { cause: wrapped });
+      }
       throw wrapped;
     }
   };
@@ -77,9 +87,17 @@ function unsent(error: unknown): boolean {
   for (let depth = 0; current instanceof Error && depth < 4; depth += 1) {
     const code = (current as { code?: unknown }).code;
     if (typeof code === "string" && UNSENT_CODES.has(code)) return true;
+    // Reset during the TLS handshake, before any of the request was written.
+    if (code === "ECONNRESET" && /before secure TLS connection/.test(current.message)) return true;
     current = current.cause;
   }
   return false;
+}
+
+/** A fetch the caller cancelled or that ran out of time, rather than one the network lost. */
+function aborted(error: FetchError, signal: AbortSignal | undefined): boolean {
+  const name = error.cause instanceof Error ? error.cause.name : undefined;
+  return signal?.aborted === true || name === "AbortError" || name === "TimeoutError";
 }
 
 function failedAtBoat(error: unknown): boolean {
