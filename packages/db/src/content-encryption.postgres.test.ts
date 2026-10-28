@@ -388,7 +388,14 @@ describePostgres("content encryption (PostgreSQL)", () => {
       );
 
       const routine = await prisma.routine.create({
-        data: { spaceId, botId, userId, name: "Daily", prompt: "Count the quokka colony" },
+        data: {
+          spaceId,
+          botId,
+          userId,
+          name: "Daily",
+          prompt: "Count the quokka colony",
+          crons: ["0 9 * * *"],
+        },
       });
       expect(await stored(`SELECT prompt FROM routines WHERE id = $1`, routine.id)).not.toContain(
         "colony",
