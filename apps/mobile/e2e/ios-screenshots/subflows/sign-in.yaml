@@ -1,0 +1,29 @@
+appId: com.anviq.app
+---
+- runFlow: launch-app.yaml
+- runFlow:
+    when:
+      visible: "Sign up for Anviq Agents"
+    commands:
+      - tapOn: "Sign in"
+- extendedWaitUntil:
+    visible: "Sign in to Anviq Agents"
+    timeout: 15000
+- tapOn: "Email"
+- inputText: ${ANVIQ_ACTIVE_EMAIL}
+- tapOn: "Password"
+- inputText: ${ANVIQ_SCREENSHOT_PASSWORD}
+- hideKeyboard
+- tapOn: "Sign in"
+- tapOn:
+    text: "Not Now"
+    optional: true
+- tapOn:
+    text: "Don’t allow"
+    optional: true
+- tapOn:
+    text: "Don't allow"
+    optional: true
+- extendedWaitUntil:
+    visible: "Account"
+    timeout: 40000

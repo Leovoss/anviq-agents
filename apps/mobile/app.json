@@ -1,0 +1,99 @@
+{
+  "expo": {
+    "name": "Anviq Agents",
+    "slug": "anviq",
+    "scheme": "anviq",
+    "version": "1.0.10",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FCFCFC",
+          "dark": {
+            "backgroundColor": "#141414"
+          }
+        }
+      ],
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": false,
+          "microphonePermission": "Anviq Agents uses the microphone for voice calls with your bots."
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "speechRecognitionPermission": "Anviq Agents turns your speech into messages during voice calls.",
+          "microphonePermission": "Anviq Agents uses the microphone for voice calls with your bots."
+        }
+      ],
+      "expo-localization",
+      "@react-native-vector-icons/ionicons",
+      "@react-native-vector-icons/material-design-icons",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Anviq Agents uses your photo library so you can attach images to a bot message.",
+          "cameraPermission": "Anviq Agents uses the camera so you can attach photos to a bot message.",
+          "microphonePermission": "Anviq Agents uses the microphone for voice calls with your bots."
+        }
+      ],
+      "expo-sharing",
+      "./plugins/with-worklets-headers",
+      "./plugins/with-scene-lifecycle",
+      "./plugins/with-lan-cleartext"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.anviq.app",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "icon": "../../packages/ui-tokens/assets/Anviq.icon",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "Anviq Agents uses the camera so you can attach photos to a bot message.",
+        "NSPhotoLibraryUsageDescription": "Anviq Agents uses your photo library so you can attach images to a bot message.",
+        "NSLocalNetworkUsageDescription": "Anviq Agents connects to a self-hosted Anviq Agents server on your local network.",
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    },
+    "android": {
+      "package": "com.anviq.app",
+      "versionCode": 10,
+      "softwareKeyboardLayoutMode": "resize",
+      "icon": "./assets/icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "monochromeImage": "./assets/monochrome-icon.png",
+        "backgroundImage": "./assets/icon-background.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "router": {},
+      "supportsRTL": true
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}
