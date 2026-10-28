@@ -26,9 +26,10 @@ root=$(git rev-parse --show-toplevel)
 git -C "$tmp" add -A
 tree=$(git -C "$tmp" write-tree)
 
-parents=(-p "$commit")
+# The mirror chains only to its previous commit, so upstream authors never enter this history.
+parents=()
 if git rev-parse --verify --quiet "refs/heads/$mirror" >/dev/null; then
-  parents=(-p "$mirror" -p "$commit")
+  parents=(-p "$mirror")
 fi
 new=$(git commit-tree "$tree" "${parents[@]}" \
   -m "Sync upstream $ref" \

@@ -7,9 +7,10 @@ Version 2.0. The license text is in the LICENSE file.
 
 Anviq LLC modified the original work: names, configuration and
 branding were changed, the upstream marketing site was removed, and
-further changes are made on top of upstream releases. All changes are
-recorded in the git history of this repository. Upstream commits keep
-their original authors.
+further changes are made on top of upstream releases. The git history of
+this repository starts from a snapshot of the renamed upstream code and
+does not carry the upstream commit authors. Copyright in the upstream
+code stays with its authors, see the LICENSE file.
 
 Files created by Anviq LLC, and Anviq LLC's changes to upstream files,
 are described in LICENSE-ANVIQ.md and are not covered by the Apache

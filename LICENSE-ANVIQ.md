@@ -19,7 +19,8 @@ from upstream with only the Anviq rename applied (see `scripts/upstream/`).
 
 - A file that is not on that branch is an Anviq addition.
 - A line that differs from that branch, in a file that is on it, is an Anviq change.
-- The git history of this repository is the record. Upstream commits keep their original authors.
+- The git history of this repository starts from a snapshot of the renamed upstream code and does
+  not carry the upstream commit authors. Copyright in the upstream code stays with its authors.
 - New Anviq source files start with the line `Copyright 2026 Anviq LLC. All rights reserved.`
 
 ## Trademarks

@@ -14,6 +14,9 @@ git merge anviq-upstream
 If `pnpm-lock.yaml` conflicts, take the incoming side and run `pnpm install --lockfile-only`. Run
 `pnpm check` and `pnpm test` before merging into `main`.
 
+Each commit on `anviq-upstream` has only the previous mirror commit as its parent and names the
+upstream commit in its message, so upstream authors never enter this repository's history.
+
 Never merge `upstream/*` directly, and do not use GitHub's "Sync fork" button: both bring the
 unrenamed code straight into `main`.
 
