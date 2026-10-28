@@ -21,6 +21,8 @@ const SKIP_CONTENT = new Set(["CHANGELOG.md", "LICENSE"]);
 const DROP = [
   "apps/www",
   "README.md",
+  "README.ja.md",
+  "README.zh-CN.md",
   "CONTRIBUTING.md",
   "VISION.md",
   "CHANGELOG.md",

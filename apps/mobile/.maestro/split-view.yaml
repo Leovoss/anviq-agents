@@ -23,9 +23,6 @@ tags:
 - runFlow: helpers/server.yaml
 - tapOn: "Email"
 - inputText: ${ANVIQ_SCREENSHOT_EMAIL}
-- tapOn:
-    text: "Use password"
-    optional: true
 - tapOn: "Password"
 - inputText: ${ANVIQ_SCREENSHOT_PASSWORD}
 - hideKeyboard

@@ -3,7 +3,8 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { loadRootEnv } from "@anviq/core/node/load-root-env";
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import { PostgreSqlContainer } from "@testcontainers/postgresql";
 
 async function main() {
   loadRootEnv();
@@ -17,7 +18,7 @@ async function main() {
   const dataDir = await mkdtemp(path.join(tmpdir(), "anviq-canary-"));
   let postgres: StartedPostgreSqlContainer | undefined;
   try {
-    if (runOpenRouter) postgres = await new PostgreSqlContainer("postgres:16-alpine").start();
+    if (runOpenRouter) postgres = await new PostgreSqlContainer("postgres:18-alpine").start();
     const env = {
       ...process.env,
       DATABASE_URL: postgres?.getConnectionUri() ?? "",

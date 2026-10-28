@@ -1,0 +1,14 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.anviq.filedrop'
+version = '0.1.0'
+
+android {
+  namespace 'com.anviq.filedrop'
+  defaultConfig {
+    versionName '0.1.0'
+  }
+}

@@ -42,6 +42,25 @@ describe("loadEnv", () => {
       expect(loadEnv({ ...base, TICKET_BOARD_ENABLED: value }).ticketBoardEnabled).toBe(false);
     expect(loadEnv({ ...base, TICKET_BOARD_ENABLED: "true" }).ticketBoardEnabled).toBe(true);
   });
+  it("loads operator menu links and refuses to start on a bad value", () => {
+    expect(loadEnv(base).navLinks).toEqual([]);
+    expect(
+      loadEnv({
+        ...base,
+        ANVIQ_NAV_LINKS: '[{"id":"clients","label":"Clients","path":"/ext/clients/"}]',
+      }).navLinks,
+    ).toEqual([{ id: "clients", label: "Clients", path: "/ext/clients/", trusted: false }]);
+    expect(() =>
+      loadEnv({ ...base, ANVIQ_NAV_LINKS: '[{"id":"x","label":"X","path":"/api/me"}]' }),
+    ).toThrow("ANVIQ_NAV_LINKS");
+  });
+  it("keeps Crisp chat off unless a valid website ID is set", () => {
+    expect(loadEnv(base).crispWebsiteId).toBeNull();
+    expect(
+      loadEnv({ ...base, CRISP_WEBSITE_ID: "c2c27ea6-4fdb-4350-a9fc-4b5b052dc5ec" }).crispWebsiteId,
+    ).toBe("c2c27ea6-4fdb-4350-a9fc-4b5b052dc5ec");
+    expect(() => loadEnv({ ...base, CRISP_WEBSITE_ID: "nope" })).toThrow("CRISP_WEBSITE_ID");
+  });
   it("defaults the product path to Pi, Docker, and Graphile Worker", () => {
     const env = loadEnv(base);
     expect(env.agentRuntime).toBe("pi");
@@ -236,18 +255,6 @@ describe("loadEnv", () => {
     );
   });
 
-  it("loads optional updater sidecar wiring without requiring the token at boot", () => {
-    expect(loadEnv(base).updaterUrl).toBeUndefined();
-    expect(loadEnv(base).updaterToken).toBeUndefined();
-    const env = loadEnv({
-      ...base,
-      ANVIQ_UPDATER_URL: " http://updater:7092 ",
-      ANVIQ_UPDATER_TOKEN: " fake-review-updater-token-000000000000 ",
-    });
-    expect(env.updaterUrl).toBe("http://updater:7092");
-    expect(env.updaterToken).toBe("fake-review-updater-token-000000000000");
-  });
-
   it("loads an optional Expo access token", () => {
     expect(loadEnv(base).expoAccessToken).toBeUndefined();
     expect(loadEnv({ ...base, EXPO_ACCESS_TOKEN: " fake-expo-token " }).expoAccessToken).toBe(
@@ -280,6 +287,17 @@ describe("loadEnv", () => {
       }).emailEmulator,
     ).toBe(false);
     expect(loadEnv({ ...base, NODE_ENV: "development" }).nodeEnv).toBe("development");
+  });
+
+  it("loads generic email API connection settings", () => {
+    expect(
+      loadEnv({ ...base, EMAIL_PROVIDER: " resend ", EMAIL_API_KEY: " fake-key " }),
+    ).toMatchObject({
+      emailProvider: "resend",
+      emailApiKey: "fake-key",
+    });
+    expect(loadEnv(base).emailProvider).toBeUndefined();
+    expect(loadEnv(base).emailApiKey).toBeUndefined();
   });
 
   it("defaults the remote MCP private-endpoint escape to off", () => {

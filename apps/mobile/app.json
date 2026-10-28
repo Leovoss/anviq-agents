@@ -3,7 +3,7 @@
     "name": "Anviq Agents",
     "slug": "anviq",
     "scheme": "anviq",
-    "version": "1.0.6",
+    "version": "1.0.10",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",

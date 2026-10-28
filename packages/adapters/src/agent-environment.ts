@@ -1,25 +1,4 @@
-import type { SecretStore } from "@anviq/adapter-kit";
-import { AgentSecretInputSchema } from "@anviq/contracts";
 import { redactSecrets } from "@anviq/core";
-
-type EncryptedAgentSecret = {
-  name: string;
-  secret: { id: string; ciphertext: string };
-};
-
-export async function decryptAgentEnvironment(
-  rows: EncryptedAgentSecret[],
-  secrets: Pick<SecretStore, "load">,
-): Promise<Record<string, string>> {
-  return Object.fromEntries(
-    await Promise.all(
-      rows.map(async (row) => {
-        AgentSecretInputSchema.shape.name.parse(row.name);
-        return [row.name, await secrets.load(row.secret.ciphertext, row.secret.id)];
-      }),
-    ),
-  );
-}
 
 export function formatAgentEnvironmentInstruction(
   environment: Record<string, string>,

@@ -1,3 +1,4 @@
+import { getLogContext } from "@anviq/logging";
 import type { SpanAttributes, TelemetryContext, TelemetrySpan } from "@earendil-works/pi-telemetry";
 import type { Attributes, Context, Span, Tracer } from "@opentelemetry/api";
 import { ROOT_CONTEXT, SpanStatusCode, trace } from "@opentelemetry/api";
@@ -50,7 +51,7 @@ export function otelPiContext(
   tracer: Tracer,
   captureContent: boolean,
   ids: SpanAttributes = {},
-  parent: Context = ROOT_CONTEXT,
+  parent?: Context,
 ): TelemetryContext {
   return {
     async startSpan(options, callback) {
@@ -60,12 +61,18 @@ export function otelPiContext(
           Object.entries(options.attributes ?? {}).filter(([key]) => key.startsWith("anviq.")),
         ),
       };
+      const parentContext = parent ?? correlatedLogContext();
       const span: Span = tracer.startSpan(
         options.name,
         { attributes: attributes({ ...options.attributes, ...correlation }, captureContent) },
-        parent,
+        parentContext,
       );
-      const child = otelPiContext(tracer, captureContent, correlation, trace.setSpan(parent, span));
+      const child = otelPiContext(
+        tracer,
+        captureContent,
+        correlation,
+        trace.setSpan(parentContext, span),
+      );
       const bridge: TelemetrySpan = {
         ...child,
         addEvent: (name, values) => {
@@ -110,4 +117,20 @@ export function createPiTelemetryExporter() {
     ),
     shutdown: () => provider.shutdown(),
   };
+}
+
+function correlatedLogContext(): Context {
+  const log = getLogContext();
+  const traceId = log["trace.id"];
+  const spanId = log["span.id"];
+  if (
+    typeof traceId !== "string" ||
+    !/^[a-f0-9]{32}$/.test(traceId) ||
+    /^0+$/.test(traceId) ||
+    typeof spanId !== "string" ||
+    !/^[a-f0-9]{16}$/.test(spanId) ||
+    /^0+$/.test(spanId)
+  )
+    return ROOT_CONTEXT;
+  return trace.setSpanContext(ROOT_CONTEXT, { traceId, spanId, traceFlags: 1, isRemote: true });
 }

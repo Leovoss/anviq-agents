@@ -1,15 +1,11 @@
 import type { AdapterContext, JobPublisher } from "@anviq/adapter-kit";
 import { cloudAgentPollJob } from "@anviq/adapter-kit";
 import { cloudAgentBlockFromPayload } from "@anviq/core";
-import {
-  appendEventInTransaction,
-  type CloudAgent,
-  createThreadMessageInTransaction,
-  type PrismaClient,
-  type ThreadEvents,
-} from "@anviq/db";
+import type { CloudAgent, PrismaClient, ThreadEvents } from "@anviq/db";
+import { appendEventInTransaction, createThreadMessageInTransaction } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
-import { type CloudAgentConnection, cloudAgentsEnabled } from "./cloud-agent-factory.js";
+import type { CloudAgentConnection } from "./cloud-agent-factory.js";
+import { cloudAgentsEnabled } from "./cloud-agent-factory.js";
 import { cloudAgentLaunchSchema, cloudAgentReplySchema } from "./cloud-agent-tools.js";
 
 export interface CloudAgentDeps {
@@ -89,11 +85,17 @@ export async function executeCloudAgentTool(
         type: "thread.message.created",
         payload: { messageId: message.id, role: "bot", blocks },
       });
-      return { agent: saved, seq: event.seq };
+      return {
+        agent: saved,
+        seq: event.seq,
+        firstResponseRunId: event.firstResponse ? run.id : undefined,
+      };
     });
     agent = result.agent;
     if (result.seq !== undefined)
-      await deps.events.notify(run.threadId, result.seq).catch(() => undefined);
+      await deps.events
+        .notify(run.threadId, result.seq, result.firstResponseRunId)
+        .catch(() => undefined);
   } else {
     const owned = await deps.prisma.cloudAgent.findFirst({
       where: {
