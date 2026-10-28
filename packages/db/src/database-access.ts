@@ -82,6 +82,7 @@ async function provisionWith(owner: Client, runtimeUrl: string): Promise<{ warni
     `DO $$ BEGIN EXECUTE format('GRANT CONNECT ON DATABASE %I TO ${RUNTIME_ROLE}', current_database()); END $$`,
   );
   await grantJobQueue(owner);
+  await grantBuiltInMemory(owner);
   const existing = await owner.query<{ rolsuper: boolean; rolbypassrls: boolean }>(
     "SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = $1",
     [login],
@@ -153,6 +154,21 @@ export const JOB_QUEUE_POLICY = "anviq_app_queue";
  * RLS on, so tables a graphile-worker upgrade adds or rebuilds are covered and a
  * hand-made policy of the same name is replaced by this definition.
  */
+/** The built-in memory schema is created by the owner role; the runtime role only uses it. */
+async function grantBuiltInMemory(owner: Client): Promise<void> {
+  await owner.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'anviq_memory') THEN
+        RETURN;
+      END IF;
+      GRANT USAGE ON SCHEMA anviq_memory TO ${RUNTIME_ROLE};
+      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA anviq_memory TO ${RUNTIME_ROLE};
+      ALTER DEFAULT PRIVILEGES IN SCHEMA anviq_memory
+        GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${RUNTIME_ROLE};
+    END $$`);
+}
+
 async function grantJobQueue(owner: Client): Promise<void> {
   await owner.query(`
     DO $$

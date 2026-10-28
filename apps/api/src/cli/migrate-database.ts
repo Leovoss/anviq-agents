@@ -1,8 +1,8 @@
-// `pnpm db:migrate`: schema migrations, the job queue schema, then the runtime
+// `pnpm db:migrate`: schema migrations, the job queue and memory schemas, then the runtime
 // login. Everything here runs as the migration (owner) role; the API and worker
 // then connect with DATABASE_URL and only get the runtime grants.
 import { execFileSync } from "node:child_process";
-import { migrateJobQueue } from "@anviq/adapters";
+import { migrateBuiltInMemory, migrateJobQueue } from "@anviq/adapters";
 import { loadRootEnv } from "@anviq/core/node/load-root-env";
 import {
   databaseUrls,
@@ -18,6 +18,7 @@ execFileSync("pnpm", ["--filter", "@anviq/db", "exec", "prisma", "migrate", "dep
   env: { ...process.env, DATABASE_MIGRATION_URL: urls.migrationUrl },
 });
 await migrateJobQueue(urls.migrationUrl);
+await migrateBuiltInMemory(urls.migrationUrl);
 
 if (!urls.separate) {
   process.stderr.write(`WARNING: ${SINGLE_DATABASE_URL_WARNING}\n`);

@@ -8,6 +8,7 @@ import {
   type MirrorMode,
   type MirrorResult,
 } from "@anviq/memory-engine";
+import { Client } from "pg";
 import { ANVIQ_MEMORY_PROVIDER_ID, AnviqMemoryProvider } from "./anviq-memory-provider.js";
 import {
   createHonchoProvider,
@@ -200,6 +201,22 @@ function builtInMemoryEngine(prisma: Pick<PrismaClient, "$queryRawUnsafe">): Mem
     async (sql, params = []) => ({ rows: await prisma.$queryRawUnsafe(sql, ...params) }),
     ring ? { sealer: createMemorySealer(ring) } : {},
   );
+}
+
+/**
+ * Creates or upgrades the built-in memory schema. It runs with the migration (owner) role so the
+ * runtime login never needs the right to create schemas.
+ */
+export async function migrateBuiltInMemory(connectionString: string): Promise<void> {
+  const client = new Client({ connectionString });
+  await client.connect();
+  try {
+    await createMemoryEngine(async (sql, params = []) => ({
+      rows: (await client.query(sql, params)).rows,
+    })).ensureSchema();
+  } finally {
+    await client.end();
+  }
 }
 
 /**
