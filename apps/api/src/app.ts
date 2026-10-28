@@ -205,6 +205,8 @@ type CreateAppOverrides = Partial<AppEnv> & {
   logger?: Logger;
   runtime?: AgentRuntime;
   contextStrategy?: AgentContextStrategy;
+  /** Test-only: replaces the database-backed memory provider resolver. */
+  memoryProviders?: SpaceMemoryProviderResolver;
 };
 
 async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
@@ -223,6 +225,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     logger: loggerOverride,
     runtime: runtimeOverride,
     contextStrategy,
+    memoryProviders: memoryProvidersOverride,
     ...envOverrides
   } = overrides;
   const env = { ...loadEnv(process.env), ...envOverrides };
@@ -358,7 +361,8 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     remoteConnectors,
     env.mcpAllowPrivateEndpoint,
   );
-  const memoryProviders = new SpaceMemoryProviderResolver(prisma, secrets);
+  const memoryProviders =
+    memoryProvidersOverride ?? new SpaceMemoryProviderResolver(prisma, secrets);
   const oauthLogins = new PiOAuthLogins();
   const home = new LocalAgentHomeStore(env.dataDir);
   const artifacts = new LocalArtifactStore(env.dataDir, contentEncryptionOf(prisma)?.ring);
