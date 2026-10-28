@@ -5,6 +5,7 @@ import {
   contentKeyProviderFromEnv,
   EncryptedSecretStore,
   LocalArtifactStore,
+  rewriteBuiltInMemory,
   upgradeLegacySecrets,
 } from "@anviq/adapters";
 import { resolveContentEncryption, resolveEncryptionKey } from "@anviq/core";
@@ -129,6 +130,18 @@ async function rewriteContent(mode: ContentMigrationMode) {
     write(
       `${table.table}: ${table.updated} of ${table.scanned} ${dryRun ? "to rewrite" : "rewritten"}`,
     );
+  if (mode !== "reencrypt") {
+    const memory = dryRun
+      ? undefined
+      : await rewriteBuiltInMemory(prisma, mode === "encrypt" ? "seal" : "unseal");
+    write(
+      dryRun
+        ? "memories: not checked in a dry run"
+        : memory
+          ? `memories: ${memory.updated} of ${memory.scanned} rewritten`
+          : "memories: built-in memory was never used",
+    );
+  }
   let files = 0;
   let rewritten = 0;
   for await (const file of artifacts.files()) {

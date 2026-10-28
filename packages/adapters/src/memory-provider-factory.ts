@@ -1,5 +1,6 @@
 import type { DurableMemoryScope, SecretStore, SemanticMemoryProvider } from "@anviq/adapter-kit";
 import type { PrismaClient } from "@anviq/db";
+import { contentEncryptionOf } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
 import {
   createMemoryEngine,
@@ -15,6 +16,7 @@ import {
   prepareHonchoConnection,
 } from "./honcho-memory-provider.js";
 import { revalidateLocalServiceSettings } from "./local-service-endpoint.js";
+import { createMemorySealer } from "./memory-sealer.js";
 import {
   classifySerenityConnectionSettings,
   createSerenityProvider,
@@ -191,6 +193,30 @@ function decodeCredentials(provider: string, plaintext: string): Record<string, 
   throw new Error(`Stored credentials for memory provider "${provider}" are invalid.`);
 }
 
+/** The built-in memory engine, sealed with the space keys when the client encrypts content. */
+function builtInMemoryEngine(prisma: Pick<PrismaClient, "$queryRawUnsafe">): MemoryEngine {
+  const ring = contentEncryptionOf(prisma)?.ring;
+  return createMemoryEngine(
+    async (sql, params = []) => ({ rows: await prisma.$queryRawUnsafe(sql, ...params) }),
+    ring ? { sealer: createMemorySealer(ring) } : {},
+  );
+}
+
+/**
+ * Seals existing built-in memories, or writes them back as plaintext for a rollback. Skips a
+ * deployment that never used built-in memory, so it never creates the schema.
+ */
+export async function rewriteBuiltInMemory(
+  prisma: Pick<PrismaClient, "$queryRawUnsafe">,
+  mode: "seal" | "unseal",
+): Promise<{ scanned: number; updated: number } | undefined> {
+  const rows = await prisma.$queryRawUnsafe<Array<{ found: string | null }>>(
+    "SELECT to_regclass('anviq_memory.memories')::text AS found",
+  );
+  if (!rows[0]?.found) return undefined;
+  return builtInMemoryEngine(prisma).rewrite({ mode });
+}
+
 export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
   private readonly engine: MemoryEngine;
 
@@ -201,9 +227,7 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
     >,
     private readonly secrets: SecretStore,
   ) {
-    this.engine = createMemoryEngine(async (sql, params = []) => ({
-      rows: await prisma.$queryRawUnsafe(sql, ...params),
-    }));
+    this.engine = builtInMemoryEngine(prisma);
   }
 
   // Nothing to purge before the built-in store has ever been used, and creating its schema

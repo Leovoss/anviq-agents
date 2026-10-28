@@ -11,6 +11,7 @@ directory, so a copied database dump, backup or disk does not reveal it.
 | Thread events (they repeat message content) | `events.payload` |
 | Compacted history summaries | `threads.historyCompactionSummary` |
 | Memory documents and their revisions | `memory_documents.content`, `memory_revisions.content` |
+| Built-in memory (bot, space and history) | `anviq_memory.memories.content` |
 | Bot instructions, descriptions and history | `bots.instructions`, `bots.description`, `bots.instructionHistory` |
 | Task and routine prompts | `tasks.prompt`, `routines.prompt` |
 | Agent skills | `agent_skills.content` |
@@ -19,6 +20,10 @@ directory, so a copied database dump, backup or disk does not reveal it.
 | Uploaded and generated files | `DATA_DIR/artifacts/<space>/<file>` |
 | Bot computer homes kept in [object storage](./self-host.md#bot-homes-in-object-storage) (always, whatever `CONTENT_ENCRYPTION` says) | `homes/<id>/<revision>` in the bucket |
 | Credentials (unchanged scheme) | `secrets`, `bot_secrets`, `integration_provider_configs` |
+
+Built-in memory is sealed with the same space keys and searched through keyed word tokens, so recall
+works without the server holding plaintext in the database. The optional Markdown mirror writes plain
+notes to a folder by design, so do not enable it on an instance where memory must stay sealed.
 
 Not yet encrypted, planned next: external conversation messages, outbound
 messaging bodies, steering messages, and taught skill playbooks and recordings.

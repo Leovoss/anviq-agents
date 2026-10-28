@@ -553,8 +553,8 @@ importers:
         specifier: workspace:*
         version: link:../logging
       '@anviq/memory-engine':
-        specifier: github:Leovoss/anviq-memory#c6f440dc364651e013c6906521214f7aee4e31e3
-        version: https://codeload.github.com/Leovoss/anviq-memory/tar.gz/c6f440dc364651e013c6906521214f7aee4e31e3
+        specifier: github:Leovoss/anviq-memory#90ff48064a8dd3aa083f6429db148d271d83abbe
+        version: https://codeload.github.com/Leovoss/anviq-memory/tar.gz/90ff48064a8dd3aa083f6429db148d271d83abbe
       '@aws-sdk/client-kms':
         specifier: 3.1127.0
         version: 3.1127.0
@@ -1081,8 +1081,8 @@ packages:
       zod:
         optional: true
 
-  '@anviq/memory-engine@https://codeload.github.com/Leovoss/anviq-memory/tar.gz/c6f440dc364651e013c6906521214f7aee4e31e3':
-    resolution: {tarball: https://codeload.github.com/Leovoss/anviq-memory/tar.gz/c6f440dc364651e013c6906521214f7aee4e31e3}
+  '@anviq/memory-engine@https://codeload.github.com/Leovoss/anviq-memory/tar.gz/90ff48064a8dd3aa083f6429db148d271d83abbe':
+    resolution: {tarball: https://codeload.github.com/Leovoss/anviq-memory/tar.gz/90ff48064a8dd3aa083f6429db148d271d83abbe}
     version: 0.1.0
     engines: {node: ^22.22.2 || ^24.0.0 || >=26.0.0}
 
@@ -10206,7 +10206,7 @@ snapshots:
     optionalDependencies:
       zod: 4.6.7
 
-  '@anviq/memory-engine@https://codeload.github.com/Leovoss/anviq-memory/tar.gz/c6f440dc364651e013c6906521214f7aee4e31e3': {}
+  '@anviq/memory-engine@https://codeload.github.com/Leovoss/anviq-memory/tar.gz/90ff48064a8dd3aa083f6429db148d271d83abbe': {}
 
   '@asamuzakjp/css-color@7.1.6':
     dependencies:
