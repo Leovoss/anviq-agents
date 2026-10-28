@@ -1,5 +1,6 @@
 import type { DurableMemoryScope, SecretStore, SemanticMemoryProvider } from "@anviq/adapter-kit";
 import type { PrismaClient } from "@anviq/db";
+import { getLogger } from "@anviq/logging";
 import {
   createMemoryEngine,
   type MemoryEngine,
@@ -13,6 +14,7 @@ import {
   honchoRequiresDeploymentOwner,
   prepareHonchoConnection,
 } from "./honcho-memory-provider.js";
+import { revalidateLocalServiceSettings } from "./local-service-endpoint.js";
 import {
   classifySerenityConnectionSettings,
   createSerenityProvider,
@@ -24,7 +26,6 @@ import {
 export { MemoryProviderDeploymentOwnerRequiredError } from "./serenity-memory-provider.js";
 
 import {
-  assertSupermemoryLocalBaseUrl,
   createSupermemoryProvider,
   decodeLegacySupermemoryCredentials,
   prepareSupermemoryConnection,
@@ -36,7 +37,7 @@ export interface MemoryProviderConnectionInput {
   provider: string;
   settings: Record<string, string>;
   credentials: Record<string, string>;
-  /** When false, Serenity must not probe endpoints that classify as private. */
+  /** When false, providers must not probe endpoints that classify as private. */
   allowPrivateEndpoint?: boolean;
 }
 
@@ -62,6 +63,8 @@ interface MemoryProviderAdapter {
   requiresDeploymentOwner(settings: Record<string, string>): boolean;
   /** Async trust classification (e.g. DNS) without probing credentials. */
   classifySettings?(settings: Record<string, string>): Promise<Record<string, string>>;
+  /** Recheck persisted endpoint settings before their credentials are decrypted. */
+  revalidate?(settings: Record<string, string>): Promise<void>;
   prepare(
     settings: Record<string, string>,
     credentials: Record<string, string>,
@@ -91,6 +94,7 @@ const MEMORY_PROVIDER_ADAPTERS: ReadonlyMap<string, MemoryProviderAdapter> = new
     SUPERMEMORY_PROVIDER_ID,
     {
       requiresDeploymentOwner: supermemoryRequiresDeploymentOwner,
+      revalidate: revalidateLocalServiceSettings,
       prepare: prepareSupermemoryConnection,
       create: createSupermemoryProvider,
       decodeLegacyCredentials: decodeLegacySupermemoryCredentials,
@@ -113,8 +117,8 @@ const MEMORY_PROVIDER_ADAPTERS: ReadonlyMap<string, MemoryProviderAdapter> = new
     HONCHO_PROVIDER_ID,
     {
       requiresDeploymentOwner: honchoRequiresDeploymentOwner,
-      prepare: (settings: Record<string, string>, credentials: Record<string, string>) =>
-        prepareHonchoConnection(settings, credentials),
+      revalidate: revalidateLocalServiceSettings,
+      prepare: prepareHonchoConnection,
       create: createHonchoProvider,
     },
   ],
@@ -245,12 +249,12 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
       // Also disable pre-existing local configurations authored outside the deployment boundary.
       if (!deployment?.ownerUserId || deployment.ownerUserId !== config.userId) return null;
     }
-    if (
-      config.provider === SUPERMEMORY_PROVIDER_ID &&
-      settings.mode === "local" &&
-      settings.baseUrl
-    ) {
-      await assertSupermemoryLocalBaseUrl(settings.baseUrl, { allowPrivateEndpoint: true });
+    const adapter = memoryProviderAdapter(config.provider);
+    try {
+      await adapter.revalidate?.(settings);
+    } catch {
+      getLogger().warn("Semantic memory disabled: endpoint revalidation failed");
+      return null;
     }
     const credentials = decodeCredentials(
       config.provider,

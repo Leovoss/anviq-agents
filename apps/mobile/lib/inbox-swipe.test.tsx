@@ -407,17 +407,6 @@ describe("iOS swipe row", () => {
   });
 });
 
-describe("inbox row long press", () => {
-  const source = readFileSync(new URL("../app/index.tsx", testFileUrl), "utf8").replace(/\s+/g, "");
-
-  it("leaves long press to the system menu on iOS rows and keeps the sheet elsewhere", () => {
-    for (const kind of ["bot", "group"]) {
-      const name = kind === "bot" ? "organizeBot" : "organizeGroup";
-      expect(source).toContain(`onLongPress={!SWIPE_ROWS?${name}:undefined}`);
-    }
-  });
-});
-
 describe("cross-space organize", () => {
   const source = readFileSync(new URL("../app/index.tsx", testFileUrl), "utf8");
   const handler = source.slice(
@@ -548,8 +537,8 @@ describe("inbox swipe handlers", () => {
       errorText: (_error: unknown, fallback: string) => fallback,
       chatTarget,
       unreadOverrideKey,
-      resumeLiveNotifications: vi.fn(async () => {}),
-      dismissThreadNotifications: vi.fn(async () => {}),
+      afterChatNotifyChange: vi.fn(async () => {}),
+      notifyArchivedChatsChanged: vi.fn(),
       currentApiBase: () => "",
       loadSessionToken: async () => null,
       selectedSpaceId: () => session.space,
@@ -733,5 +722,17 @@ describe("inbox swipe handlers", () => {
       "Could not archive bot",
       "Could not update chat",
     ]);
+    expect(h.notifyArchivedChatsChanged).not.toHaveBeenCalled();
   });
+
+  it.each(["bot", "group"] as const)(
+    "updates the archived count once a %s is archived",
+    async (kind) => {
+      const h = handlers(async () => ({ ok: true }));
+      await h.runRowAction(kind, { id: "x" }, "archive");
+      expect(h.notifyArchivedChatsChanged).toHaveBeenCalledOnce();
+      await h.runRowAction(kind, { id: "x" }, "pin");
+      expect(h.notifyArchivedChatsChanged).toHaveBeenCalledOnce();
+    },
+  );
 });

@@ -29,7 +29,7 @@ const DROP = [
 ];
 
 const rules = [
-  [/\b(?:hello|support|security|elie)@rakazo\.com\b/gi, "lvoss@anviq.net"],
+  [/\b[\w.-]+@rakazo\.com\b/gi, "lvoss@anviq.net"],
   [/rakazo\.com/gi, "anviq.net"],
   [/ghcr\.io\/elie222\/rakazo/g, "ghcr.io/leovoss/anviq-agents"],
   [

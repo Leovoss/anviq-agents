@@ -1,9 +1,9 @@
+import type { IntegrationSetupState, ThinkingLevel } from "@anviq/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
   cloudflareGatewayRouting,
   DEFAULT_MODEL_CONTEXT_WINDOW,
   DEFAULT_MODEL_MAX_TOKENS,
-  type IntegrationSetupState,
   MAX_MODEL_CONTEXT_WINDOW,
   MAX_MODEL_MAX_TOKENS,
   OPENAI_COMPATIBLE_PROVIDER_ID,
@@ -12,7 +12,6 @@ import {
   parseModelContextWindow,
   parseModelMaxImagesPerPrompt,
   parseModelMaxTokens,
-  type ThinkingLevel,
 } from "@anviq/contracts";
 import {
   COMPATIBLE_THINKING_LEVELS,
@@ -23,6 +22,7 @@ import {
 } from "@anviq/core";
 import {
   Button,
+  Disclosure,
   Input,
   ModelThinkingOptions,
   Select,
@@ -118,23 +118,17 @@ function providerLabel(entry: ModelCatalogEntry): string {
   return entry.provider === "openai-codex" ? "ChatGPT" : (entry.providerName ?? entry.provider);
 }
 
-function nextStepAfterModel(
-  needsIntegrationSetup: boolean,
-  needsMemory: boolean,
-): "integrations" | "memory" | "bot" {
-  return needsIntegrationSetup ? "integrations" : needsMemory ? "memory" : "bot";
+function nextStepAfterModel(needsIntegrationSetup: boolean): "integrations" | "bot" {
+  return needsIntegrationSetup ? "integrations" : "bot";
 }
 
 export function OnboardingPage() {
   const { t } = useLingui();
   const navigate = useNavigate();
   const fieldId = useId();
-  const [step, setStep] = useState<"loading" | "model" | "integrations" | "memory" | "bot">(
-    "loading",
-  );
+  const [step, setStep] = useState<"loading" | "model" | "integrations" | "bot">("loading");
   const [integrationSetup, setIntegrationSetup] = useState<IntegrationSetupState | null>(null);
   const needsIntegrationSetup = integrationSetup?.needsSetup ?? false;
-  const [needsMemory, setNeedsMemory] = useState(false);
   const [integrationServers, setIntegrationServers] = useState<string[]>([]);
   const [catalog, setCatalog] = useState<ModelCatalogEntry[]>([]);
   const [provider, setProvider] = useState("openrouter");
@@ -194,7 +188,7 @@ export function OnboardingPage() {
           // The connection itself succeeded; the effort stays adjustable in Models.
         }
       }
-      setStep(nextStepAfterModel(needsIntegrationSetup, needsMemory));
+      setStep(nextStepAfterModel(needsIntegrationSetup));
     },
   });
 
@@ -207,7 +201,16 @@ export function OnboardingPage() {
     ])
       .then(([me, models, integrations, memoryConfig]) => {
         setIntegrationSetup(integrations);
-        setNeedsMemory(memoryConfig === null);
+        if (memoryConfig === null) {
+          void rpc.memory
+            .connectProvider({
+              provider: "anviq",
+              settings: {},
+              credentials: {},
+              defaultMemoryScope: "isolated",
+            })
+            .catch(() => undefined);
+        }
         setCatalog(models);
         deploymentDefaultModelRef.current = me.defaultModel;
         const preferred =
@@ -220,11 +223,7 @@ export function OnboardingPage() {
           setProvider(preferred.provider);
           setModelId(preferred.provider === OPENAI_COMPATIBLE_PROVIDER_ID ? "" : preferred.id);
         }
-        setStep(
-          me.needsModel
-            ? "model"
-            : nextStepAfterModel(integrations?.needsSetup ?? false, memoryConfig === null),
-        );
+        setStep(me.needsModel ? "model" : integrations?.needsSetup ? "integrations" : "bot");
       })
       .catch(() => setStep("bot"));
     return () => {
@@ -515,7 +514,7 @@ export function OnboardingPage() {
       if (level && !isOpenAiCompatible && modelId) {
         await rpc.models.setDefault({ provider, modelId, thinkingLevel: level });
       }
-      setStep(nextStepAfterModel(needsIntegrationSetup, needsMemory));
+      setStep(nextStepAfterModel(needsIntegrationSetup));
     } catch (err) {
       setError(errorText(err, t`Could not save model`));
     }
@@ -970,10 +969,10 @@ export function OnboardingPage() {
             ) : null}
             {acceptsKey ? (
               isOpenAiCompatible ? (
-                <details className="mt-4 text-sm text-muted-foreground">
-                  <summary className="w-fit cursor-pointer select-none">
-                    <Trans>API key</Trans>
-                  </summary>
+                <Disclosure
+                  className="mt-4 text-sm text-muted-foreground"
+                  summary={<Trans>API key</Trans>}
+                >
                   <Input
                     aria-label={t`API key`}
                     value={apiKey}
@@ -983,7 +982,7 @@ export function OnboardingPage() {
                     autoComplete="new-password"
                     className="mt-2"
                   />
-                </details>
+                </Disclosure>
               ) : (
                 <label
                   htmlFor={`${fieldId}-api-key`}
@@ -1038,37 +1037,11 @@ export function OnboardingPage() {
           <IntegrationSetup
             serverSetup
             initialState={integrationSetup}
-            onDone={() => setStep(needsMemory ? "memory" : "bot")}
+            onDone={() => setStep("bot")}
             onServerConnected={(id) =>
               setIntegrationServers((current) => [...new Set([...current, id])])
             }
           />
-        ) : null}
-        {step === "memory" ? (
-          <div>
-            <h1 className="text-[32px] font-medium text-foreground">
-              <Trans>Memory</Trans>
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              <Trans>Built in, stored on this server.</Trans>
-            </p>
-            <Button
-              className="mt-8"
-              onClick={() => {
-                void rpc.memory
-                  .connectProvider({
-                    provider: "anviq",
-                    settings: {},
-                    credentials: {},
-                    defaultMemoryScope: "isolated",
-                  })
-                  .catch(() => undefined)
-                  .finally(() => setStep("bot"));
-              }}
-            >
-              <Trans>Continue</Trans>
-            </Button>
-          </div>
         ) : null}
         {step === "bot" ? (
           <div>

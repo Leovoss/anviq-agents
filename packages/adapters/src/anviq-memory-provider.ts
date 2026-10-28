@@ -102,11 +102,10 @@ export class AnviqMemoryProvider implements SemanticMemoryProvider {
     request: SemanticMemoryForgetRequest,
     context: AdapterContext,
   ): Promise<SemanticMemoryResponse<{ id: string; expired: boolean; reason: string | null }>> {
-    if (!context.botId) return { ok: false, error: "A bot is required to forget a memory" };
     try {
       const removed = await this.engine.forget({
         id: request.id,
-        namespaces: durableNamespaces("shared", context.botId, context.spaceId),
+        namespaces: durableNamespaces(request.scope, request.botId, context.spaceId),
       });
       return removed
         ? { ok: true, value: { id: request.id, expired: true, reason: request.reason ?? null } }

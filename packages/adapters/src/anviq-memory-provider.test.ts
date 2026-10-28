@@ -89,7 +89,7 @@ describe("AnviqMemoryProvider", () => {
       value: undefined,
     });
     expect(engine.purgeHistory).toHaveBeenCalledWith("bot-1", [1, 2]);
-    await provider.forget({ id: "m1" }, context);
+    await provider.forget({ id: "m1", scope: "shared", botId: "bot-1" }, context);
     expect(engine.forget).toHaveBeenCalledWith({
       id: "m1",
       namespaces: [
