@@ -175,6 +175,13 @@ export function defaultGroupName(names: readonly string[]): string {
   return (last >= 0xd800 && last <= 0xdbff ? value.slice(0, -1) : value).trim();
 }
 
+export const GroupParticipantSchema = z.object({
+  userId: Id,
+  name: z.string(),
+  host: z.boolean(),
+});
+export type GroupParticipant = z.infer<typeof GroupParticipantSchema>;
+
 export const GroupSchema = z.object({
   id: Id,
   spaceId: Id,
@@ -183,6 +190,10 @@ export const GroupSchema = z.object({
   sectionId: Id.nullable(),
   archivedAt: z.string().nullable(),
   members: z.array(GroupMemberSchema),
+  /** The people in a chat shared with others, host first. Absent for a private group. */
+  participants: z.array(GroupParticipantSchema).optional(),
+  /** False when the viewer is a guest in someone else's chat and may not change it. */
+  canManage: z.boolean().optional(),
   threadId: Id,
   preview: z.string(),
   unread: z.boolean(),
@@ -260,6 +271,7 @@ export const SpaceGroupSchema = GroupSchema.pick({
   pinned: true,
   sectionId: true,
   members: true,
+  participants: true,
   preview: true,
   unread: true,
   updatedAt: true,

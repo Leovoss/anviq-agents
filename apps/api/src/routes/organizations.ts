@@ -30,7 +30,7 @@ const CODES = {
 } as const;
 
 /** Reports a broken membership rule as the matching API error; anything else is not ours to describe. */
-async function reportRules<T>(work: () => Promise<T>): Promise<T> {
+export async function reportRules<T>(work: () => Promise<T>): Promise<T> {
   try {
     return await work();
   } catch (error) {

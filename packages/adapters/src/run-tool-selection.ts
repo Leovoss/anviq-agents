@@ -72,11 +72,15 @@ export function selectBuiltinToolsForRun(options: {
   fleetManagement?: boolean;
   /** A follow-up run whose source message the user wrote. */
   followUpFromUser?: boolean;
+  /** A teammate in a shared chat started this run, so it is not the owner's own request. */
+  startedByTeammate?: boolean;
   /** The person who started this run has their desktop connected (see userComputerOwner). */
   userComputer?: boolean;
 }) {
   const disabled = disabledBuiltinToolSet(options.disabledBuiltinTools);
-  const fleetToolsAllowed = isOwnerStartedRun(options.trigger, Boolean(options.followUpFromUser));
+  const fleetToolsAllowed =
+    !options.startedByTeammate &&
+    isOwnerStartedRun(options.trigger, Boolean(options.followUpFromUser));
   return selectCloudAgentTools(
     selectMemoryTools(
       filterBuiltinToolsForRun(

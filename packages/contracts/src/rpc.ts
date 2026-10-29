@@ -485,6 +485,12 @@ export const appContract = {
     listArchived: oc.output(z.array(GroupSchema)),
     get: oc.input(groupId).output(GroupDetailSchema),
     duplicate: oc.input(groupId).output(GroupSchema),
+    /** The host chooses who else takes part; an empty list makes the group private again. */
+    setParticipants: oc
+      .input(z.object({ groupId: Id, userIds: z.array(Id).max(50) }))
+      .output(GroupSchema),
+    /** A guest leaves a chat shared with them. */
+    leave: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
     update: oc.input(UpdateGroupInput).output(GroupSchema),
     archive: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
     restore: oc.input(groupId).output(z.object({ ok: z.literal(true) })),

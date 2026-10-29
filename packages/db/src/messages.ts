@@ -60,6 +60,8 @@ export interface CreateThreadMessageInput {
   replyToMessageId?: string;
   replyQuote?: string;
   runId?: string;
+  /** Who wrote a user message in a chat shared with others. */
+  senderUserId?: string;
   clientNonce?: string;
   markUnread?: boolean;
   /** Terminal echo after the run is already cancelled. Every other write stays rejected. */
@@ -97,6 +99,7 @@ export async function createThreadMessageInTransaction(
       replyToMessageId: input.replyToMessageId,
       replyQuote: input.replyQuote,
       runId: input.runId,
+      senderUserId: input.senderUserId,
       clientNonce: input.clientNonce,
     },
   });

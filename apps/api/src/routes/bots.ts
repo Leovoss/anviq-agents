@@ -28,10 +28,12 @@ import {
   commitBotUpdate,
   InstructionConflictError,
   IsolationError,
+  leaveSharedGroup,
   recordComputerRunEnd,
   recordSecurityEvent,
   restoreBotUnderComputerQuota,
   SpaceDeletionInProgressError,
+  setGroupParticipants,
   settingsTarget,
 } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
@@ -49,6 +51,7 @@ import { requireIdentityConfirmation } from "../identity-confirmation.js";
 import type { RouterDeps } from "../router.js";
 import { loadMessagePage } from "../thread-message-pages.js";
 import type { RouterContext } from "./context.js";
+import { reportRules } from "./organizations.js";
 import { computerContext, modelSetup, THREAD_MESSAGE_PAGE_SIZE } from "./shared.js";
 
 /** Surface a Space deletion race as a retryable conflict instead of a generic failure. */
@@ -585,7 +588,7 @@ export function botsRoutes(ctx: RouterContext) {
       get: authed.groups.get.handler(async ({ context, input }) => {
         const group = await groupRepos.getGroup(context.actor, input.groupId);
         return {
-          ...groupRepos.mapGroup(group),
+          ...groupRepos.mapGroup(group, context.actor.userId),
           messages: (
             await loadMessagePage(
               deps.prisma,
@@ -598,6 +601,7 @@ export function botsRoutes(ctx: RouterContext) {
       }),
       duplicate: authed.groups.duplicate.handler(async ({ context, input }) => {
         const source = await groupRepos.getGroup(context.actor, input.groupId);
+        if (source.userId !== context.actor.userId) throw new IsolationError();
         try {
           return await groupRepos.createGroup(context.actor, {
             name: duplicateBotName(source.name),
@@ -606,6 +610,17 @@ export function botsRoutes(ctx: RouterContext) {
         } catch (error) {
           throw mapSpaceLifecycleError(error);
         }
+      }),
+      setParticipants: authed.groups.setParticipants.handler(async ({ context, input }) => {
+        await reportRules(() => setGroupParticipants(deps.prisma, context.actor, input));
+        return groupRepos.mapGroup(
+          await groupRepos.getGroup(context.actor, input.groupId),
+          context.actor.userId,
+        );
+      }),
+      leave: authed.groups.leave.handler(async ({ context, input }) => {
+        await reportRules(() => leaveSharedGroup(deps.prisma, context.actor, input.groupId));
+        return { ok: true as const };
       }),
       update: authed.groups.update.handler(async ({ context, input }) => {
         if (input.sectionId) {
