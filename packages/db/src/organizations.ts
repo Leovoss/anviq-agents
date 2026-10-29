@@ -397,16 +397,7 @@ export async function acceptInvitation(
               createdAt,
             },
           });
-          await tx.spaceMember.create({
-            data: {
-              id: randomUUID(),
-              spaceId: space.id,
-              organizationId: invitation.organizationId,
-              userId: input.userId,
-              role: "member",
-              createdAt,
-            },
-          });
+          // A database trigger adds the person to the default space when the member row is created.
           await createSpaceDefaults(tx, {
             spaceId: space.id,
             userId: input.userId,
