@@ -110,7 +110,7 @@ describeWithDatabase("team space isolation", () => {
       expect(JSON.stringify(found)).not.toContain(needle);
       const files = await harness.ok(intruder, "artifacts/listSpace", {});
       expect(JSON.stringify(files)).not.toContain(needle);
-      await harness.denied(intruder, "artifacts/list", { botId: anaBotId }, needle);
+      await harness.hidden(intruder, "artifacts/list", { botId: anaBotId }, needle);
       await harness.denied(intruder, "artifacts/getById", { artifactId: anaArtifactId }, needle);
       await harness.denied(
         intruder,
@@ -119,9 +119,9 @@ describeWithDatabase("team space isolation", () => {
         needle,
       );
       await harness.denied(intruder, "artifacts/remove", { artifactId: anaArtifactId }, needle);
-      await harness.denied(intruder, "scratchpad/list", { botId: anaBotId }, needle);
-      await harness.denied(intruder, "routines/list", { botId: anaBotId }, needle);
-      await harness.denied(intruder, "memory/list", { botId: anaBotId }, needle);
+      await harness.hidden(intruder, "scratchpad/list", { botId: anaBotId }, needle);
+      await harness.hidden(intruder, "routines/list", { botId: anaBotId }, needle);
+      await harness.hidden(intruder, "memory/list", { botId: anaBotId }, needle);
       const exported = await harness.ok(intruder, "memory/exportMarkdown", {});
       expect(JSON.stringify(exported)).not.toContain(needle);
     });
