@@ -41,6 +41,7 @@ describe("AnviqMemoryProvider", () => {
     );
     expect(engine.recall).toHaveBeenCalledWith({
       namespaces: [{ kind: "bot", id: "bot-1" }],
+      spaceId: "space-1",
       query: "fact",
       limit: 5,
     });
