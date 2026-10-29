@@ -3,6 +3,7 @@ const SETTINGS_SECTIONS = [
   "space",
   "models",
   "memory",
+  "team",
   "voice",
   "confirmations",
   "vault",

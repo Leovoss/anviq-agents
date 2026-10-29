@@ -609,6 +609,10 @@ msgstr "追加済み"
 msgid "Adding…"
 msgstr "追加中…"
 
+#: src/components/TeamSettings.tsx
+msgid "Admin"
+msgstr ""
+
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
@@ -939,6 +943,7 @@ msgstr "Avatar Studio"
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Board.tsx
 #: src/pages/NavLinkPage.tsx
@@ -1106,6 +1111,7 @@ msgstr "画像を読み取れません"
 #: src/components/markdown-link-prompt.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
+#: src/components/TeamSettings.tsx
 #: src/components/VaultSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Artifacts.tsx
@@ -1949,6 +1955,10 @@ msgstr "ログイン方法を読み込めませんでした"
 msgid "Could not load skill"
 msgstr "スキルを読み込めませんでした"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Could not load the invitation"
+msgstr ""
+
 #: src/pages/Artifacts.tsx
 msgid "Could not load this artifact."
 msgstr "このアーティファクトを読み込めませんでした。"
@@ -2215,6 +2225,7 @@ msgstr "タイムゾーンを更新できませんでした"
 msgid "Couldn't update your wallet"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
 #: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
@@ -2631,6 +2642,7 @@ msgstr "名前を編集"
 msgid "Edit Profile"
 msgstr "プロフィールを編集"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "メールアドレス"
@@ -3224,6 +3236,14 @@ msgstr "間隔の単位"
 msgid "Invalid code"
 msgstr "無効なコード"
 
+#: src/components/TeamSettings.tsx
+msgid "Invitations"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Invite"
+msgstr ""
+
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Isolated"
@@ -3260,6 +3280,11 @@ msgstr "インポート後にモデルが変更されたため、そのまま残
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Its model goes back to before the import."
 msgstr "モデルはインポート前の状態に戻ります。"
+
+#: src/components/TeamSettings.tsx
+#: src/pages/AcceptInvitation.tsx
+msgid "Join"
+msgstr ""
 
 #: src/pages/shell/transcript.tsx
 msgid "Jump to latest"
@@ -3314,6 +3339,10 @@ msgstr "後で"
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Leave"
 msgstr "退出"
+
+#: src/components/TeamSettings.tsx
+msgid "Leave team"
+msgstr ""
 
 #: src/components/ComputerDeviceSettings.tsx
 msgid "Let bots use this computer"
@@ -3449,13 +3478,25 @@ msgstr "小文字、数字、ハイフン、アンダースコアのみ使用で
 msgid "Main model"
 msgstr "メインモデル"
 
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Make {0} the owner"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Make owner"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
 #: src/pages/BillingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Manage"
 msgstr "管理"
 
+#. placeholder {0}: item.name
 #. placeholder {0}: option.name
 #. placeholder {0}: providerName(choice)
+#: src/components/TeamSettings.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Manage {0}"
@@ -3550,6 +3591,7 @@ msgstr "中"
 msgid "Medium"
 msgstr "中"
 
+#: src/components/TeamSettings.tsx
 #: src/lib/identity-display.ts
 msgid "Member"
 msgstr "メンバー"
@@ -3817,6 +3859,10 @@ msgstr "ルーティンに名前を付ける"
 msgid "Name your Bot"
 msgstr "ボットに名前を付ける"
 
+#: src/components/TeamSettings.tsx
+msgid "name@company.com"
+msgstr ""
+
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
 msgstr "回答が必要"
@@ -3890,6 +3936,10 @@ msgstr "新しいスキル"
 #: src/pages/shell/dialogs.tsx
 msgid "New space"
 msgstr "新しいスペース"
+
+#: src/components/TeamSettings.tsx
+msgid "New team"
+msgstr ""
 
 #: src/pages/Board.tsx
 msgid "New ticket"
@@ -4124,6 +4174,7 @@ msgid "One-time purchase. Credits do not expire."
 msgstr "1回限りの購入です。クレジットは失効しません。"
 
 #: src/components/markdown-link-prompt.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/computer-panel.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -4170,6 +4221,10 @@ msgstr "フルウィンドウで開く"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "ナビゲーションを開く"
+
+#: src/pages/AcceptInvitation.tsx
+msgid "Open the app"
+msgstr ""
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
@@ -4221,6 +4276,7 @@ msgstr "その他のモデル…"
 msgid "Output"
 msgstr "出力"
 
+#: src/components/TeamSettings.tsx
 #: src/lib/identity-display.ts
 #: src/pages/Board.tsx
 msgid "Owner"
@@ -4306,6 +4362,10 @@ msgstr "一時停止中"
 msgid "Pending"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "People"
+msgstr ""
+
 #: src/pages/shell/bot-panel.tsx
 msgid "Permissions"
 msgstr "権限"
@@ -4315,6 +4375,7 @@ msgid "Persona"
 msgstr "ペルソナ"
 
 #: src/components/SignupSurvey.tsx
+#: src/components/TeamSettings.tsx
 msgid "Personal"
 msgstr "個人"
 
@@ -4596,6 +4657,7 @@ msgstr "再読み込み"
 #: src/components/ApprovalRulesSettings.tsx
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/LoginFields.tsx
+#: src/components/TeamSettings.tsx
 #: src/components/VaultSettings.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -4606,7 +4668,9 @@ msgstr "削除"
 
 #. placeholder {0}: attachment.file.name
 #. placeholder {0}: device.name
+#. placeholder {0}: member.name
 #: src/components/ComputerDeviceSettings.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/composer.tsx
 msgid "Remove {0}"
 msgstr "{0}を削除"
@@ -4830,6 +4894,15 @@ msgstr "プロバイダー設定を確認して、もう一度テストしてく
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "取り消す"
+
+#: src/components/TeamSettings.tsx
+msgid "Role"
+msgstr ""
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Role of {0}"
+msgstr ""
 
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Room guidance"
@@ -5059,6 +5132,7 @@ msgstr "ボットを選択"
 msgid "Self-hosted"
 msgstr "セルフホスト"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/composer.tsx
 msgid "Send"
 msgstr "送信"
@@ -5538,6 +5612,7 @@ msgstr "タスクを教える"
 msgid "Teaching in progress. Stop teaching before sending a new message."
 msgstr "ティーチング中です。新しいメッセージを送信する前にティーチングを停止してください。"
 
+#: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Team"
 msgstr "チーム"
@@ -5545,6 +5620,14 @@ msgstr "チーム"
 #: src/pages/shell/computer-view.tsx
 msgid "Team Computer"
 msgstr "チームのコンピューター"
+
+#: src/components/TeamSettings.tsx
+msgid "Team name"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Teams"
+msgstr ""
 
 #: src/pages/RoutineEditor.tsx
 msgid "Teams message"
@@ -5715,6 +5798,10 @@ msgstr "このインポートは変更されました。もう一度お試しく
 #: src/lib/agent-import-errors.ts
 msgid "This import was already used. Choose the files again."
 msgstr "このインポートはすでに使用されています。もう一度ファイルを選択してください。"
+
+#: src/pages/AcceptInvitation.tsx
+msgid "This invitation is not available"
+msgstr ""
 
 #: src/pages/HostComputerPrompt.tsx
 msgid "this Mac"

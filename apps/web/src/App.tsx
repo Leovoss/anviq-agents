@@ -33,6 +33,7 @@ import {
   showSessionUnavailable,
 } from "./lib/session-gate";
 import { completeSsoCallback, SSO_CALLBACK_PATH } from "./lib/sso-flow";
+import { AcceptInvitationPage } from "./pages/AcceptInvitation";
 import { IntegrationCallbackPage } from "./pages/IntegrationCallback";
 import { IntegrationSetupPage } from "./pages/IntegrationSetup";
 import { McpOAuthCallbackPage } from "./pages/McpOAuthCallback";
@@ -92,13 +93,16 @@ export function App() {
 }
 
 const MCP_OAUTH_CALLBACK_PATH = "/mcp/oauth/callback";
+const ACCEPT_INVITATION_NEXT = /^\/accept-invitation\/[\w-]+$/;
 
 function SessionApp() {
   const [searchParams] = useSearchParams();
   const next = searchParams.get("next") ?? "";
   // A connector sign-in started on another device lands here signed out; finish it after sign-in.
   const signInDestination =
-    next === "/integrations/setup" || next.startsWith(`${MCP_OAUTH_CALLBACK_PATH}?`)
+    next === "/integrations/setup" ||
+    next.startsWith(`${MCP_OAUTH_CALLBACK_PATH}?`) ||
+    ACCEPT_INVITATION_NEXT.test(next)
       ? next
       : "/app";
   const ticketBoardEnabled = useSyncExternalStore(
@@ -186,6 +190,16 @@ function SessionApp() {
                   <McpOAuthCallbackPage />
                 ) : (
                   <Navigate to={`/sign-in?next=${encodeURIComponent(pathname + search)}`} replace />
+                )
+              }
+            />
+            <Route
+              path="/accept-invitation/:invitationId"
+              element={
+                user ? (
+                  <AcceptInvitationPage />
+                ) : (
+                  <Navigate to={`/sign-in?next=${encodeURIComponent(pathname)}`} replace />
                 )
               }
             />

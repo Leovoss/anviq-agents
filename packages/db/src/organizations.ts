@@ -55,6 +55,8 @@ export interface OrganizationSummary {
   name: string;
   role: OrganizationRole;
   memberCount: number;
+  /** The team's general space, where the person lands when switching to it. */
+  spaceId: string;
 }
 
 async function membership(
@@ -153,16 +155,54 @@ export async function listTeams(
     where: { userId, organization: { metadata: { contains: '"kind":"team"' } } },
     select: {
       role: true,
-      organization: { select: { id: true, name: true, _count: { select: { members: true } } } },
+      organization: {
+        select: {
+          id: true,
+          name: true,
+          _count: { select: { members: true } },
+          spaces: {
+            where: { isDefault: true, memberships: { some: { userId } } },
+            select: { id: true },
+            take: 1,
+          },
+        },
+      },
     },
     orderBy: { createdAt: "asc" },
   });
-  return rows.map((row) => ({
-    id: row.organization.id,
-    name: row.organization.name,
-    role: organizationRole(row.role),
-    memberCount: row.organization._count.members,
-  }));
+  return rows.flatMap((row) => {
+    const space = row.organization.spaces[0];
+    return space
+      ? [
+          {
+            id: row.organization.id,
+            name: row.organization.name,
+            role: organizationRole(row.role),
+            memberCount: row.organization._count.members,
+            spaceId: space.id,
+          },
+        ]
+      : [];
+  });
+}
+
+/** The person's own workspace, so the app can switch back to it from a team. */
+export async function personalSpaceId(
+  prisma: PrismaClient,
+  userId: string,
+): Promise<string | null> {
+  const space = await prisma.space.findFirst({
+    where: {
+      isDefault: true,
+      memberships: { some: { userId } },
+      organization: {
+        OR: [{ metadata: null }, { NOT: { metadata: { contains: '"kind":"team"' } } }],
+      },
+    },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+  });
+  return space?.id ?? null;
 }
 
 export interface OrganizationMemberView {

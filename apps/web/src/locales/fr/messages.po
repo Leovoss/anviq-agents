@@ -609,6 +609,10 @@ msgstr "Ajouté"
 msgid "Adding…"
 msgstr "Ajout en cours…"
 
+#: src/components/TeamSettings.tsx
+msgid "Admin"
+msgstr ""
+
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
@@ -939,6 +943,7 @@ msgstr "Studio d'avatars"
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Board.tsx
 #: src/pages/NavLinkPage.tsx
@@ -1106,6 +1111,7 @@ msgstr "Ne peut pas lire les images"
 #: src/components/markdown-link-prompt.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
+#: src/components/TeamSettings.tsx
 #: src/components/VaultSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Artifacts.tsx
@@ -1949,6 +1955,10 @@ msgstr "Impossible de charger les options de connexion"
 msgid "Could not load skill"
 msgstr "Impossible de charger la compétence"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Could not load the invitation"
+msgstr ""
+
 #: src/pages/Artifacts.tsx
 msgid "Could not load this artifact."
 msgstr "Impossible de charger cet artefact."
@@ -2215,6 +2225,7 @@ msgstr ""
 msgid "Couldn't update your wallet"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
 #: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
@@ -2631,6 +2642,7 @@ msgstr "Modifier le nom"
 msgid "Edit Profile"
 msgstr "Modifier le profil"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "E-mail"
@@ -3224,6 +3236,14 @@ msgstr "Unité de l'intervalle"
 msgid "Invalid code"
 msgstr "Code non valide"
 
+#: src/components/TeamSettings.tsx
+msgid "Invitations"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Invite"
+msgstr ""
+
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Isolated"
@@ -3260,6 +3280,11 @@ msgstr "Son modèle a changé depuis l’import ; il reste donc."
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Its model goes back to before the import."
 msgstr "Son modèle revient à celui d’avant l’import."
+
+#: src/components/TeamSettings.tsx
+#: src/pages/AcceptInvitation.tsx
+msgid "Join"
+msgstr ""
 
 #: src/pages/shell/transcript.tsx
 msgid "Jump to latest"
@@ -3314,6 +3339,10 @@ msgstr "Plus tard"
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Leave"
 msgstr "Quitter"
+
+#: src/components/TeamSettings.tsx
+msgid "Leave team"
+msgstr ""
 
 #: src/components/ComputerDeviceSettings.tsx
 msgid "Let bots use this computer"
@@ -3449,13 +3478,25 @@ msgstr ""
 msgid "Main model"
 msgstr "Modèle principal"
 
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Make {0} the owner"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Make owner"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
 #: src/pages/BillingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Manage"
 msgstr "Gérer"
 
+#. placeholder {0}: item.name
 #. placeholder {0}: option.name
 #. placeholder {0}: providerName(choice)
+#: src/components/TeamSettings.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Manage {0}"
@@ -3550,6 +3591,7 @@ msgstr "Moyen"
 msgid "Medium"
 msgstr "Moyen"
 
+#: src/components/TeamSettings.tsx
 #: src/lib/identity-display.ts
 msgid "Member"
 msgstr "Membre"
@@ -3817,6 +3859,10 @@ msgstr "Nommez cette routine"
 msgid "Name your Bot"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "name@company.com"
+msgstr ""
+
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
 msgstr ""
@@ -3890,6 +3936,10 @@ msgstr "Nouvelle compétence"
 #: src/pages/shell/dialogs.tsx
 msgid "New space"
 msgstr "Nouvel espace"
+
+#: src/components/TeamSettings.tsx
+msgid "New team"
+msgstr ""
 
 #: src/pages/Board.tsx
 msgid "New ticket"
@@ -4124,6 +4174,7 @@ msgid "One-time purchase. Credits do not expire."
 msgstr ""
 
 #: src/components/markdown-link-prompt.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/computer-panel.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -4170,6 +4221,10 @@ msgstr "Ouvrir en fenêtre complète"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Ouvrir la navigation"
+
+#: src/pages/AcceptInvitation.tsx
+msgid "Open the app"
+msgstr ""
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
@@ -4221,6 +4276,7 @@ msgstr "Autre modèle…"
 msgid "Output"
 msgstr "Sortie"
 
+#: src/components/TeamSettings.tsx
 #: src/lib/identity-display.ts
 #: src/pages/Board.tsx
 msgid "Owner"
@@ -4306,6 +4362,10 @@ msgstr "En pause"
 msgid "Pending"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "People"
+msgstr ""
+
 #: src/pages/shell/bot-panel.tsx
 msgid "Permissions"
 msgstr "Autorisations"
@@ -4315,6 +4375,7 @@ msgid "Persona"
 msgstr "Personnalité"
 
 #: src/components/SignupSurvey.tsx
+#: src/components/TeamSettings.tsx
 msgid "Personal"
 msgstr ""
 
@@ -4596,6 +4657,7 @@ msgstr "Recharger"
 #: src/components/ApprovalRulesSettings.tsx
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/LoginFields.tsx
+#: src/components/TeamSettings.tsx
 #: src/components/VaultSettings.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -4606,7 +4668,9 @@ msgstr "Retirer"
 
 #. placeholder {0}: attachment.file.name
 #. placeholder {0}: device.name
+#. placeholder {0}: member.name
 #: src/components/ComputerDeviceSettings.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/composer.tsx
 msgid "Remove {0}"
 msgstr "Retirer {0}"
@@ -4830,6 +4894,15 @@ msgstr "Vérifiez les paramètres du fournisseur et testez à nouveau."
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "Révoquer"
+
+#: src/components/TeamSettings.tsx
+msgid "Role"
+msgstr ""
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Role of {0}"
+msgstr ""
 
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Room guidance"
@@ -5059,6 +5132,7 @@ msgstr "Sélectionnez un bot"
 msgid "Self-hosted"
 msgstr "Auto-hébergé"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/composer.tsx
 msgid "Send"
 msgstr "Envoyer"
@@ -5538,6 +5612,7 @@ msgstr "Enseigner une tâche"
 msgid "Teaching in progress. Stop teaching before sending a new message."
 msgstr "Enseignement en cours. Arrêtez l'enseignement avant d'envoyer un nouveau message."
 
+#: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Team"
 msgstr "Équipe"
@@ -5545,6 +5620,14 @@ msgstr "Équipe"
 #: src/pages/shell/computer-view.tsx
 msgid "Team Computer"
 msgstr "Ordinateur d'équipe"
+
+#: src/components/TeamSettings.tsx
+msgid "Team name"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Teams"
+msgstr ""
 
 #: src/pages/RoutineEditor.tsx
 msgid "Teams message"
@@ -5715,6 +5798,10 @@ msgstr "Cet import a changé. Réessayez."
 #: src/lib/agent-import-errors.ts
 msgid "This import was already used. Choose the files again."
 msgstr "Cet import a déjà été utilisé. Choisissez à nouveau les fichiers."
+
+#: src/pages/AcceptInvitation.tsx
+msgid "This invitation is not available"
+msgstr ""
 
 #: src/pages/HostComputerPrompt.tsx
 msgid "this Mac"

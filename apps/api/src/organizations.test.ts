@@ -51,11 +51,11 @@ describe("organization routes", () => {
   });
 
   it("lists the signed-in person's teams", async () => {
-    db.listTeams.mockResolvedValue([{ id: "t1", name: "Acme", role: "owner", memberCount: 2 }]);
+    db.listTeams.mockResolvedValue([{ id: "t1", name: "Acme", role: "owner", memberCount: 2, spaceId: "s1" }]);
     const result = await call("list", {});
     expect(result.status).toBe(200);
     expect(db.listTeams).toHaveBeenCalledWith(expect.anything(), "user-1");
-    expect(result.body.json).toEqual([{ id: "t1", name: "Acme", role: "owner", memberCount: 2 }]);
+    expect(result.body.json).toEqual([{ id: "t1", name: "Acme", role: "owner", memberCount: 2, spaceId: "s1" }]);
   });
 
   it("emails an invitation with a link to accept it", async () => {
