@@ -81,10 +81,19 @@ export async function createTeamHarness(label: string, people: string[]) {
     async denied(person: Person, procedure: string, body: unknown, secret?: string) {
       const response = await call(person, procedure, body);
       const text = await response.text();
-      expect(response.status, `${procedure} should be refused: ${text}`).toBeGreaterThanOrEqual(
-        400,
-      );
+      // A stream refused after it opens answers 200 and then carries an error event.
+      const refused = response.status >= 400 || text.includes("event: error");
+      expect(refused, `${procedure} should be refused: ${text}`).toBe(true);
       if (secret) expect(text).not.toContain(secret);
+    },
+    /** A list call either refuses or answers with nothing, and either way shows none of `secret`. */
+    async hidden(person: Person, procedure: string, body: unknown, secret: string) {
+      const response = await call(person, procedure, body);
+      const text = await response.text();
+      expect(text, `${procedure} leaked`).not.toContain(secret);
+      if (response.status < 400) {
+        expect(JSON.parse(text), `${procedure} should list nothing`).toEqual({ json: [] });
+      }
     },
     async stop() {
       await handles.stop();
