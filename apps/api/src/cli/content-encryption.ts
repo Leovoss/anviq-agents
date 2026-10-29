@@ -2,22 +2,28 @@ import { createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import { parseArgs } from "node:util";
 import {
+  AwsKmsKeyProvider,
+  awsKmsConfigFromEnv,
   contentKeyProviderFromEnv,
   EncryptedSecretStore,
   LocalArtifactStore,
+  rewriteBuiltInMemory,
   upgradeLegacySecrets,
 } from "@anviq/adapters";
 import { resolveContentEncryption, resolveEncryptionKey } from "@anviq/core";
 import { loadRootEnv } from "@anviq/core/node/load-root-env";
 import type { ContentMigrationMode } from "@anviq/db";
 import {
+  clearOrganizationKey,
   contentEncryptionStatus,
   createDb,
   exportContent,
   migrateContent,
+  organizationKeys,
   rewrapSpaceKeys,
   rotateSpaceDataKeys,
   runAsSystem,
+  setOrganizationKey,
 } from "@anviq/db";
 import { createSecretMigrationRepository } from "../secret-migration.js";
 
@@ -32,10 +38,22 @@ const USAGE = `Usage: content-encryption <command> [--dry-run]
   decrypt              Write plaintext back, after CONTENT_ENCRYPTION=off or
                        before rolling back to an older release
   export [--space <id>] [--thread <id>] [--bot <id>] [--output <file>]
-                       Write decrypted threads, messages and memory as JSON lines`;
+                       Write decrypted threads, messages and memory as JSON lines
+  org-key list         Organizations with their own KMS key
+  org-key set <organization id> <key arn>
+                       Wrap the organization's space keys with the company's KMS
+                       key (checked first); run rotate to move the existing ones
+  org-key clear <organization id>
+                       Back to the deployment key for new space keys`;
 
-const COMMANDS = ["status", "migrate", "rotate", "reencrypt", "decrypt", "export"];
+const COMMANDS = ["status", "migrate", "rotate", "reencrypt", "decrypt", "export", "org-key"];
 const EXPORT_OPTIONS = ["space", "thread", "bot", "output"] as const;
+/** org-key subcommand and how many words follow the command: `list`, `set <org> <arn>`, `clear <org>`. */
+const ORG_KEY_ARGS = new Map([
+  ["list", 1],
+  ["set", 3],
+  ["clear", 2],
+]);
 
 function parseCommand() {
   try {
@@ -52,17 +70,20 @@ function parseCommand() {
     });
     const [command, ...rest] = positionals;
     const exporting = command === "export";
+    const orgKey = command === "org-key";
     if (
       !command ||
       !COMMANDS.includes(command) ||
-      rest.length ||
+      (orgKey
+        ? !ORG_KEY_ARGS.has(rest[0] ?? "") || rest.length !== ORG_KEY_ARGS.get(rest[0]!)!
+        : rest.length) ||
       (values.reencrypt && command !== "rotate") ||
       (values["dry-run"] && exporting) ||
       (!exporting && EXPORT_OPTIONS.some((name) => values[name] !== undefined)) ||
       EXPORT_OPTIONS.some((name) => values[name] === "")
     )
       return undefined;
-    return { command, values };
+    return { command, values, args: rest };
   } catch {
     return undefined;
   }
@@ -73,7 +94,7 @@ if (!parsed) {
   process.stderr.write(`${USAGE}\n`);
   process.exit(2);
 }
-const { command, values: flags } = parsed;
+const { command, values: flags, args } = parsed;
 const dryRun = flags["dry-run"] === true;
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
 
@@ -129,6 +150,18 @@ async function rewriteContent(mode: ContentMigrationMode) {
     write(
       `${table.table}: ${table.updated} of ${table.scanned} ${dryRun ? "to rewrite" : "rewritten"}`,
     );
+  if (mode !== "reencrypt") {
+    const memory = dryRun
+      ? undefined
+      : await rewriteBuiltInMemory(prisma, mode === "encrypt" ? "seal" : "unseal");
+    write(
+      dryRun
+        ? "memories: not checked in a dry run"
+        : memory
+          ? `memories: ${memory.updated} of ${memory.scanned} rewritten`
+          : "memories: built-in memory was never used",
+    );
+  }
   let files = 0;
   let rewritten = 0;
   for await (const file of artifacts.files()) {
@@ -144,6 +177,46 @@ async function rewriteContent(mode: ContentMigrationMode) {
     }
   }
   write(`artifacts: ${dryRun ? "not checked in a dry run" : `${rewritten} of ${files} rewritten`}`);
+}
+
+const KEY_ARN = /^arn:aws[a-z-]*:kms:[a-z0-9-]+:\d{12}:key\/[A-Za-z0-9-]+$/;
+
+/** The company's own KMS key for its organization's space keys. */
+async function orgKey() {
+  const [action, organizationId, keyArn] = args;
+  if (action === "list") {
+    const configs = await organizationKeys(prisma);
+    for (const config of configs)
+      write(
+        `${config.organizationId}: ${config.keyArn || "deployment key"}${
+          config.previousKeyArns.length ? ` (earlier: ${config.previousKeyArns.join(", ")})` : ""
+        }`,
+      );
+    if (!configs.length) write("no organization has its own key");
+    return;
+  }
+  if (!(await prisma.organization.findUnique({ where: { id: organizationId! } })))
+    throw new Error(`Unknown organization ${organizationId}`);
+  if (action === "clear") {
+    write(
+      (await clearOrganizationKey(prisma, organizationId!))
+        ? `${organizationId}: new space keys use the deployment key; run rotate to move the existing ones`
+        : `${organizationId}: no key was set`,
+    );
+    return;
+  }
+  if (!KEY_ARN.test(keyArn!)) throw new Error("The key must be a KMS key ARN, not an alias");
+  // Prove the server can use the key before any space key depends on it.
+  const kms = new AwsKmsKeyProvider({ ...awsKmsConfigFromEnv(process.env), keyArn: keyArn! });
+  const context = { spaceId: "org-key-check", version: 0 };
+  const probe = Buffer.alloc(32, 7);
+  const wrapped = await kms.wrap(probe, context);
+  if (!Buffer.from(await kms.unwrap(wrapped, context)).equals(probe))
+    throw new Error("The key did not round-trip");
+  await setOrganizationKey(prisma, organizationId!, keyArn!);
+  write(
+    `${organizationId}: space keys are wrapped by ${keyArn}; run rotate to move the existing ones`,
+  );
 }
 
 async function upgradeCredentials() {
@@ -206,6 +279,8 @@ try {
       await rewriteContent("reencrypt");
     } else if (command === "export") {
       await exportJsonLines();
+    } else if (command === "org-key") {
+      await orgKey();
     } else {
       await rewriteContent("decrypt");
     }

@@ -115,6 +115,7 @@ export * from "./openai-compatible-url.js";
 export * from "./openai-compatible-voice.js";
 export * from "./openai-voice.js";
 export * from "./openrouter-usage.js";
+export * from "./org-key-provider.js";
 export * from "./page-browser-session.js";
 export * from "./parallel-web.js";
 export * from "./payment-wallet-factory.js";

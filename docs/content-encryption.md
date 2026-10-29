@@ -11,6 +11,7 @@ directory, so a copied database dump, backup or disk does not reveal it.
 | Thread events (they repeat message content) | `events.payload` |
 | Compacted history summaries | `threads.historyCompactionSummary` |
 | Memory documents and their revisions | `memory_documents.content`, `memory_revisions.content` |
+| Built-in memory (bot, space and history) | `anviq_memory.memories.content` |
 | Bot instructions, descriptions and history | `bots.instructions`, `bots.description`, `bots.instructionHistory` |
 | Task and routine prompts | `tasks.prompt`, `routines.prompt` |
 | Agent skills | `agent_skills.content` |
@@ -19,6 +20,10 @@ directory, so a copied database dump, backup or disk does not reveal it.
 | Uploaded and generated files | `DATA_DIR/artifacts/<space>/<file>` |
 | Bot computer homes kept in [object storage](./self-host.md#bot-homes-in-object-storage) (always, whatever `CONTENT_ENCRYPTION` says) | `homes/<id>/<revision>` in the bucket |
 | Credentials (unchanged scheme) | `secrets`, `bot_secrets`, `integration_provider_configs` |
+
+Built-in memory is sealed with the same space keys and searched through keyed word tokens, so recall
+works without the server holding plaintext in the database. The optional Markdown mirror writes plain
+notes to a folder by design, so do not enable it on an instance where memory must stay sealed.
 
 Not yet encrypted, planned next: external conversation messages, outbound
 messaging bodies, steering messages, and taught skill playbooks and recordings.
@@ -203,6 +208,34 @@ To replace the KMS key, point `AWS_KMS_KEY_ARN` at the new one, keep
 
 While KMS is unreachable, a process cannot read or write content in a space
 whose key it has not cached. Startup logs master keys it cannot unwrap.
+
+### A key per organization
+
+A company can keep its own KMS key, so the people who run the server cannot read its data. Set
+`AWS_KMS_ACCESS_KEY_ID` and `AWS_KMS_SECRET_ACCESS_KEY` on the API and worker (the deployment key
+stays as above, or local master keys). The company creates a symmetric key in its AWS account and
+adds a key policy that lets the server's AWS identity use it (`kms:Encrypt`, `kms:Decrypt`). Then:
+
+```bash
+pnpm --filter @anviq/api content-encryption org-key set <organization id> <key arn>
+pnpm --filter @anviq/api content-encryption rotate      # moves the existing space keys
+pnpm --filter @anviq/api content-encryption status      # every space key of the organization
+```
+
+`set` checks that the server can use the key before saving it, and keeps the previous key listed so
+space keys wrapped under it still unwrap until `rotate` has moved them. New spaces in the
+organization get their key wrapped by the company's key. Every wrap and unwrap appears in the
+company's own CloudTrail, with the space id as encryption context. If the company disables the key
+or removes the server from its policy, the organization's content cannot be read or written, and
+becomes readable again when access returns. Space keys are cached for up to ten minutes, and the
+setting is read once a minute, so revoking takes effect within that window.
+
+Anviq still runs the process that decrypts, so a server operator with shell access to a running
+host could capture content while it is in use. To keep the operator out of running data as well,
+deploy the stack in the company's own cloud account and keep the operator out of it.
+
+`org-key clear <organization id>` sends new space keys back to the deployment key, and `org-key
+list` shows which organizations have their own key.
 
 Other key managers implement the `KeyProvider` interface in
 `@anviq/adapter-kit` (`activeKeyId`, `wrap`, `unwrap`), pass the shared suite in

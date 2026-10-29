@@ -225,6 +225,20 @@ describePostgres("content encryption (PostgreSQL)", () => {
 
       const before = await contentEncryptionStatus(prisma);
       expect(before.tables.find((t) => t.table === "messages")!.plaintext).toBeGreaterThan(0);
+      expect(before.tables.map((t) => t.table)).toEqual(
+        expect.arrayContaining([
+          "bots.instructions",
+          "bots.description",
+          "bots.instructionHistory",
+          "tasks",
+          "routines",
+          "agent_skills",
+          "scratchpad_items",
+          "tickets.title",
+          "tickets.description",
+          "ticket_comments",
+        ]),
+      );
       await migrateContent(prisma, { mode: "encrypt" });
       expect(await rawBlocks(plaintextId)).not.toContain("pelicans");
       expect(await texts()).toEqual(["fresh note about pelicans", "legacy note about pelicans"]);

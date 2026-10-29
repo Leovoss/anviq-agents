@@ -55,6 +55,7 @@ export class AnviqMemoryProvider implements SemanticMemoryProvider {
     try {
       const found = await this.engine.recall({
         namespaces,
+        spaceId: context.spaceId,
         query: request.query,
         limit: request.limit,
       });

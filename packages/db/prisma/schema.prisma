@@ -224,6 +224,7 @@ model Organization {
   invitations  Invitation[]
   spaces       Space[]
   billing      BillingAccount?
+  keyConfig    OrganizationKeyConfig?
   modelCredits ModelCreditAccount?
 
   @@unique([slug])
@@ -364,6 +365,17 @@ model Space {
 /// A space's data encryption key, wrapped by a master key. There is no foreign key:
 /// keys are created on their own connection, possibly before the space row commits.
 /// A trigger deletes them with the space, which crypto-shreds anything left behind.
+model OrganizationKeyConfig {
+  organizationId  String       @id
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  keyArn          String
+  previousKeyArns String[]     @default([])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("organization_key_configs")
+}
+
 model SpaceKey {
   id          String   @id
   spaceId     String
