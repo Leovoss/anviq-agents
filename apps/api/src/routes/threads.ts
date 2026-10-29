@@ -157,15 +157,18 @@ export function threadsRoutes(ctx: RouterContext) {
         }
       }),
       send: authed.threads.send.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
-          participant: true,
-        });
-        // In a shared chat the host's bots answer with the host's models and access.
-        const actor = threadActor(context.actor, target);
+        // In a shared chat the host's bots answer with the host's models and access, so a group
+        // is resolved first to learn whose they are. A direct chat is always the sender's own.
+        const groupTarget = input.groupId
+          ? await resolveThreadTarget(deps.prisma, context.actor, input, { participant: true })
+          : undefined;
+        const actor = groupTarget ? threadActor(context.actor, groupTarget) : context.actor;
         const setup = await modelSetup(deps, actor);
         if (setup.needsModel) {
           throw new ORPCError("BAD_REQUEST", { message: MODEL_REQUIRED_SEND_ERROR });
         }
+        const target =
+          groupTarget ?? (await resolveThreadTarget(deps.prisma, context.actor, input));
         if (target.kind === "bot") {
           await assertTeachingSendAllowed(deps.prisma, context.actor.spaceId, target.botId);
         }

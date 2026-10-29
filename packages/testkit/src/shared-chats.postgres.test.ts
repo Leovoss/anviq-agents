@@ -111,32 +111,55 @@ describeWithDatabase("shared chats", () => {
   });
 
   it("runs the host's bots for a guest without treating it as the host's own request", async () => {
-    const runs = await harness.db.run.findMany({
-      where: { threadId: await threadIdOf(groupId) },
-      select: { userId: true, triggeredByUserId: true, task: { select: { prompt: true } } },
+    const threadId = await threadIdOf(groupId);
+    const tasks = await harness.db.task.findMany({
+      where: { threadId },
+      select: { id: true, prompt: true },
     });
-    const forBen = runs.filter((run) => run.task.prompt.includes("question"));
+    const runs = await harness.db.run.findMany({
+      where: { threadId },
+      select: { taskId: true, userId: true, triggeredByUserId: true },
+    });
+    const promptOf = (taskId: string) => tasks.find((task) => task.id === taskId)?.prompt ?? "";
+    const forBen = runs.filter((run) => promptOf(run.taskId).includes("question"));
     expect(forBen.length).toBeGreaterThan(0);
     for (const run of forBen) {
       expect(run.userId).toBe(ana.userId);
       expect(run.triggeredByUserId).toBe(ben.userId);
-      expect(run.task.prompt).toContain("ben wrote in this shared chat");
+      expect(promptOf(run.taskId)).toContain("ben wrote in this shared chat");
     }
-    const forAna = runs.filter((run) => run.task.prompt.includes("kickoff"));
+    const forAna = runs.filter((run) => promptOf(run.taskId).includes("kickoff"));
+    expect(forAna.length).toBeGreaterThan(0);
     for (const run of forAna) expect(run.triggeredByUserId).toBeNull();
   });
 
   it("keeps each person's own reading position", async () => {
-    const before = await harness.ok<GroupView[]>(ben, "groups/list");
+    const position = async (userId: string) =>
+      (
+        await harness.db.chatGroupParticipant.findFirstOrThrow({
+          where: { groupId, userId },
+          select: { lastReadSeq: true },
+        })
+      ).lastReadSeq;
     await harness.ok(ana, "threads/send", { groupId, text: "Ana again" });
-    const unread = await harness.ok<GroupView[]>(ben, "groups/list");
-    expect(unread.find((group) => group.id === groupId)?.unread).toBe(true);
-    expect(before.find((group) => group.id === groupId)).toBeDefined();
+    const page = await harness.ok<{ messages: Array<{ seq: number; blocks: unknown }> }>(
+      ana,
+      "threads/messages",
+      { groupId },
+    );
+    const again = page.messages.find((message) =>
+      JSON.stringify(message.blocks).includes("Ana again"),
+    );
+    expect(again).toBeDefined();
+    const seq = again?.seq as number;
+    const guest = await harness.ok<GroupView[]>(ben, "groups/list");
+    expect(guest.find((group) => group.id === groupId)?.unread).toBe(true);
+    const hostBefore = await position(ana.userId);
+    expect(await position(ben.userId)).toBeLessThan(seq);
+
     await harness.ok(ben, "threads/markRead", { groupId });
-    const read = await harness.ok<GroupView[]>(ben, "groups/list");
-    expect(read.find((group) => group.id === groupId)?.unread).toBe(false);
-    const hostView = await harness.ok<GroupView[]>(ana, "groups/list");
-    expect(hostView.find((group) => group.id === groupId)?.unread).toBe(false);
+    expect(await position(ben.userId)).toBeGreaterThanOrEqual(seq);
+    expect(await position(ana.userId)).toBe(hostBefore);
   });
 
   it("keeps a guest from changing the group or answering for the host", async () => {
@@ -153,8 +176,8 @@ describeWithDatabase("shared chats", () => {
       answer: "yes",
     });
     await harness.denied(ben, "bots/get", { botId: botIds[0] });
-    await harness.denied(ben, "artifacts/list", { botId: botIds[0] });
-    await harness.denied(ben, "memory/list", { botId: botIds[0] });
+    await harness.hidden(ben, "artifacts/list", { botId: botIds[0] }, "Ada");
+    await harness.hidden(ben, "memory/list", { botId: botIds[0] }, "Ada");
   });
 
   it("refuses to share a chat that already has messages until it is cleared", async () => {
