@@ -431,6 +431,30 @@ export async function contentEncryptionStatus(
     UNION ALL
     SELECT 'threads', count(*) FILTER (WHERE "historyCompactionSummary" IS NOT NULL),
       count(*) FILTER (WHERE "historyCompactionSummary" NOT LIKE 'rkz1:%') FROM threads
+    UNION ALL
+    SELECT 'bots.instructions', count(*), count(*) FILTER (WHERE instructions NOT LIKE 'rkz1:%') FROM bots
+    UNION ALL
+    SELECT 'bots.description', count(*), count(*) FILTER (WHERE description NOT LIKE 'rkz1:%') FROM bots
+    UNION ALL
+    SELECT 'bots.instructionHistory', count(*), count(*) FILTER (WHERE NOT CASE jsonb_typeof("instructionHistory")
+      WHEN 'object' THEN jsonb_exists("instructionHistory", '$sealed')
+      WHEN 'array' THEN jsonb_array_length("instructionHistory") = 0 OR jsonb_exists("instructionHistory"->0, '$sealed')
+      ELSE false END) FROM bots
+    UNION ALL
+    SELECT 'tasks', count(*), count(*) FILTER (WHERE prompt NOT LIKE 'rkz1:%') FROM tasks
+    UNION ALL
+    SELECT 'routines', count(*), count(*) FILTER (WHERE prompt NOT LIKE 'rkz1:%') FROM routines
+    UNION ALL
+    SELECT 'agent_skills', count(*), count(*) FILTER (WHERE content NOT LIKE 'rkz1:%') FROM agent_skills
+    UNION ALL
+    SELECT 'scratchpad_items', count(*), count(*) FILTER (WHERE notes NOT LIKE 'rkz1:%') FROM scratchpad_items
+    UNION ALL
+    SELECT 'tickets.title', count(*), count(*) FILTER (WHERE title NOT LIKE 'rkz1:%') FROM tickets
+    UNION ALL
+    SELECT 'tickets.description', count(*) FILTER (WHERE description IS NOT NULL),
+      count(*) FILTER (WHERE description NOT LIKE 'rkz1:%') FROM tickets
+    UNION ALL
+    SELECT 'ticket_comments', count(*), count(*) FILTER (WHERE body NOT LIKE 'rkz1:%') FROM ticket_comments
   `;
   const keys = await prisma.spaceKey.groupBy({ by: ["masterKeyId"], _count: { _all: true } });
   return {
