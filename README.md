@@ -4,12 +4,8 @@ Anviq Agents runs persistent AI agents ("bots") that keep their own conversation
 and work on a computer of their own: a browser, a terminal, files and a graphical desktop. One API
 serves a web app, an Electron desktop app and an Expo mobile app.
 
-It is self-hosted. You bring your own model credentials and a computer provider, or run the whole
-stack on one machine with Docker.
-
-Anviq Agents is a fork of [rakazo](https://github.com/elie222/rakazo) by Elie Steinbock, maintained
-by Anviq LLC for enterprise and EU deployments. It keeps the Apache-2.0 license, follows upstream
-releases and carries its own changes on top. Anviq Agents is in beta.
+Each customer runs on its own instance with its own database, keys and domain, operated by Anviq.
+Anviq Agents is in beta.
 
 ## Requirements
 
@@ -50,9 +46,11 @@ pnpm dev
 Open <http://127.0.0.1:5173>, create an account and add a model. The first registered user
 becomes the deployment owner.
 
-## Deploy to a server
+## Deploy an instance
 
-Build and run the whole stack with Compose:
+One customer gets one server and one domain. The step by step runbook is
+[docs/new-customer-instance.md](./docs/new-customer-instance.md). In short, the stack is the Compose
+files in `infra/compose`:
 
 ```bash
 docker compose --env-file .env -f infra/compose/docker-compose.yml up --build -d
@@ -67,11 +65,12 @@ API_URL=https://app.example.com
 ANVIQ_HOST=app.example.com
 ```
 
-Terminate TLS in front of port 5173 with a reverse proxy such as Caddy, and do not expose port
-3100 or Postgres. Control who can register with `SIGNUPS_ENABLED` and `SIGNUP_ALLOWLIST`.
+Terminate TLS in front of port 5173 with a reverse proxy, and do not expose port 3100 or Postgres.
+Control who can register with `SIGNUPS_ENABLED` and `SIGNUP_ALLOWLIST`. Pin the image tags to a fixed
+build for every customer.
 
-Backups, upgrades, host hardening and the production Compose file are covered in
-[docs/self-host.md](./docs/self-host.md).
+Backups, upgrades, host hardening and the production Compose file are covered in the operations
+guide, [docs/self-host.md](./docs/self-host.md).
 
 ## Computer providers
 
@@ -79,12 +78,19 @@ Set `SANDBOX_PROVIDER` to one of:
 
 | Value | Notes |
 | --- | --- |
-| `docker` | Default. Local Docker computers through the sandbox supervisor. |
-| `e2b`, `daytona`, `box`, `createos` | Remote providers. Requires the matching API key. |
+| `docker` | Default. Docker computers on the same server, through the sandbox supervisor. |
+| `e2b`, `daytona`, `railway`, `boat`, `createos` | Remote providers. Each needs its own API key. |
+| `none` | No bot computers. |
 
 Provider details and isolation notes are in
 [docs/self-host-sandbox-providers.md](./docs/self-host-sandbox-providers.md) and
 [docs/computer-runtime.md](./docs/computer-runtime.md).
+
+## Content encryption
+
+Messages, bot instructions, prompts, memory and files are encrypted at rest with per-space keys.
+What is covered and how keys are managed is in
+[docs/content-encryption.md](./docs/content-encryption.md).
 
 ## Desktop and mobile
 
@@ -105,7 +111,7 @@ apps/       web, api, worker, desktop, mobile
 packages/   domain, contracts, persistence, adapters, UI, test tooling
 infra/      Compose files, sandbox images, updater
 docs/       operations and release guides
-scripts/    maintenance scripts, including upstream sync
+scripts/    maintenance scripts, including the upstream sync
 ```
 
 Checks:
@@ -116,15 +122,16 @@ pnpm check
 pnpm test
 ```
 
-Upstream changes are merged as described in [docs/upstream-sync.md](./docs/upstream-sync.md).
-
 ## Documentation
 
-- [Self-hosting](./docs/self-host.md)
-- [Self-host secrets](./docs/self-host-secrets.md)
+- [New customer instance](./docs/new-customer-instance.md)
+- [Operations guide](./docs/self-host.md)
+- [Secrets](./docs/self-host-secrets.md)
+- [Content encryption](./docs/content-encryption.md)
 - [Computer runtime and isolation](./docs/computer-runtime.md)
 - [Desktop releases](./docs/desktop-release.md)
 - [Mobile releases](./docs/mobile-release.md)
+- [Syncing upstream](./docs/upstream-sync.md)
 
 ## Security
 
@@ -132,6 +139,6 @@ Report vulnerabilities as described in [SECURITY.md](./SECURITY.md), not in publ
 
 ## License
 
-The upstream code from rakazo and its contributors is licensed under the Apache License 2.0, see
-[LICENSE](./LICENSE). Anviq LLC's own additions are proprietary, see
+Anviq Agents includes code from [rakazo](https://github.com/elie222/rakazo), licensed under the
+Apache License 2.0, see [LICENSE](./LICENSE). Anviq LLC's own additions are proprietary, see
 [LICENSE-ANVIQ.md](./LICENSE-ANVIQ.md) and [NOTICE](./NOTICE).
