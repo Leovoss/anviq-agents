@@ -162,6 +162,8 @@ it("updates an accessible group thread and emits its normal update event", async
     findFirst: vi.fn(async () => ({
       id: "group",
       name: "Team",
+      userId: actor.userId,
+      participants: [],
       thread: { id: "group-thread" },
       members: ["bot", "peer"].map((id) => ({ bot: { id, name: id, runs: [] } })),
     })),
