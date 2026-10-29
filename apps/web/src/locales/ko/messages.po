@@ -6225,6 +6225,10 @@ msgstr "보관함"
 msgid "Verify and add"
 msgstr "확인 후 추가"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "확인 중…"

@@ -6225,6 +6225,10 @@ msgstr "Bóveda"
 msgid "Verify and add"
 msgstr "Verificar y agregar"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "Verificando…"

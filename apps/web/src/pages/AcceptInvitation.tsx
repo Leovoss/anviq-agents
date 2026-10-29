@@ -51,7 +51,9 @@ export function AcceptInvitationPage() {
             <p className="text-[14px] text-muted-foreground">
               {invitations.isError
                 ? t`Could not load the invitation`
-                : t`This invitation is not available`}
+                : verified === false
+                  ? t`Verify your email to join`
+                  : t`This invitation is not available`}
             </p>
             <Button variant="ghost" className="mt-4 rounded-full" render={<Link to="/app" />}>
               {t`Open the app`}

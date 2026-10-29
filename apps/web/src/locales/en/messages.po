@@ -6225,6 +6225,10 @@ msgstr "Vault"
 msgid "Verify and add"
 msgstr "Verify and add"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr "Verify your email to join"
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "Verifying…"

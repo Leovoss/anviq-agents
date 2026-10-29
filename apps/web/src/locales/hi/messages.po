@@ -6225,6 +6225,10 @@ msgstr "वॉल्ट"
 msgid "Verify and add"
 msgstr "पुष्टि करके जोड़ें"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "पुष्टि की जा रही है…"

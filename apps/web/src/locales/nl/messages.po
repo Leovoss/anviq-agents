@@ -6225,6 +6225,10 @@ msgstr "Kluis"
 msgid "Verify and add"
 msgstr "Verifiëren en toevoegen"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "Bezig met verifiëren…"

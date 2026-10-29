@@ -6225,6 +6225,10 @@ msgstr "保管库"
 msgid "Verify and add"
 msgstr "校验并添加"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "正在校验…"

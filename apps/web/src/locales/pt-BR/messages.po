@@ -6225,6 +6225,10 @@ msgstr "Cofre"
 msgid "Verify and add"
 msgstr "Verificar e adicionar"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "Verificando…"

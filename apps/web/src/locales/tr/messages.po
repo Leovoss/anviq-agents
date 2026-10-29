@@ -6225,6 +6225,10 @@ msgstr "Kasa"
 msgid "Verify and add"
 msgstr "Doğrula ve ekle"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "Doğrulanıyor…"

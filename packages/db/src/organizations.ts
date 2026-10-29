@@ -383,7 +383,7 @@ export async function cancelInvitation(
   invitationId: string,
 ): Promise<void> {
   const invitation = await prisma.invitation.findUnique({ where: { id: invitationId } });
-  if (!invitation || invitation.status !== "pending")
+  if (invitation?.status !== "pending")
     throw new OrganizationError("NOT_FOUND", "Invitation not found");
   await managerOf(prisma, userId, invitation.organizationId);
   await prisma.invitation.update({ where: { id: invitationId }, data: { status: "canceled" } });

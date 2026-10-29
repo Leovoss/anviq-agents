@@ -6225,6 +6225,10 @@ msgstr "כספת"
 msgid "Verify and add"
 msgstr "אימות והוספה"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr ""
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "מאמת…"
