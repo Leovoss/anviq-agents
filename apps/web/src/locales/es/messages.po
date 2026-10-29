@@ -3340,6 +3340,11 @@ msgstr ""
 msgid "Leave"
 msgstr "Salir"
 
+#. placeholder {0}: team.name
+#: src/components/TeamSettings.tsx
+msgid "Leave {0}?"
+msgstr ""
+
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
 msgstr ""
@@ -3481,6 +3486,11 @@ msgstr "Modelo principal"
 #. placeholder {0}: member.name
 #: src/components/TeamSettings.tsx
 msgid "Make {0} the owner"
+msgstr ""
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Make {0} the owner?"
 msgstr ""
 
 #: src/components/TeamSettings.tsx
@@ -4376,6 +4386,7 @@ msgstr "Personalidad"
 
 #: src/components/SignupSurvey.tsx
 #: src/components/TeamSettings.tsx
+#: src/components/use-workspaces.ts
 msgid "Personal"
 msgstr ""
 
@@ -4678,6 +4689,11 @@ msgstr "Quitar {0}"
 #. placeholder {0}: bot.name
 #: src/pages/GroupPanel.tsx
 msgid "Remove {0} from the group"
+msgstr ""
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Remove {0}?"
 msgstr ""
 
 #: src/components/VaultSettings.tsx

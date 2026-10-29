@@ -13,7 +13,18 @@ vi.mock("@lingui/react/macro", () => {
     parts.reduce((text, part, index) => `${text}${index > 0 ? values[index - 1] : ""}${part}`, "");
   return { useLingui: () => ({ t }) };
 });
+vi.mock("../lib/auth", () => ({
+  authClient: { useSession: () => ({ data: { user: { id: "u2" } } }) },
+}));
 vi.mock("@anviq/ui-web", () => ({
+  AlertDialog: ({ open, children }: { open: boolean; children?: ReactNode }) =>
+    open ? <div role="alertdialog">{children}</div> : null,
+  AlertDialogAction: (props: ComponentProps<"button">) => <button type="button" {...props} />,
+  AlertDialogCancel: (props: ComponentProps<"button">) => <button type="button" {...props} />,
+  AlertDialogContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  AlertDialogFooter: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  AlertDialogHeader: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  AlertDialogTitle: ({ children }: { children?: ReactNode }) => <h2>{children}</h2>,
   Button: (props: ComponentProps<"button">) => <button type="button" {...props} />,
   Input: (props: ComponentProps<"input">) => <input {...props} />,
   NativeSelect: (props: ComponentProps<"select">) => <select {...props} />,
@@ -80,6 +91,7 @@ beforeEach(() => {
   rpc.organizations.members.mockResolvedValue([
     { userId: "u1", name: "Ana", email: "ana@anviq.test", role: "owner", joinedAt: "2026-01-01" },
     { userId: "u2", name: "Ben", email: "ben@anviq.test", role: "admin", joinedAt: "2026-01-02" },
+    { userId: "u3", name: "Cy", email: "cy@anviq.test", role: "member", joinedAt: "2026-01-03" },
   ]);
   rpc.organizations.invitations.mockResolvedValue([]);
 });
@@ -111,7 +123,29 @@ describe("TeamSettings", () => {
     expect(container.querySelector("select[aria-label='Role']")).toBeNull();
     expect(container.querySelector('[aria-label="Make Ben the owner"]')).toBeNull();
     expect(container.querySelector('[aria-label="Remove Ana"]')).toBeNull();
-    expect(container.querySelector('[aria-label="Remove Ben"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="Remove Ben"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Remove Cy"]')).not.toBeNull();
+  });
+
+  it("asks before removing someone", async () => {
+    rpc.organizations.removeMember.mockResolvedValue({ ok: true });
+    await render();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Manage Acme"]')?.click(),
+    );
+    await settle();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Remove Cy"]')?.click(),
+    );
+    expect(container.querySelector('[role="alertdialog"]')?.textContent).toContain("Remove Cy?");
+    expect(rpc.organizations.removeMember).not.toHaveBeenCalled();
+    await act(async () =>
+      container.querySelector<HTMLElement>('[role="alertdialog"] button:last-child')?.click(),
+    );
+    expect(rpc.organizations.removeMember).toHaveBeenCalledWith({
+      organizationId: "t1",
+      userId: "u3",
+    });
   });
 
   it("offers an invitation addressed to the person", async () => {

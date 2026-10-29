@@ -173,7 +173,11 @@ function SessionApp() {
             <Route
               path="/sign-up"
               element={
-                user ? <Navigate to="/onboarding" replace /> : <AuthPage key="up" mode="up" />
+                user ? (
+                  <Navigate to={ACCEPT_INVITATION_NEXT.test(next) ? next : "/onboarding"} replace />
+                ) : (
+                  <AuthPage key="up" mode="up" />
+                )
               }
             />
             <Route

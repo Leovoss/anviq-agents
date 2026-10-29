@@ -3341,6 +3341,11 @@ msgstr "稍後"
 msgid "Leave"
 msgstr "退出"
 
+#. placeholder {0}: team.name
+#: src/components/TeamSettings.tsx
+msgid "Leave {0}?"
+msgstr ""
+
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
 msgstr ""
@@ -3482,6 +3487,11 @@ msgstr "主模型"
 #. placeholder {0}: member.name
 #: src/components/TeamSettings.tsx
 msgid "Make {0} the owner"
+msgstr ""
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Make {0} the owner?"
 msgstr ""
 
 #: src/components/TeamSettings.tsx
@@ -4377,6 +4387,7 @@ msgstr "人設"
 
 #: src/components/SignupSurvey.tsx
 #: src/components/TeamSettings.tsx
+#: src/components/use-workspaces.ts
 msgid "Personal"
 msgstr "個人"
 
@@ -4680,6 +4691,11 @@ msgstr "移除 {0}"
 #: src/pages/GroupPanel.tsx
 msgid "Remove {0} from the group"
 msgstr "將 {0} 移出群組"
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Remove {0}?"
+msgstr ""
 
 #: src/components/VaultSettings.tsx
 msgid "Remove {secretName}? Bots will no longer be able to use it."

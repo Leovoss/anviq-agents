@@ -193,6 +193,7 @@ export async function openUserSettings(
     | "general"
     | "models"
     | "memory"
+    | "team"
     | "voice"
     | "vault"
     | "wallet"

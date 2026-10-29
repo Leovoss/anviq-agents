@@ -1,10 +1,23 @@
 // Copyright 2026 Anviq LLC. All rights reserved.
 import type { OrganizationRole, Team } from "@anviq/contracts";
-import { Button, Input, NativeSelect, NativeSelectOption } from "@anviq/ui-web";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Button,
+  Input,
+  NativeSelect,
+  NativeSelectOption,
+} from "@anviq/ui-web";
 import { useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
+import { authClient } from "../lib/auth";
 import { rpc, selectSpace } from "../lib/rpc";
 import { errorText } from "../lib/user-error";
 import { SettingsGroup, SettingsRow } from "./SettingsRows";
@@ -167,6 +180,12 @@ function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
   const manager = canManage(team.role);
+  const myId = authClient.useSession().data?.user.id;
+  const [confirm, setConfirm] = useState<{
+    title: string;
+    action: string;
+    work: () => Promise<unknown>;
+  } | null>(null);
   const members = useQuery({
     queryKey: [...TEAMS, "members", team.id],
     queryFn: () => rpc.organizations.members({ organizationId: team.id }),
@@ -190,6 +209,7 @@ function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
       <SettingsGroup title={t`People`}>
         {members.data?.map((member) => {
           const fixed = member.role === "owner";
+          const self = member.userId === myId;
           return (
             <SettingsRow
               key={member.userId}
@@ -228,7 +248,7 @@ function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
                           : t`Member`}
                     </span>
                   )}
-                  {manager && !fixed ? (
+                  {manager && !fixed && !self ? (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -236,15 +256,21 @@ function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
                       disabled={busy}
                       aria-label={t`Remove ${member.name}`}
                       onClick={() =>
-                        void run(() =>
-                          rpc.organizations.removeMember({ organizationId, userId: member.userId }),
-                        )
+                        setConfirm({
+                          title: t`Remove ${member.name}?`,
+                          action: t`Remove`,
+                          work: () =>
+                            rpc.organizations.removeMember({
+                              organizationId,
+                              userId: member.userId,
+                            }),
+                        })
                       }
                     >
                       {t`Remove`}
                     </Button>
                   ) : null}
-                  {team.role === "owner" && !fixed ? (
+                  {team.role === "owner" && !fixed && !self ? (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -252,12 +278,15 @@ function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
                       disabled={busy}
                       aria-label={t`Make ${member.name} the owner`}
                       onClick={() =>
-                        void run(() =>
-                          rpc.organizations.transferOwnership({
-                            organizationId,
-                            userId: member.userId,
-                          }),
-                        )
+                        setConfirm({
+                          title: t`Make ${member.name} the owner?`,
+                          action: t`Make owner`,
+                          work: () =>
+                            rpc.organizations.transferOwnership({
+                              organizationId,
+                              userId: member.userId,
+                            }),
+                        })
                       }
                     >
                       {t`Make owner`}
@@ -341,9 +370,13 @@ function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
           className="text-destructive"
           disabled={busy}
           onClick={() =>
-            void run(async () => {
-              await rpc.organizations.leave({ organizationId });
-              onBack();
+            setConfirm({
+              title: t`Leave ${team.name}?`,
+              action: t`Leave team`,
+              work: async () => {
+                await rpc.organizations.leave({ organizationId });
+                onBack();
+              },
             })
           }
         >
@@ -355,6 +388,27 @@ function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
           {error}
         </p>
       ) : null}
+      <AlertDialog open={confirm !== null} onOpenChange={(open) => !open && setConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirm?.title}</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t`Cancel`}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={busy}
+              onClick={() => {
+                const work = confirm?.work;
+                setConfirm(null);
+                if (work) void run(work);
+              }}
+            >
+              {confirm?.action}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

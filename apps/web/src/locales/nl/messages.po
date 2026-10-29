@@ -3340,6 +3340,11 @@ msgstr "Later"
 msgid "Leave"
 msgstr "Verlaten"
 
+#. placeholder {0}: team.name
+#: src/components/TeamSettings.tsx
+msgid "Leave {0}?"
+msgstr ""
+
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
 msgstr ""
@@ -3481,6 +3486,11 @@ msgstr "Hoofdmodel"
 #. placeholder {0}: member.name
 #: src/components/TeamSettings.tsx
 msgid "Make {0} the owner"
+msgstr ""
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Make {0} the owner?"
 msgstr ""
 
 #: src/components/TeamSettings.tsx
@@ -4376,6 +4386,7 @@ msgstr "Persona"
 
 #: src/components/SignupSurvey.tsx
 #: src/components/TeamSettings.tsx
+#: src/components/use-workspaces.ts
 msgid "Personal"
 msgstr ""
 
@@ -4679,6 +4690,11 @@ msgstr "{0} verwijderen"
 #: src/pages/GroupPanel.tsx
 msgid "Remove {0} from the group"
 msgstr "{0} uit de groep verwijderen"
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Remove {0}?"
+msgstr ""
 
 #: src/components/VaultSettings.tsx
 msgid "Remove {secretName}? Bots will no longer be able to use it."

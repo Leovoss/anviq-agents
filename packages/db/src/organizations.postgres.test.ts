@@ -12,6 +12,7 @@ import {
   listOrganizationMembers,
   listTeams,
   OrganizationError,
+  personalSpaceId,
   removeMember,
   setMemberRole,
   transferOwnership,
@@ -78,7 +79,10 @@ describePostgres("organization membership (PostgreSQL)", () => {
   it("creates a team with its owner and a default space", () =>
     run(async () => {
       const teams = await listTeams(db.prisma, ids.owner);
-      expect(teams).toEqual([{ id: teamId, name: "Acme Corp", role: "owner", memberCount: 1 }]);
+      expect(teams).toEqual([
+        { id: teamId, name: "Acme Corp", role: "owner", memberCount: 1, spaceId },
+      ]);
+      expect(await personalSpaceId(db.prisma, ids.owner)).toBeNull();
       const space = await db.prisma.space.findUnique({ where: { id: spaceId } });
       expect(space).toMatchObject({ organizationId: teamId, isDefault: true, name: "General" });
       expect(await listTeams(db.prisma, ids.ben)).toEqual([]);

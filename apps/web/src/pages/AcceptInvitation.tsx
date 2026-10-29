@@ -5,12 +5,14 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { PageLoading } from "../components/PageLoading";
 import { openSpace } from "../components/TeamSettings";
+import { authClient } from "../lib/auth";
 import { rpc } from "../lib/rpc";
 import { errorText } from "../lib/user-error";
 
 export function AcceptInvitationPage() {
   const { t } = useLingui();
   const { invitationId = "" } = useParams();
+  const verified = authClient.useSession().data?.user.emailVerified;
   const invitations = useQuery({
     queryKey: ["organizations", "mine"],
     queryFn: () => rpc.organizations.myInvitations(),
