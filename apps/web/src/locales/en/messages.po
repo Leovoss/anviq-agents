@@ -825,6 +825,7 @@ msgstr "Approval model"
 msgid "Approvals"
 msgstr "Approvals"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
@@ -833,6 +834,10 @@ msgstr "Approve"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
 msgstr "Approve this server to let your agent use its tools."
+
+#: src/components/TeamSettings.tsx
+msgid "approved a suggestion"
+msgstr "approved a suggestion"
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -4701,6 +4706,14 @@ msgstr "Refreshing…"
 msgid "Registration is closed"
 msgstr "Registration is closed"
 
+#: src/components/TeamSettings.tsx
+msgid "Reject"
+msgstr "Reject"
+
+#: src/components/TeamSettings.tsx
+msgid "rejected a suggestion"
+msgstr "rejected a suggestion"
+
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Release control"
 msgstr "Release control"
@@ -5643,6 +5656,14 @@ msgstr "Subscribe with your own AI"
 #: src/pages/Paywall.tsx
 msgid "Subscription required"
 msgstr "Subscription required"
+
+#: src/components/TeamSettings.tsx
+msgid "Suggest a note"
+msgstr "Suggest a note"
+
+#: src/components/TeamSettings.tsx
+msgid "suggested a note"
+msgstr "suggested a note"
 
 #: src/lib/cron.ts
 msgid "Sunday"

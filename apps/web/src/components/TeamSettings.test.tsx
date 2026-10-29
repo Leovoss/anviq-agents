@@ -49,6 +49,9 @@ const rpc = vi.hoisted(() => ({
     cancelInvitation: vi.fn(),
     leave: vi.fn(),
     memory: vi.fn(),
+    memoryProposals: vi.fn(),
+    proposeMemory: vi.fn(),
+    decideMemoryProposal: vi.fn(),
     setMemory: vi.fn(),
     events: vi.fn(),
   },
@@ -105,6 +108,7 @@ beforeEach(() => {
     canEdit: false,
   });
   rpc.organizations.events.mockResolvedValue([]);
+  rpc.organizations.memoryProposals.mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -208,5 +212,61 @@ describe("TeamSettings", () => {
     );
     await settle();
     expect(container.querySelector<HTMLTextAreaElement>("textarea")?.readOnly).toBe(false);
+  });
+
+  it("lets a member suggest a note and an admin approve what is waiting", async () => {
+    rpc.organizations.proposeMemory.mockResolvedValue({ id: "p1" });
+    rpc.organizations.decideMemoryProposal.mockResolvedValue({ ok: true });
+    await render();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Manage Acme"]')?.click(),
+    );
+    await settle();
+    const field = container.querySelector<HTMLInputElement>('input[aria-label="Suggest a note"]');
+    expect(field).not.toBeNull();
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      setter?.call(field, "Greet people by name");
+      field?.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    const form = field?.closest("form");
+    await act(async () => {
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    expect(rpc.organizations.proposeMemory).toHaveBeenCalledWith({
+      organizationId: "t1",
+      content: "Greet people by name",
+    });
+  });
+
+  it("shows an admin each waiting suggestion with Approve and Reject", async () => {
+    rpc.organizations.memory.mockResolvedValue({
+      content: "",
+      revision: 0,
+      updatedAt: null,
+      canEdit: true,
+    });
+    rpc.organizations.memoryProposals.mockResolvedValue([
+      {
+        id: "p1",
+        content: "Greet people by name",
+        proposedBy: "Ben",
+        mine: false,
+        createdAt: "2026-01-01",
+      },
+    ]);
+    rpc.organizations.decideMemoryProposal.mockResolvedValue({ ok: true });
+    await render();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Manage Acme"]')?.click(),
+    );
+    await settle();
+    expect(container.textContent).toContain("Greet people by name");
+    expect(container.querySelector('input[aria-label="Suggest a note"]')).toBeNull();
+    await act(async () => button("Approve")?.click());
+    expect(rpc.organizations.decideMemoryProposal).toHaveBeenCalledWith({
+      proposalId: "p1",
+      approve: true,
+    });
   });
 });

@@ -150,9 +150,12 @@ import {
   CompanyMemorySchema,
   CreateTeamInput,
   CreateTeamOutput,
+  DecideMemoryProposalInput,
   InvitationIdInput,
   InviteToTeamInput,
+  MemoryProposalSchema,
   MyTeamInvitationSchema,
+  ProposeMemoryInput,
   SetCompanyMemoryInput,
   SetTeamRoleInput,
   TeamEventSchema,
@@ -316,6 +319,12 @@ export const appContract = {
     /** What every bot in the team knows. Members read it; owners and admins write it. */
     memory: oc.input(TeamIdInput).output(CompanyMemorySchema),
     setMemory: oc.input(SetCompanyMemoryInput).output(z.object({ revision: z.number().int() })),
+    /** A member suggests an addition; an owner or admin decides. */
+    proposeMemory: oc.input(ProposeMemoryInput).output(z.object({ id: Id })),
+    memoryProposals: oc.input(TeamIdInput).output(z.array(MemoryProposalSchema)),
+    decideMemoryProposal: oc
+      .input(DecideMemoryProposalInput)
+      .output(z.object({ ok: z.literal(true) })),
     /** The team's audit log, newest first, for owners and admins. */
     events: oc.input(TeamIdInput).output(z.array(TeamEventSchema)),
   },
