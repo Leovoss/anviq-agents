@@ -463,6 +463,7 @@ msgstr ""
 msgid "Active"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Activity"
 msgstr "गतिविधि"
@@ -1179,6 +1180,10 @@ msgstr "मॉडल बदलें"
 msgid "Change password"
 msgstr "पासवर्ड बदलें"
 
+#: src/components/TeamSettings.tsx
+msgid "changed a role"
+msgstr ""
+
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Changing…"
 msgstr "बदला जा रहा है…"
@@ -1459,6 +1464,10 @@ msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Compact"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Company memory"
 msgstr ""
 
 #: src/pages/ScratchpadSection.tsx
@@ -2270,6 +2279,10 @@ msgstr "अपना Anviq Agents बनाएं"
 msgid "Created"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "created the team"
+msgstr ""
+
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2649,6 +2662,10 @@ msgid "Edit Profile"
 msgstr "प्रोफ़ाइल संपादित करें"
 
 #: src/components/TeamSettings.tsx
+msgid "edited company memory"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "ईमेल"
@@ -2990,6 +3007,10 @@ msgstr "समूह सेटिंग्स"
 msgid "Group updates"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "handed over ownership"
+msgstr ""
+
 #: src/components/call/CallCard.tsx
 msgid "Hang up"
 msgstr "कॉल समाप्त करें"
@@ -3250,6 +3271,10 @@ msgstr ""
 msgid "Invite"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "invited"
+msgstr ""
+
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Isolated"
@@ -3290,6 +3315,10 @@ msgstr "इसका मॉडल इंपोर्ट से पहले ज�
 #: src/components/TeamSettings.tsx
 #: src/pages/AcceptInvitation.tsx
 msgid "Join"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "joined"
 msgstr ""
 
 #: src/pages/shell/transcript.tsx
@@ -3357,6 +3386,10 @@ msgstr ""
 
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "left"
 msgstr ""
 
 #: src/components/ComputerDeviceSettings.tsx
@@ -4754,6 +4787,10 @@ msgstr ""
 msgid "Remove webhook"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "removed"
+msgstr ""
+
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Removed"
 msgstr "हटाया जाएगा"
@@ -5009,6 +5046,7 @@ msgstr "शनिवार"
 #: src/components/AskCard.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/SkillDraftCard.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
@@ -5270,6 +5308,10 @@ msgstr ""
 #: src/pages/shell/bot-panel.tsx
 msgid "Shared"
 msgstr "साझा"
+
+#: src/components/TeamSettings.tsx
+msgid "shared a chat"
+msgstr ""
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Shared memory"
@@ -5549,6 +5591,10 @@ msgstr "बोलना रोकें"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Stop teaching"
 msgstr "सिखाना रोकें"
+
+#: src/components/TeamSettings.tsx
+msgid "stopped sharing a chat"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts

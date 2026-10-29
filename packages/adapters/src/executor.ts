@@ -26,6 +26,7 @@ import {
   userTurnMessageForRun,
 } from "@anviq/core";
 import {
+  companyMemoryForSpace,
   effectiveMemoryScope,
   isPartialReplyClientNonce,
   isTooManyDatabaseConnections,
@@ -649,7 +650,11 @@ export function createRunExecutor(deps: ExecutorDeps) {
           loadCurrentTurnImages(deps, turnBlocks, context),
           messagingChannelRun
             ? Promise.resolve("")
-            : loadAgentMemoryContext(deps.memory, bot.id, context),
+            : companyMemoryForSpace(deps.prisma, run.spaceId)
+                .catch(() => undefined)
+                .then((companyMemory) =>
+                  loadAgentMemoryContext(deps.memory, bot.id, context, undefined, companyMemory),
+                ),
           messagingChannelRun
             ? Promise.resolve("")
             : loadAgentScratchpadContext(deps, {

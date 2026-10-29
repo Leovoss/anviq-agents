@@ -33,6 +33,54 @@ describe("agent memory context", () => {
     expect(result!.indexOf("user fact")).toBeLessThan(result!.indexOf("bot fact"));
   });
 
+  it("puts company memory first and returns it even when nothing else is saved", async () => {
+    const read = vi.fn(async () => snapshot([]));
+    const alone = await loadAgentMemoryContext(
+      storeWith(read),
+      "bot-1",
+      context,
+      undefined,
+      "Refunds above 500 need a manager.",
+    );
+    expect(alone).toContain("## company: notes every bot in this team knows\nRefunds above 500");
+    expect(await loadAgentMemoryContext(storeWith(read), "bot-1", context)).toBeUndefined();
+
+    const withUser = vi.fn(async ({ scope }: { scope: "bot" | "user" }) =>
+      snapshot(
+        scope === "user"
+          ? [document("u", "profile.md", "user fact", 1, "2026-08-15T12:00:00.000Z")]
+          : [],
+      ),
+    );
+    const both = await loadAgentMemoryContext(
+      storeWith(withUser),
+      "bot-1",
+      context,
+      undefined,
+      "Company rule.",
+    );
+    expect(both!.indexOf("Company rule.")).toBeLessThan(both!.indexOf("user fact"));
+  });
+
+  it("keeps company memory from crowding out the user's own memory", async () => {
+    const read = vi.fn(async ({ scope }: { scope: "bot" | "user" }) =>
+      snapshot(
+        scope === "user"
+          ? [document("u", "profile.md", "user fact", 1, "2026-08-15T12:00:00.000Z")]
+          : [],
+      ),
+    );
+    const result = await loadAgentMemoryContext(
+      storeWith(read),
+      "bot-1",
+      context,
+      undefined,
+      "x".repeat(100_000),
+    );
+    expect(result).toContain("user fact");
+    expect(Buffer.byteLength(result!)).toBeLessThanOrEqual(32 * 1024);
+  });
+
   it("caps the complete memory block without splitting UTF-8 characters", async () => {
     const read = vi.fn(async ({ scope }: { scope: "bot" | "user" }) =>
       snapshot(

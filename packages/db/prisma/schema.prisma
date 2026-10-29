@@ -222,6 +222,7 @@ model Organization {
   createdAt    DateTime
   metadata     String?
   members      Member[]
+  events       OrganizationEvent[]
   invitations  Invitation[]
   spaces       Space[]
   billing      BillingAccount?
@@ -677,6 +678,21 @@ model ChatGroupMember {
   @@unique([groupId, botId])
   @@index([botId])
   @@map("chat_group_members")
+}
+
+/// What happened in a team, for its admins: membership, sharing and company memory changes.
+model OrganizationEvent {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actorUserId    String
+  type           String
+  /// The person or item the event is about, when there is one.
+  subject        String?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+  @@map("organization_events")
 }
 
 model ChatGroupParticipant {

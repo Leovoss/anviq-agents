@@ -59,7 +59,7 @@ export interface OrganizationSummary {
   spaceId: string;
 }
 
-async function membership(
+export async function membership(
   prisma: Pick<PrismaClient, "member">,
   userId: string,
   organizationId: string,
@@ -72,7 +72,7 @@ async function membership(
   return organizationRole(member.role);
 }
 
-async function managerOf(
+export async function managerOf(
   prisma: Pick<PrismaClient, "member">,
   userId: string,
   organizationId: string,

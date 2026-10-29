@@ -30,6 +30,7 @@ import {
   IsolationError,
   leaveSharedGroup,
   recordComputerRunEnd,
+  recordOrganizationEvent,
   recordSecurityEvent,
   restoreBotUnderComputerQuota,
   SpaceDeletionInProgressError,
@@ -613,6 +614,17 @@ export function botsRoutes(ctx: RouterContext) {
       }),
       setParticipants: authed.groups.setParticipants.handler(async ({ context, input }) => {
         await reportRules(() => setGroupParticipants(deps.prisma, context.actor, input));
+        const space = await deps.prisma.space.findUnique({
+          where: { id: context.actor.spaceId },
+          select: { organizationId: true },
+        });
+        if (space) {
+          await recordOrganizationEvent(deps.prisma, {
+            organizationId: space.organizationId,
+            actorUserId: context.actor.userId,
+            type: input.userIds.length > 0 ? "chat.shared" : "chat.unshared",
+          });
+        }
         return groupRepos.mapGroup(
           await groupRepos.getGroup(context.actor, input.groupId),
           context.actor.userId,

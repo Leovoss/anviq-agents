@@ -463,6 +463,7 @@ msgstr "Actions for space"
 msgid "Active"
 msgstr "Active"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Activity"
 msgstr "Activity"
@@ -1179,6 +1180,10 @@ msgstr "Change model"
 msgid "Change password"
 msgstr "Change password"
 
+#: src/components/TeamSettings.tsx
+msgid "changed a role"
+msgstr "changed a role"
+
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Changing…"
 msgstr "Changing…"
@@ -1460,6 +1465,10 @@ msgstr "Communication"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Compact"
 msgstr "Compact"
+
+#: src/components/TeamSettings.tsx
+msgid "Company memory"
+msgstr "Company memory"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Complete"
@@ -2270,6 +2279,10 @@ msgstr "Create your Anviq Agents"
 msgid "Created"
 msgstr "Created"
 
+#: src/components/TeamSettings.tsx
+msgid "created the team"
+msgstr "created the team"
+
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2649,6 +2662,10 @@ msgid "Edit Profile"
 msgstr "Edit Profile"
 
 #: src/components/TeamSettings.tsx
+msgid "edited company memory"
+msgstr "edited company memory"
+
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "Email"
@@ -2990,6 +3007,10 @@ msgstr "Group settings"
 msgid "Group updates"
 msgstr "Group updates"
 
+#: src/components/TeamSettings.tsx
+msgid "handed over ownership"
+msgstr "handed over ownership"
+
 #: src/components/call/CallCard.tsx
 msgid "Hang up"
 msgstr "Hang up"
@@ -3250,6 +3271,10 @@ msgstr "Invitations"
 msgid "Invite"
 msgstr "Invite"
 
+#: src/components/TeamSettings.tsx
+msgid "invited"
+msgstr "invited"
+
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Isolated"
@@ -3291,6 +3316,10 @@ msgstr "Its model goes back to before the import."
 #: src/pages/AcceptInvitation.tsx
 msgid "Join"
 msgstr "Join"
+
+#: src/components/TeamSettings.tsx
+msgid "joined"
+msgstr "joined"
 
 #: src/pages/shell/transcript.tsx
 msgid "Jump to latest"
@@ -3358,6 +3387,10 @@ msgstr "Leave chat"
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
 msgstr "Leave team"
+
+#: src/components/TeamSettings.tsx
+msgid "left"
+msgstr "left"
 
 #: src/components/ComputerDeviceSettings.tsx
 msgid "Let bots use this computer"
@@ -4754,6 +4787,10 @@ msgstr "Remove skills"
 msgid "Remove webhook"
 msgstr "Remove webhook"
 
+#: src/components/TeamSettings.tsx
+msgid "removed"
+msgstr "removed"
+
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Removed"
 msgstr "Removed"
@@ -5009,6 +5046,7 @@ msgstr "Saturday"
 #: src/components/AskCard.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/SkillDraftCard.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
@@ -5270,6 +5308,10 @@ msgstr "Shape {0}"
 #: src/pages/shell/bot-panel.tsx
 msgid "Shared"
 msgstr "Shared"
+
+#: src/components/TeamSettings.tsx
+msgid "shared a chat"
+msgstr "shared a chat"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Shared memory"
@@ -5549,6 +5591,10 @@ msgstr "Stop speaking"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Stop teaching"
 msgstr "Stop teaching"
+
+#: src/components/TeamSettings.tsx
+msgid "stopped sharing a chat"
+msgstr "stopped sharing a chat"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
