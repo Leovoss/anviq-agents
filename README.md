@@ -127,6 +127,7 @@ pnpm test
 - [New customer instance](./docs/new-customer-instance.md)
 - [Operations guide](./docs/self-host.md)
 - [Secrets](./docs/self-host-secrets.md)
+- [Teams](./docs/teams.md)
 - [Content encryption](./docs/content-encryption.md)
 - [Computer runtime and isolation](./docs/computer-runtime.md)
 - [Desktop releases](./docs/desktop-release.md)
