@@ -58,6 +58,7 @@ export const Transcript = memo(function Transcript({
   loadingOlder,
   answerableAskIds,
   dismissableAskIds,
+  viewerUserId,
   running,
   workingBots,
   userBubble,
@@ -96,6 +97,8 @@ export const Transcript = memo(function Transcript({
   loadingOlder: boolean;
   answerableAskIds: Set<string>;
   dismissableAskIds: Set<string>;
+  /** Who is reading, so a shared chat names only the messages somebody else wrote. */
+  viewerUserId?: string;
   running: boolean;
   workingBots: GroupAvatarMember[];
   /** Your bubbles take the bot's color in its own chat. */
@@ -526,6 +529,11 @@ export const Transcript = memo(function Transcript({
                           : message.role === "bot"
                             ? memberName?.(message.botId)
                             : undefined
+                      }
+                      senderName={
+                        message.role === "user" && message.sender?.userId !== viewerUserId
+                          ? message.sender?.name
+                          : undefined
                       }
                       memberName={memberName}
                       peerBot={peerBot}

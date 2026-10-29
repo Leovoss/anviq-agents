@@ -404,10 +404,15 @@ function SpaceShell() {
       ? snapshot
       : null;
   const currentRuns = activeThreadRuns(activeSnapshot);
-  const answerableAskIds = useMemo(() => answerableAskMessageIds(activeSnapshot), [activeSnapshot]);
+  // A guest in someone else's chat reads it and writes in it; the host answers what the bots ask.
+  const guestInGroup = inGroup && activeGroup?.canManage === false;
+  const answerableAskIds = useMemo(
+    () => (guestInGroup ? new Set<string>() : answerableAskMessageIds(activeSnapshot)),
+    [activeSnapshot, guestInGroup],
+  );
   const dismissableAskIds = useMemo(
-    () => dismissableAskMessageIds(activeSnapshot, userId),
-    [activeSnapshot, userId],
+    () => (guestInGroup ? new Set<string>() : dismissableAskMessageIds(activeSnapshot, userId)),
+    [activeSnapshot, guestInGroup, userId],
   );
   const workingRuns = currentRuns.filter((run) => isRunWorking(run.status));
   const transcriptRunning = workingRuns.length > 0;
@@ -850,6 +855,7 @@ function SpaceShell() {
               loadingOlder={loadingOlder}
               answerableAskIds={answerableAskIds}
               dismissableAskIds={dismissableAskIds}
+              viewerUserId={userId}
               running={transcriptRunning}
               workingBots={workingBots}
               userBubble={userBubble}

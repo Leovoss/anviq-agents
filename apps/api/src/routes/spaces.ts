@@ -60,6 +60,18 @@ export function spacesRoutes(ctx: RouterContext) {
       list: authed.spaces.list.handler(async ({ context }) =>
         spaceNavigationDto(deps, context.actor, repos, groupRepos),
       ),
+      people: authed.spaces.people.handler(async ({ context }) => {
+        const members = await deps.prisma.spaceMember.findMany({
+          where: { spaceId: context.actor.spaceId, userId: { not: context.actor.userId } },
+          select: { userId: true },
+        });
+        const users = await deps.prisma.user.findMany({
+          where: { id: { in: members.map((member) => member.userId) } },
+          select: { id: true, name: true },
+          orderBy: { name: "asc" },
+        });
+        return users.map((user) => ({ userId: user.id, name: user.name }));
+      }),
       // Seeds a Space whose id does not exist yet; the member limit is checked inside.
       create: authed.spaces.create.handler(({ context, input }) =>
         runAsSystem("create a Space for its member", async () => {

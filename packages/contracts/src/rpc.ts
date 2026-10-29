@@ -313,6 +313,8 @@ export const appContract = {
   },
   spaces: {
     list: oc.output(SpaceNavigationSchema),
+    /** The other people in the current space, for choosing who joins a shared chat. */
+    people: oc.output(z.array(z.object({ userId: Id, name: z.string() }))),
     create: oc.input(z.object({ name: spaceName })).output(SpaceSchema),
     rename: oc
       .input(z.object({ spaceId: Id, name: spaceName }))

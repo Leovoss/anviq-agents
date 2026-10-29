@@ -476,6 +476,11 @@ msgstr "動態"
 msgid "Add"
 msgstr "新增"
 
+#. placeholder {0}: person.name
+#: src/pages/GroupPanel.tsx
+msgid "Add {0} to the chat"
+msgstr ""
+
 #. placeholder {0}: bot.name
 #: src/pages/GroupPanel.tsx
 msgid "Add {0} to the group"
@@ -2069,6 +2074,7 @@ msgid "Could not run routine"
 msgstr "無法執行例行任務"
 
 #: src/pages/ExternalConversationSettings.tsx
+#: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -3346,6 +3352,10 @@ msgstr "退出"
 msgid "Leave {0}?"
 msgstr ""
 
+#: src/pages/GroupPanel.tsx
+msgid "Leave chat"
+msgstr ""
+
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
 msgstr ""
@@ -4374,6 +4384,7 @@ msgid "Pending"
 msgstr "待處理"
 
 #: src/components/TeamSettings.tsx
+#: src/pages/GroupPanel.tsx
 msgid "People"
 msgstr ""
 
@@ -4686,6 +4697,11 @@ msgstr "移除"
 #: src/pages/shell/composer.tsx
 msgid "Remove {0}"
 msgstr "移除 {0}"
+
+#. placeholder {0}: person.name
+#: src/pages/GroupPanel.tsx
+msgid "Remove {0} from the chat"
+msgstr ""
 
 #. placeholder {0}: bot.name
 #: src/pages/GroupPanel.tsx

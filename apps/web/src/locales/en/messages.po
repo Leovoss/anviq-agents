@@ -475,6 +475,11 @@ msgstr "Activity"
 msgid "Add"
 msgstr "Add"
 
+#. placeholder {0}: person.name
+#: src/pages/GroupPanel.tsx
+msgid "Add {0} to the chat"
+msgstr "Add {0} to the chat"
+
 #. placeholder {0}: bot.name
 #: src/pages/GroupPanel.tsx
 msgid "Add {0} to the group"
@@ -2068,6 +2073,7 @@ msgid "Could not run routine"
 msgstr "Could not run routine"
 
 #: src/pages/ExternalConversationSettings.tsx
+#: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -3345,6 +3351,10 @@ msgstr "Leave"
 msgid "Leave {0}?"
 msgstr "Leave {0}?"
 
+#: src/pages/GroupPanel.tsx
+msgid "Leave chat"
+msgstr "Leave chat"
+
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
 msgstr "Leave team"
@@ -4373,6 +4383,7 @@ msgid "Pending"
 msgstr "Pending"
 
 #: src/components/TeamSettings.tsx
+#: src/pages/GroupPanel.tsx
 msgid "People"
 msgstr "People"
 
@@ -4685,6 +4696,11 @@ msgstr "Remove"
 #: src/pages/shell/composer.tsx
 msgid "Remove {0}"
 msgstr "Remove {0}"
+
+#. placeholder {0}: person.name
+#: src/pages/GroupPanel.tsx
+msgid "Remove {0} from the chat"
+msgstr "Remove {0} from the chat"
 
 #. placeholder {0}: bot.name
 #: src/pages/GroupPanel.tsx

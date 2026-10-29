@@ -215,9 +215,98 @@ export function CreateGroupForm({
   );
 }
 
+/** The people in a shared chat. The host chooses them; a guest can only leave. */
+function PeoplePicker({
+  group,
+  people,
+  onShare,
+  onLeave,
+}: {
+  group: Group;
+  people: Array<{ userId: string; name: string }>;
+  onShare?: (userIds: string[]) => Promise<void>;
+  onLeave?: () => Promise<void>;
+}) {
+  const { t } = useLingui();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const guests = (group.participants ?? []).filter((person) => !person.host);
+  const chosen = new Set(guests.map((person) => person.userId));
+  const manage = group.canManage !== false;
+  // A guest sees the people already in the chat; the host sees everyone in the space.
+  const listed = manage ? people : guests;
+  if (listed.length === 0 && manage) return null;
+
+  async function run(work: () => Promise<void>) {
+    setBusy(true);
+    setError(null);
+    try {
+      await work();
+    } catch (cause) {
+      setError(errorText(cause, t`Could not save`));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-5">
+      <span className="text-sm text-muted-foreground">
+        <Trans>People</Trans>
+      </span>
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
+      <div className="mt-2 space-y-1">
+        {listed.map((person) => (
+          <div
+            key={person.userId}
+            className="flex w-full items-center rounded-xl px-2.5 py-2.5 hover:bg-accent"
+          >
+            <span className="flex-1 text-[15px] text-foreground" dir="auto">
+              {person.name}
+            </span>
+            {manage ? (
+              <Checkbox
+                checked={chosen.has(person.userId)}
+                disabled={busy}
+                aria-label={
+                  chosen.has(person.userId)
+                    ? t`Remove ${person.name} from the chat`
+                    : t`Add ${person.name} to the chat`
+                }
+                onCheckedChange={() => {
+                  const next = new Set(chosen);
+                  if (!next.delete(person.userId)) next.add(person.userId);
+                  void run(() => onShare?.([...next]) ?? Promise.resolve());
+                }}
+              />
+            ) : null}
+          </div>
+        ))}
+      </div>
+      {!manage && onLeave ? (
+        <Button
+          variant="destructive"
+          className="mt-4 w-full"
+          disabled={busy}
+          onClick={() => void run(onLeave)}
+        >
+          <Trans>Leave chat</Trans>
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 export function GroupSettings({
   group,
   bots,
+  people = [],
+  onShare,
+  onLeave,
   onSave,
   onRemove,
   onClose,
@@ -226,6 +315,10 @@ export function GroupSettings({
 }: {
   group: Group;
   bots: Bot[];
+  /** Everyone else in the space, for the host to choose from. */
+  people?: Array<{ userId: string; name: string }>;
+  onShare?: (userIds: string[]) => Promise<void>;
+  onLeave?: () => Promise<void>;
   onSave: (input: { name?: string; botIds?: string[] }) => Promise<void>;
   onRemove: () => Promise<void>;
   onClose: () => void;
@@ -321,32 +414,44 @@ export function GroupSettings({
           {error}
         </p>
       ) : null}
-      <label htmlFor={nameId} className="block text-sm text-muted-foreground">
-        <Trans>Name</Trans>
-        <Input
-          id={nameId}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={GROUP_NAME_MAX_LENGTH}
-          className="mt-2"
-        />
-      </label>
-      <MemberPicker bots={bots} selected={selected} onChange={setSelected} onOpenBot={onOpenBot} />
-      <Button
-        className="mt-5 w-full"
-        disabled={saving || !validSelection(name, selected)}
-        onClick={() => void save()}
-      >
-        {saving ? <Trans>Saving…</Trans> : <Trans>Save</Trans>}
-      </Button>
-      <Button
-        variant="destructive"
-        className="mt-4 w-full"
-        disabled={saving}
-        onClick={() => setConfirmingDelete(true)}
-      >
-        <Trans>Delete group</Trans>
-      </Button>
+      {group.canManage === false ? (
+        <PeoplePicker group={group} people={people} onLeave={onLeave} />
+      ) : (
+        <>
+          <label htmlFor={nameId} className="block text-sm text-muted-foreground">
+            <Trans>Name</Trans>
+            <Input
+              id={nameId}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={GROUP_NAME_MAX_LENGTH}
+              className="mt-2"
+            />
+          </label>
+          <MemberPicker
+            bots={bots}
+            selected={selected}
+            onChange={setSelected}
+            onOpenBot={onOpenBot}
+          />
+          <PeoplePicker group={group} people={people} onShare={onShare} />
+          <Button
+            className="mt-5 w-full"
+            disabled={saving || !validSelection(name, selected)}
+            onClick={() => void save()}
+          >
+            {saving ? <Trans>Saving…</Trans> : <Trans>Save</Trans>}
+          </Button>
+          <Button
+            variant="destructive"
+            className="mt-4 w-full"
+            disabled={saving}
+            onClick={() => setConfirmingDelete(true)}
+          >
+            <Trans>Delete group</Trans>
+          </Button>
+        </>
+      )}
       {confirmingDelete ? (
         <DeleteItemDialog
           item={group}
