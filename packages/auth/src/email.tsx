@@ -82,6 +82,29 @@ export function passwordResetEmail(
   );
 }
 
+export function teamInvitationEmail(
+  email: string,
+  invitation: { organizationName: string; inviterName: string; url: string },
+): Promise<TransactionalEmail> {
+  const team = displayName(invitation.organizationName, "a team");
+  return message(
+    email,
+    `Join ${team} on Anviq Agents`,
+    <>
+      <Text>
+        {displayName(invitation.inviterName, "A teammate")} invited you to join {team} on Anviq
+        Agents.
+      </Text>
+      <Text>
+        <Link href={invitation.url} style={linkStyle}>
+          Accept the invitation
+        </Link>
+      </Text>
+      <Text>Sign in with this email address to accept. The invitation expires in seven days.</Text>
+    </>,
+  );
+}
+
 export function accountDeletionEmail(email: string, code: string): Promise<TransactionalEmail> {
   return message(
     email,

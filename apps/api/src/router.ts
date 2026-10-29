@@ -7,6 +7,7 @@ import type {
   ProductAnalytics,
   SandboxProvider,
   SecretStore,
+  TransactionalEmailProvider,
 } from "@anviq/adapter-kit";
 import type {
   CloudAgentConnection,
@@ -43,6 +44,7 @@ import { mcpRoutes } from "./routes/mcp.js";
 import { memoryRoutes } from "./routes/memory.js";
 import { messagingRoutes } from "./routes/messaging.js";
 import { modelsRoutes } from "./routes/models.js";
+import { organizationsRoutes } from "./routes/organizations.js";
 import { paymentWalletRoutes } from "./routes/payment-wallet.js";
 import { routinesRoutes } from "./routes/routines.js";
 import { spacesRoutes } from "./routes/spaces.js";
@@ -57,6 +59,7 @@ export { callMarkerClientNonce } from "./routes/threads.js";
 export interface RouterDeps {
   pushTokens: PushTokenStore;
   analytics?: ProductAnalytics;
+  email?: TransactionalEmailProvider;
   cloudAgent?: CloudAgentConnection | null;
   /** The deployment's wallet provider; absent hides purchases. */
   paymentWallet?: PaymentWalletProvider | null;
@@ -140,6 +143,7 @@ export function createRouter(deps: RouterDeps) {
 
   return os.router({
     ...accountRoutes(ctx),
+    ...organizationsRoutes(ctx),
     ...spacesRoutes(ctx),
     ...modelsRoutes(ctx),
     ...botsRoutes(ctx),

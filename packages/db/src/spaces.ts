@@ -78,14 +78,16 @@ interface CreateSpaceInput {
   userId: string;
   name: string;
   createdAt: Date;
+  isDefault?: boolean;
 }
 
-async function createSpace(prisma: SpaceClient, input: CreateSpaceInput): Promise<void> {
+export async function createSpace(prisma: SpaceClient, input: CreateSpaceInput): Promise<void> {
   await prisma.space.create({
     data: {
       id: input.spaceId,
       organizationId: input.organizationId,
       name: input.name,
+      ...(input.isDefault ? { isDefault: true } : {}),
       createdByUserId: input.userId,
       createdAt: input.createdAt,
     },
@@ -102,7 +104,7 @@ async function createSpace(prisma: SpaceClient, input: CreateSpaceInput): Promis
   });
 }
 
-async function createSpaceDefaults(
+export async function createSpaceDefaults(
   prisma: SpaceClient,
   input: { spaceId: string; userId: string; memoryContent: string },
 ): Promise<void> {

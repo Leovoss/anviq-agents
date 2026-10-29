@@ -8,7 +8,13 @@ import {
   signupPolicyFromEnv,
 } from "@anviq/core";
 import type { PrismaClient, SecurityEventType } from "@anviq/db";
-import { bootstrapUserSpace, personalOrganizationIds, recordSecurityEvent } from "@anviq/db";
+import {
+  assertAccountCanBeDeleted,
+  bootstrapUserSpace,
+  OrganizationError,
+  personalOrganizationIds,
+  recordSecurityEvent,
+} from "@anviq/db";
 import { expo } from "@better-auth/expo";
 import { passkey } from "@better-auth/passkey";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
@@ -37,7 +43,12 @@ import { passkeyRelyingParty } from "./passkey.js";
 import type { TokenKey } from "./token-storage.js";
 import { encryptStoredOAuthTokens, openIdToken, sealIdToken } from "./token-storage.js";
 
-export { passwordResetEmail, signInCodeEmail, verificationEmail } from "./email.js";
+export {
+  passwordResetEmail,
+  signInCodeEmail,
+  teamInvitationEmail,
+  verificationEmail,
+} from "./email.js";
 export type { OidcConfig } from "./oidc.js";
 export { passkeyRelyingParty } from "./passkey.js";
 export { welcomeEmail } from "./welcome-email.js";
@@ -242,6 +253,13 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
       deleteUser: {
         enabled: true,
         beforeDelete: async (user) => {
+          try {
+            await assertAccountCanBeDeleted(prisma, user.id);
+          } catch (error) {
+            if (error instanceof OrganizationError)
+              throw new APIError("BAD_REQUEST", { message: error.message });
+            throw error;
+          }
           await env.beforeDeleteUser?.(user.id);
           const organizationIds = await personalOrganizationIds(prisma, user.id);
 
