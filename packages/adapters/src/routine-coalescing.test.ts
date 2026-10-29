@@ -16,7 +16,15 @@ function fixture(
   const updatedAt = new Date("2026-01-01T00:00:00Z");
   const findMany = vi.fn(async (_args: Prisma.RunFindManyArgs) =>
     clientNonce?.startsWith("routine-timer:routine-1:")
-      ? [{ id: "run-1", taskId: "task-1", leaseFence: 0, updatedAt }]
+      ? [
+          {
+            id: "run-1",
+            taskId: "task-1",
+            leaseFence: 0,
+            updatedAt,
+            task: { prompt: config.prompt },
+          },
+        ]
       : [],
   );
   const updateMany = vi.fn(async () => ({ count: 1 }));
@@ -40,7 +48,7 @@ describe("pending routine timer coalescing", () => {
           attempts: { none: {} },
           effects: { none: {} },
           steeringMessages: { none: {} },
-          task: { status: "queued", prompt: config.prompt },
+          task: { status: "queued" },
           modelPinned: false,
           modelProvider: null,
           modelId: null,
@@ -66,6 +74,13 @@ describe("pending routine timer coalescing", () => {
     const { tx, updateMany } = fixture();
     updateMany.mockResolvedValue({ count: 0 });
     expect(await findPendingRoutineTick(tx, config)).toBeNull();
+  });
+  it("leaves a queued tick alone when its task prompt differs", async () => {
+    const { tx, updateMany } = fixture();
+    expect(
+      await findPendingRoutineTick(tx, { ...config, prompt: "a different prompt" }),
+    ).toBeNull();
+    expect(updateMany).not.toHaveBeenCalled();
   });
   it("requires the same explicit model pin", async () => {
     const { tx, findMany } = fixture();

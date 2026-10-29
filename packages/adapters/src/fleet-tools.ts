@@ -1003,21 +1003,22 @@ export async function createChildRoutine(
   const runAt = text(schedule.runAt);
   const cron = runAt ? ONCE_ROUTINE_CRON : text(schedule.cron);
   if (!cron) return { error: "The approved routine is incomplete." };
-  const existing = await deps.prisma.routine.findFirst({
+  // The prompt is sealed, so it is compared after the candidates are read.
+  const candidates = await deps.prisma.routine.findMany({
     where: {
       spaceId: run.spaceId,
       userId: run.userId,
       botId: child.id,
       threadId: child.thread.id,
       name,
-      prompt,
       timezone,
       crons: { equals: [cron] },
       active: true,
       ...(runAt ? { nextRunAt: new Date(runAt) } : {}),
     },
-    select: { id: true, name: true, crons: true, nextRunAt: true },
+    select: { id: true, name: true, crons: true, nextRunAt: true, prompt: true },
   });
+  const existing = candidates.find((candidate) => candidate.prompt === prompt);
   const target = { botId: child.id, botName: singleLine(child.name) };
   if (existing) {
     return {

@@ -81,6 +81,52 @@ export const ENCRYPTED_MODELS: Record<string, ModelSpec> = {
     space: { column: "spaceId" },
     ownerRelation: "user",
   },
+  Bot: {
+    table: "bots",
+    fields: {
+      instructions: {},
+      description: {},
+      instructionHistory: { plainKeys: new Set<string>() },
+    },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  Task: {
+    table: "tasks",
+    fields: { prompt: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  AgentSkill: {
+    table: "agent_skills",
+    fields: { content: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  ScratchpadItem: {
+    table: "scratchpad_items",
+    fields: { notes: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  Routine: {
+    table: "routines",
+    fields: { prompt: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  Ticket: {
+    table: "tickets",
+    fields: { title: {}, description: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "board",
+  },
+  TicketComment: {
+    table: "ticket_comments",
+    fields: { body: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "ticket",
+  },
 };
 
 /** Rows whose id → space mapping the ring learns from results, for child writes. */
@@ -205,6 +251,47 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
       ),
     );
   const relationTarget = (model: string, field: string) => relations.get(model)?.get(field);
+
+  /** Ciphertext never matches the text a caller means, so filtering or sorting on it is a bug. */
+  function assertNoSealedReads(model: string, args: RecordValue) {
+    const nullCheck = (value: unknown) =>
+      value === null ||
+      (isRecord(value) &&
+        Object.entries(value).every(
+          ([key, item]) => (key === "not" || key === "equals") && item === null,
+        ));
+    const sealed = (target: string, field: string) => {
+      const field_ = ENCRYPTED_MODELS[target]?.fields[field];
+      return field_ !== undefined && field_.plainKeys === undefined;
+    };
+    const walk = (target: string, where: unknown) => {
+      for (const item of Array.isArray(where) ? where : [where]) {
+        if (!isRecord(item)) continue;
+        for (const [key, value] of Object.entries(item)) {
+          if (key === "AND" || key === "OR" || key === "NOT") {
+            walk(target, value);
+            continue;
+          }
+          const related = relationTarget(target, key);
+          if (related) {
+            if (!isRecord(value)) continue;
+            walk(related, value);
+            for (const operator of ["some", "every", "none", "is", "isNot"])
+              walk(related, value[operator]);
+            continue;
+          }
+          if (sealed(target, key) && value !== undefined && !nullCheck(value))
+            throw new Error(`Encrypted ${target}.${key} cannot be filtered`);
+        }
+      }
+    };
+    walk(model, args.where);
+    for (const entry of Array.isArray(args.orderBy) ? args.orderBy : [args.orderBy]) {
+      if (!isRecord(entry)) continue;
+      for (const key of Object.keys(entry))
+        if (sealed(model, key)) throw new Error(`Encrypted ${model}.${key} cannot be sorted`);
+    }
+  }
 
   function plan(model: string, args: RecordValue | undefined): { args: RecordValue; plan?: Plan } {
     const spec = ENCRYPTED_MODELS[model];
@@ -509,6 +596,7 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
             const where = (args as RecordValue).where;
             if (isRecord(where) && typeof where.id === "string") ring.forget(where.id);
           }
+          assertNoSealedReads(model, (args ?? {}) as RecordValue);
           let next = await sealWrites(model, operation, (args ?? {}) as RecordValue);
           if (NO_ROWS.has(operation)) return query(next);
           const planned = plan(model, next);

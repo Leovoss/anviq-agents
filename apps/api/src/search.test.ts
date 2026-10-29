@@ -90,7 +90,10 @@ describe("search saturation", () => {
     const messageSearchTokens = vi.fn().mockResolvedValue([]);
     Object.assign(prisma, { $contentEncryption: () => ({ messageSearchTokens }) });
     prisma.bot.findMany.mockResolvedValue(
-      Array.from({ length: scenario.conversations }, (_, i) => ({ id: `bot-${i}`, name: "Bot" })),
+      Array.from({ length: scenario.conversations }, (_, i) => ({
+        id: `bot-${i}`,
+        name: "Report bot",
+      })),
     );
     prisma.artifact.findMany
       .mockReset()
@@ -215,9 +218,6 @@ it("searches for the characters the user typed, not SQL wildcards", async () => 
   const { prisma } = fixture(0);
   await querySpaceSearch(prisma as unknown as PrismaClient, actor, "50%_off");
 
-  const botFilter = prisma.bot.findMany.mock.calls[0]?.[0]?.where?.OR?.[0]?.name;
-  expect(botFilter?.contains).toBe("50\\%\\_off");
-
   const groupFilter = prisma.chatGroup.findMany.mock.calls[0]?.[0]?.where?.name;
   expect(groupFilter?.contains).toBe("50\\%\\_off");
 
@@ -229,12 +229,21 @@ it("searches for the characters the user typed, not SQL wildcards", async () => 
   expect(boundValues.flat()).toContain("%50\\%\\_off%");
 });
 
+it("matches sealed bot text for the characters typed, not as a pattern", async () => {
+  const { prisma } = fixture(0);
+  prisma.bot.findMany.mockResolvedValue([
+    { id: "a", name: "Sale", title: null, description: "Save 50%_off today" },
+    { id: "b", name: "Other", title: null, description: "5000 off everything" },
+  ]);
+  const hits = await querySpaceSearch(prisma as unknown as PrismaClient, actor, "50%_off");
+
+  expect(hits.filter((hit) => hit.kind === "conversation").map((hit) => hit.botId)).toEqual(["a"]);
+});
+
 it("JSON-escapes backslashes only for the message scan", async () => {
   const { prisma } = fixture(0);
   await querySpaceSearch(prisma as unknown as PrismaClient, actor, String.raw`back\slash`);
 
-  const botFilter = prisma.bot.findMany.mock.calls[0]?.[0]?.where?.OR?.[0]?.name;
-  expect(botFilter?.contains).toBe(String.raw`back\\slash`);
   const groupFilter = prisma.chatGroup.findMany.mock.calls[0]?.[0]?.where?.name;
   expect(groupFilter?.contains).toBe(String.raw`back\\slash`);
   for (const call of prisma.$queryRaw.mock.calls.slice(1)) {

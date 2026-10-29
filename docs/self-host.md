@@ -1042,7 +1042,8 @@ For provider configuration and health checks, see the [provider setup guide](./s
 ## Content encryption
 
 Anviq Agents encrypts chat messages, thread events, compacted history summaries, memory documents and
-their revisions, and uploaded or generated files before they reach PostgreSQL or `DATA_DIR`.
+their revisions, bot instructions, task prompts, skill content, scratchpad notes, ticket comments, and
+uploaded or generated files before they reach PostgreSQL or `DATA_DIR`.
 Names, ids, timestamps and other metadata stay readable. Credentials are always encrypted,
 whatever this setting says. Details and the threat model are in
 [content encryption](./content-encryption.md).

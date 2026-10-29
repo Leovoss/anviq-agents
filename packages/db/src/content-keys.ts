@@ -158,7 +158,14 @@ export type SpaceSource =
   | "messages"
   | "events"
   | "memory_documents"
-  | "memory_revisions";
+  | "memory_revisions"
+  | "bots"
+  | "tasks"
+  | "agent_skills"
+  | "scratchpad_items"
+  | "ticket_comments"
+  | "routines"
+  | "tickets";
 
 export interface SpaceKeyStore {
   forSpace(spaceId: string): Promise<SpaceKeyRecord[]>;
@@ -187,6 +194,13 @@ export const ROW_OWNER: Record<SpaceSource, string> = {
   events: "threadId",
   memory_documents: "userId",
   memory_revisions: "documentId",
+  bots: "userId",
+  tasks: "userId",
+  agent_skills: "userId",
+  scratchpad_items: "userId",
+  ticket_comments: "ticketId",
+  routines: "userId",
+  tickets: "boardId",
 };
 
 export interface Queryable {
@@ -200,6 +214,13 @@ const ROW_CONTEXT: Record<SpaceSource, string> = {
   memory_documents: `SELECT "spaceId", "userId" AS owner FROM memory_documents WHERE id = $1`,
   messages: `SELECT t."spaceId", m."threadId" AS owner FROM messages m JOIN threads t ON t.id = m."threadId" WHERE m.id = $1`,
   memory_revisions: `SELECT d."spaceId", r."documentId" AS owner FROM memory_revisions r JOIN memory_documents d ON d.id = r."documentId" WHERE r.id = $1`,
+  bots: `SELECT "spaceId", "userId" AS owner FROM bots WHERE id = $1`,
+  tasks: `SELECT "spaceId", "userId" AS owner FROM tasks WHERE id = $1`,
+  agent_skills: `SELECT "spaceId", "userId" AS owner FROM agent_skills WHERE id = $1`,
+  scratchpad_items: `SELECT "spaceId", "userId" AS owner FROM scratchpad_items WHERE id = $1`,
+  ticket_comments: `SELECT "spaceId", "ticketId" AS owner FROM ticket_comments WHERE id = $1`,
+  routines: `SELECT "spaceId", "userId" AS owner FROM routines WHERE id = $1`,
+  tickets: `SELECT "spaceId", "boardId" AS owner FROM tickets WHERE id = $1`,
 };
 
 /**

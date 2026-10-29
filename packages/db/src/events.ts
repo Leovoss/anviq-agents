@@ -771,6 +771,7 @@ async function commitAnswerRunInput(
     select: {
       botId: true,
       userId: true,
+      taskId: true,
       checkpoint: true,
       trigger: true,
       task: { select: { prompt: true } },
@@ -961,7 +962,7 @@ async function commitAnswerRunInput(
       data: { status: "completed", result: DISMISSED_SECRET_RESULT },
     });
     const task = await tx.task.updateMany({
-      where: { runs: { some: { id: input.runId } } },
+      where: { id: run.taskId },
       data: { prompt: resumePrompt(run, pendingAsk.text, DISMISSED_SECRET_PROMPT) },
     });
     if (task.count !== 1) throw new Error("Run task was not available to answer");
@@ -992,7 +993,7 @@ async function commitAnswerRunInput(
       ? resumeChoiceLabel(selectedChoice, run.checkpoint)
       : undefined;
     const task = await tx.task.updateMany({
-      where: { runs: { some: { id: input.runId } } },
+      where: { id: run.taskId },
       data: {
         prompt: resumePrompt(
           { ...run, trigger: resumedTrigger },

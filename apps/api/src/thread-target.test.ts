@@ -252,7 +252,7 @@ describe("reaction turns", () => {
             ? options.recentReaction
               ? { id: "recent" }
               : null
-            : { botId: "bot-1", userId: "user-1" },
+            : { botId: "bot-1", userId: "user-1", taskId: "task-1" },
         ),
         findUnique: vi.fn().mockResolvedValue({ status: "queued" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
@@ -487,7 +487,7 @@ describe("reaction turns", () => {
     });
     await react();
     expect(tx.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-waiting" } } },
+      where: { id: "task-1" },
       data: { prompt: "no" },
     });
     expect(tx.run.create).not.toHaveBeenCalled();
@@ -533,7 +533,7 @@ describe("reaction turns", () => {
     });
     await react();
     expect(tx.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-waiting" } } },
+      where: { id: "task-1" },
       data: { prompt: "yes" },
     });
     expect(enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "run.continue" }));
@@ -1539,7 +1539,9 @@ describe("sendThreadMessage", () => {
           .mockResolvedValue([
             { id: "run-waiting", taskId: "task-1", status: "waiting_input", trigger: "user" },
           ]),
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1", userId: "user-1" }),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ botId: "bot-1", userId: "user-1", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn().mockResolvedValue({ status: "queued" }),
       },
@@ -1583,7 +1585,7 @@ describe("sendThreadMessage", () => {
       runIds: ["run-waiting"],
     });
     expect(tx.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-waiting" } } },
+      where: { id: "task-1" },
       data: { prompt: "Paris" },
     });
     expect(tx.run.updateMany).toHaveBeenCalledWith(
@@ -1648,7 +1650,9 @@ describe("sendThreadMessage", () => {
           { id: "run-waiting-1", taskId: "task-1", status: "waiting_input" },
           { id: "run-waiting-2", taskId: "task-2", status: "waiting_input" },
         ]),
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1", userId: "user-1" }),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ botId: "bot-1", userId: "user-1", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn(async ({ where }: { where: { id: string } }) => ({
           status: where.id === "run-waiting-2" ? "cancelled" : "queued",
@@ -1840,7 +1844,9 @@ describe("sendThreadMessage", () => {
           { id: "run-waiting-1", taskId: "task-1", botId: "bot-a", status: "waiting_input" },
           { id: "run-waiting-2", taskId: "task-2", botId: "bot-a", status: "waiting_input" },
         ]),
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-a", userId: "user-1" }),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ botId: "bot-a", userId: "user-1", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn(async ({ where }: { where: { id: string } }) => ({
           status: where.id === "run-waiting-2" ? "cancelled" : "queued",
@@ -2416,7 +2422,9 @@ describe("sendThreadMessage", () => {
             trigger: "routine",
           },
         ]),
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1", userId: "user-1" }),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ botId: "bot-1", userId: "user-1", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn().mockResolvedValue({ status: "queued" }),
         create: vi.fn(),
@@ -2455,7 +2463,7 @@ describe("sendThreadMessage", () => {
       runIds: ["run-routine"],
     });
     expect(tx.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-routine" } } },
+      where: { id: "task-1" },
       data: { prompt: "Paris" },
     });
     expect(tx.run.updateMany).toHaveBeenCalledWith(
@@ -2509,7 +2517,9 @@ describe("sendThreadMessage", () => {
             trigger: "webhook",
           },
         ]),
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-a", userId: "user-1" }),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ botId: "bot-a", userId: "user-1", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn().mockResolvedValue({ status: "queued" }),
         create: vi.fn(),
@@ -2560,7 +2570,7 @@ describe("sendThreadMessage", () => {
       runIds: ["run-webhook"],
     });
     expect(tx.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-webhook" } } },
+      where: { id: "task-1" },
       data: { prompt: "Paris" },
     });
     expect(tx.run.updateMany).toHaveBeenCalledWith(

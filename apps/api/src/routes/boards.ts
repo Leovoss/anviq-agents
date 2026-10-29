@@ -1,7 +1,6 @@
 import { commentTicket, createTicket, updateTicket } from "@anviq/adapters";
 import type { BoardEvent } from "@anviq/contracts";
 import { parseTicketRef } from "@anviq/contracts";
-import { escapeSearchWildcards } from "@anviq/core";
 import type { Board as BoardRow, Prisma, PrismaClient } from "@anviq/db";
 import {
   ensureBoard,
@@ -103,29 +102,25 @@ export function boardsRoutes(ctx: RouterContext) {
     tickets: {
       list: boardEnabled.tickets.list.handler(async ({ context, input }) => {
         const board = await resolveSpaceBoard(deps.prisma, context.actor.spaceId, input.boardId);
-        const q = input.q?.trim();
-        // The database side has to match the text the user typed: a `%` or `_`
-        // would otherwise widen the match, and a `\` would swallow the
-        // character after it.
-        const likeQ = q ? escapeSearchWildcards(q) : q;
+        const q = input.q?.trim().toLowerCase();
         const where: Prisma.TicketWhereInput = {
           spaceId: context.actor.spaceId,
           boardId: board.id,
           ...(input.status ? { status: input.status } : {}),
           ...(input.assigneeBotId ? { assigneeBotId: input.assigneeBotId } : {}),
-          ...(q
-            ? {
-                OR: [
-                  { title: { contains: likeQ, mode: "insensitive" } },
-                  { description: { contains: likeQ, mode: "insensitive" } },
-                ],
-              }
-            : {}),
         };
-        const rows = await deps.prisma.ticket.findMany({
+        // Titles and descriptions are sealed, so the text match happens after they are read.
+        const found = await deps.prisma.ticket.findMany({
           where,
           orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
         });
+        const rows = q
+          ? found.filter(
+              (row) =>
+                row.title.toLowerCase().includes(q) ||
+                (row.description ?? "").toLowerCase().includes(q),
+            )
+          : found;
         return { tickets: rows.map((row) => toTicketDto(row, board.ticketPrefix)) };
       }),
       get: boardEnabled.tickets.get.handler(async ({ context, input }) => {

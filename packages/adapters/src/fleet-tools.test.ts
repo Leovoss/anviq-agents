@@ -105,7 +105,9 @@ function fakeFleet(input: {
     externalEffect: { findMany: vi.fn(async () => input.effects ?? []) },
     routine: {
       findFirst: vi.fn(async () => input.routines?.[0] ?? null),
-      findMany: vi.fn(async () => []),
+      findMany: vi.fn(async (args?: { where?: { name?: string } }) =>
+        args?.where?.name ? (input.routines ?? []) : [],
+      ),
       create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
         id: "routine-new",
         ...data,
@@ -1534,6 +1536,7 @@ describe("createChildRoutine", () => {
         {
           id: "routine-1",
           name: "Daily",
+          prompt: "Check in",
           crons: ["0 9 * * *"],
           nextRunAt: new Date("2026-10-18T09:00:00Z"),
         },

@@ -132,4 +132,19 @@ describe("withContentEncryption with encryption off", () => {
       }),
     ).rejects.toThrow(/nested write/);
   });
+
+  it("refuses to filter or sort on sealed columns, including through relations", async () => {
+    await expect(
+      prisma.bot.findMany({ where: { instructions: { contains: "quokka" } } }),
+    ).rejects.toThrow("Encrypted Bot.instructions cannot be filtered");
+    await expect(
+      prisma.task.findFirst({ where: { OR: [{ prompt: "exact text" }] } }),
+    ).rejects.toThrow("Encrypted Task.prompt cannot be filtered");
+    await expect(
+      prisma.thread.findMany({ where: { bot: { instructions: { equals: "x" } } } }),
+    ).rejects.toThrow("Encrypted Bot.instructions cannot be filtered");
+    await expect(prisma.bot.findMany({ orderBy: { instructions: "asc" } })).rejects.toThrow(
+      "Encrypted Bot.instructions cannot be sorted",
+    );
+  });
 });

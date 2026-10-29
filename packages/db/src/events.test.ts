@@ -1433,7 +1433,7 @@ describe("answerRunInput", () => {
         update: vi.fn().mockResolvedValue({ id: "message-1" }),
       },
       run: {
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-2" }),
+        findFirst: vi.fn().mockResolvedValue({ botId: "bot-2", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn().mockResolvedValue({
           status: "queued",
@@ -1494,7 +1494,7 @@ describe("answerRunInput", () => {
       },
     });
     expect(tx.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-1" } } },
+      where: { id: "task-1" },
       data: { prompt: "Selected choice choice-2: Paris" },
     });
     expect(tx.event.create).toHaveBeenCalledWith(
@@ -1531,6 +1531,7 @@ describe("answerRunInput", () => {
           findFirst: vi.fn().mockResolvedValue({
             botId: "bot-2",
             trigger: "routine",
+            taskId: "task-1",
             task: { prompt },
           }),
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
@@ -1605,6 +1606,7 @@ describe("answerRunInput", () => {
           findFirst: vi.fn().mockResolvedValue({
             botId: "bot-2",
             trigger: "created",
+            taskId: "task-1",
             task: { prompt: "You were just created." },
           }),
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
@@ -1649,7 +1651,7 @@ describe("answerRunInput", () => {
       }),
     );
     expect(chosen.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-1" } } },
+      where: { id: "task-1" },
       data: { prompt: "Selected choice choice-2: Research and one-off tasks" },
     });
 
@@ -1658,7 +1660,7 @@ describe("answerRunInput", () => {
       expect.objectContaining({ data: expect.objectContaining({ trigger: "user" }) }),
     );
     expect(typed.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-1" } } },
+      where: { id: "task-1" },
       data: { prompt: "Track our competitors' launches" },
     });
   });
@@ -1676,7 +1678,9 @@ describe("answerRunInput", () => {
         update: vi.fn().mockResolvedValue({ id: "message-1" }),
       },
       run: {
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-2", userId: "user-1" }),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ botId: "bot-2", userId: "user-1", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn().mockResolvedValue({
           status: "queued",
@@ -1739,7 +1743,7 @@ describe("answerRunInput", () => {
       }),
     );
     expect(tx.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-1" } } },
+      where: { id: "task-1" },
       data: { prompt: "Toronto" },
     });
   });
@@ -1773,6 +1777,7 @@ describe("answerRunInput", () => {
           findFirst: vi.fn().mockResolvedValue({
             botId: "bot-2",
             userId: "user-1",
+            taskId: "task-1",
             checkpoint: JSON.stringify({
               kind: "choice_ask_v1",
               actions: [
@@ -1819,7 +1824,7 @@ describe("answerRunInput", () => {
       ).resolves.toBe(true);
 
       expect(tx.task.updateMany).toHaveBeenCalledWith({
-        where: { runs: { some: { id: "run-1" } } },
+        where: { id: "task-1" },
         data: { prompt: `Selected choice choice-1: use ${secret}` },
       });
       expect(tx.message.update).toHaveBeenCalledWith({
@@ -1869,7 +1874,9 @@ describe("answerRunInput", () => {
         update: vi.fn().mockResolvedValue({ id: "message-1" }),
       },
       run: {
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-2", userId: "user-1" }),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ botId: "bot-2", userId: "user-1", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn().mockResolvedValue({
           status: "queued",
@@ -1912,7 +1919,7 @@ describe("answerRunInput", () => {
       }),
     );
     expect(tx.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-1" } } },
+      where: { id: "task-1" },
       data: { prompt: "Toronto" },
     });
     expect(tx.message.update).toHaveBeenCalledWith({
@@ -1956,7 +1963,9 @@ describe("answerRunInput", () => {
         update: vi.fn().mockResolvedValue({ id: "message-1" }),
       },
       run: {
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-2", userId: "user-1" }),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ botId: "bot-2", userId: "user-1", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn().mockResolvedValue({
           status: "queued",
@@ -1994,7 +2003,7 @@ describe("answerRunInput", () => {
     ).resolves.toBe(true);
 
     expect(tx.task.updateMany).toHaveBeenCalledWith({
-      where: { runs: { some: { id: "run-1" } } },
+      where: { id: "task-1" },
       data: { prompt: "Selected choice choice-2: Seoul" },
     });
     expect(tx.message.update).toHaveBeenCalledWith({
@@ -2048,7 +2057,9 @@ describe("answerWaitingRunWithTextInTransaction", () => {
           update: vi.fn().mockResolvedValue({ id: "message-1" }),
         },
         run: {
-          findFirst: vi.fn().mockResolvedValue({ botId: "bot-2", userId: "user-1" }),
+          findFirst: vi
+            .fn()
+            .mockResolvedValue({ botId: "bot-2", userId: "user-1", taskId: "task-1" }),
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
           findUnique: vi.fn().mockResolvedValue({ status: "queued" }),
         },
@@ -2086,7 +2097,7 @@ describe("answerWaitingRunWithTextInTransaction", () => {
         });
       }
       expect(tx.task.updateMany).toHaveBeenCalledWith({
-        where: { runs: { some: { id: "run-1" } } },
+        where: { id: "task-1" },
         data: { prompt: "Paris" },
       });
       expect(tx.run.updateMany).toHaveBeenCalledWith(
@@ -2159,7 +2170,7 @@ describe("answerRunInput", () => {
         update: vi.fn().mockResolvedValue({ id: "message-1" }),
       },
       run: {
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1" }),
+        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1", taskId: "task-1" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUnique: vi.fn().mockResolvedValue({ status: "queued" }),
       },
@@ -2436,7 +2447,7 @@ describe("answerRunInput", () => {
         }),
       },
       run: {
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1" }),
+        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1", taskId: "task-1" }),
         updateMany: vi.fn(),
       },
       externalEffect: { findFirst: vi.fn().mockResolvedValue(null) },
@@ -2479,7 +2490,7 @@ describe("answerRunInput", () => {
         }),
       },
       run: {
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1" }),
+        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1", taskId: "task-1" }),
         updateMany: vi.fn(),
       },
       externalEffect: { findFirst: vi.fn() },
@@ -2590,7 +2601,7 @@ describe("answerRunInput", () => {
         }),
       },
       run: {
-        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1" }),
+        findFirst: vi.fn().mockResolvedValue({ botId: "bot-1", taskId: "task-1" }),
         updateMany: vi.fn(),
       },
     };
@@ -2793,6 +2804,7 @@ describe("answerRunInput", () => {
             botId: "bot-1",
             userId: options.ownerId ?? "user-1",
             trigger: options.trigger ?? "message",
+            taskId: "task-1",
             task: { prompt: "Sign in to the example site" },
           }),
           findUnique: vi.fn().mockResolvedValue({ status: "queued" }),
@@ -2869,7 +2881,7 @@ describe("answerRunInput", () => {
         data: { status: "completed", result: { ok: false, dismissed: true } },
       });
       expect(h.tx.task.updateMany).toHaveBeenCalledWith({
-        where: { runs: { some: { id: "run-1" } } },
+        where: { id: "task-1" },
         data: { prompt: "The user dismissed this request." },
       });
       expect(h.tx.message.update).toHaveBeenCalledWith({
@@ -2882,7 +2894,7 @@ describe("answerRunInput", () => {
       const h = setup({ trigger: "routine" });
       await expect(h.dismiss()).resolves.toBe(true);
       expect(h.tx.task.updateMany).toHaveBeenCalledWith({
-        where: { runs: { some: { id: "run-1" } } },
+        where: { id: "task-1" },
         data: {
           prompt:
             "Sign in to the example site\n\nExample sign-in\nAnswer: The user dismissed this request.",

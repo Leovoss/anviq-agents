@@ -8212,8 +8212,25 @@ describe("boards.tickets.list", () => {
     return { findMany, handler: new RPCHandler(createRouter(deps)) };
   }
 
-  it("searches ticket text for the characters the user typed, not SQL wildcards", async () => {
+  it("searches sealed ticket text for the characters the user typed, not as a pattern", async () => {
     const { findMany, handler } = listDeps();
+    const ticketRow = {
+      boardId: "board-1",
+      spaceId: "workspace-1",
+      number: 1,
+      status: "todo",
+      priority: "normal",
+      assigneeBotId: null,
+      createdByBotId: null,
+      createdByUserId: "user-1",
+      createdAt: new Date("2026-06-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-06-01T00:00:00.000Z"),
+      completedAt: null,
+    };
+    (findMany as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { ...ticketRow, id: "a", title: "Half price", description: "Save 50%_off today" },
+      { ...ticketRow, id: "b", title: "Other", description: "5000 off everything" },
+    ]);
     const { response } = await handler.handle(
       new Request("http://127.0.0.1/rpc/tickets/list", {
         method: "POST",
@@ -8223,9 +8240,9 @@ describe("boards.tickets.list", () => {
       { prefix: "/rpc", context: { actor } },
     );
     expect(response?.status).toBe(200);
-    const where = findMany.mock.calls[0]?.[0]?.where;
-    expect(where?.OR?.[0]?.title?.contains).toBe("50\\%\\_off");
-    expect(where?.OR?.[1]?.description?.contains).toBe("50\\%\\_off");
+    expect(findMany.mock.calls[0]?.[0]?.where?.OR).toBeUndefined();
+    const body = (await response?.json()) as { json: { tickets: Array<{ id: string }> } };
+    expect(body.json.tickets.map((ticket) => ticket.id)).toEqual(["a"]);
   });
 });
 

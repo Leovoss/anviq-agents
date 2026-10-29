@@ -14,6 +14,14 @@ import { contentEncryptionOf, INDEXED_MESSAGE, Prisma, UNINDEXED_MESSAGE } from 
 const SEARCH_LIMIT = 25;
 /** Cap name matches so content hits (messages/files/links/routines) keep most of the budget. */
 const CONVERSATION_HIT_LIMIT = 5;
+/**
+ * Bot descriptions and routine prompts are sealed, so the database cannot match them. They are
+ * read for the actor's own rows and matched here.
+ * ponytail: a scan per search; add blind-index tokens if one person has thousands of routines.
+ */
+const SEALED_SCAN_LIMIT = 1000;
+const includesText = (value: string | null | undefined, needle: string) =>
+  value?.toLowerCase().includes(needle) === true;
 /** Recent encrypted messages scanned when no query term is long enough to be indexed. */
 const UNINDEXED_SCAN_LIMIT = 200;
 
@@ -113,19 +121,21 @@ export async function querySpaceSearch(
     bucket.push(hit);
   }
 
-  const bots = await prisma.bot.findMany({
-    where: {
-      spaceId: actor.spaceId,
-      userId: actor.userId,
-      archivedAt: null,
-      OR: [
-        { name: { contains: likeQuery, mode: "insensitive" } },
-        { title: { contains: likeQuery, mode: "insensitive" } },
-        { description: { contains: likeQuery, mode: "insensitive" } },
-      ],
-    },
-    take: CONVERSATION_HIT_LIMIT,
+  const needle = query.toLowerCase();
+  const botRows = await prisma.bot.findMany({
+    where: { spaceId: actor.spaceId, userId: actor.userId, archivedAt: null },
+    select: { id: true, name: true, title: true, description: true },
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    take: SEALED_SCAN_LIMIT,
   });
+  const bots = botRows
+    .filter(
+      (bot) =>
+        includesText(bot.name, needle) ||
+        includesText(bot.title, needle) ||
+        includesText(bot.description, needle),
+    )
+    .slice(0, CONVERSATION_HIT_LIMIT);
   for (const bot of bots) {
     pushInto(
       conversationHits,
@@ -265,19 +275,15 @@ export async function querySpaceSearch(
 
   if (full()) return [...conversationHits, ...contentHits];
 
-  const routines = await prisma.routine.findMany({
-    where: {
-      spaceId: actor.spaceId,
-      userId: actor.userId,
-      OR: [
-        { name: { contains: likeQuery, mode: "insensitive" } },
-        { prompt: { contains: likeQuery, mode: "insensitive" } },
-      ],
-      bot: { archivedAt: null },
-    },
+  const routineRows = await prisma.routine.findMany({
+    where: { spaceId: actor.spaceId, userId: actor.userId, bot: { archivedAt: null } },
     include: { bot: { select: { name: true } } },
-    take: SEARCH_LIMIT,
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    take: SEALED_SCAN_LIMIT,
   });
+  const routines = routineRows
+    .filter((routine) => includesText(routine.name, needle) || includesText(routine.prompt, needle))
+    .slice(0, SEARCH_LIMIT);
   for (const routine of routines) {
     pushInto(
       contentHits,
