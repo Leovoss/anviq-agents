@@ -345,7 +345,8 @@ export async function rewrapSpaceKeys(
   ring: ContentKeyRing,
   options: { dryRun?: boolean; signal?: AbortSignal } = {},
 ): Promise<{ rewrapped: number; current: number }> {
-  const active = ring.provider.activeKeyId();
+  const activeFor = async (spaceId: string) =>
+    (await ring.provider.activeKeyIdFor?.(spaceId)) ?? ring.provider.activeKeyId();
   const counts = { rewrapped: 0, current: 0 };
   let cursor = "";
   while (true) {
@@ -358,7 +359,7 @@ export async function rewrapSpaceKeys(
     if (!batch.length) break;
     cursor = batch.at(-1)!.id;
     for (const record of batch) {
-      if (record.masterKeyId === active) {
+      if (record.masterKeyId === (await activeFor(record.spaceId))) {
         counts.current += 1;
         continue;
       }

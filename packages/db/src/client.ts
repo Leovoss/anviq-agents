@@ -21,8 +21,11 @@ export type Db = PrismaClient;
 export interface DbClientOptions {
   poolMax?: number;
   applicationName?: string;
-  /** Wraps per-space content keys. Defaults to master keys from the environment. */
-  keyProvider?: KeyProvider;
+  /**
+   * Wraps per-space content keys. Defaults to master keys from the environment. A function gets
+   * the small pool the space keys use, for providers that read settings from the database.
+   */
+  keyProvider?: KeyProvider | ((keyPool: Pool) => KeyProvider);
   /** Encrypt new content. Defaults to CONTENT_ENCRYPTION (see resolveContentEncryption). */
   encryptContent?: boolean;
 }
@@ -93,8 +96,10 @@ export function createDb(
     await keyPool.end().catch(() => undefined);
     await end();
   }) as Pool["end"];
+  const keyProvider =
+    typeof options.keyProvider === "function" ? options.keyProvider(keyPool) : options.keyProvider;
   const contentKeys = new ContentKeyRing(
-    options.keyProvider ?? lazyKeyProvider(() => new LocalKeyProvider(masterKeysFromEnv())),
+    keyProvider ?? lazyKeyProvider(() => new LocalKeyProvider(masterKeysFromEnv())),
     new PgSpaceKeyStore(keyPool),
     { encryptWrites },
   );

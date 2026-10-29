@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import type { KeyProvider } from "@anviq/adapter-kit";
 import { LocalKeyProvider, withLocalMasterKeys } from "@anviq/db";
 import { KMSClient } from "@aws-sdk/client-kms";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { AwsKmsKeyProvider, awsKmsConfigFromEnv } from "./aws-kms-key-provider.js";
 import { contentKeyProviderFromEnv } from "./key-provider-factory.js";
 
@@ -222,6 +222,20 @@ describe("moving space keys to a key manager", () => {
       MASTER_KEY_PROVIDER: "aws-kms",
       ENCRYPTION_KEY: "fake-encryption-key-for-tests-0000000000000000000000000000",
     });
-    expect(provider?.activeKeyId()).toBe("aws-kms:1234abcd-12ab-34cd-56ef-1234567890ab");
+    // Organization keys are on whenever the AWS credentials are, so the key pool is passed in.
+    expect(typeof provider).toBe("function");
+    const created = (provider as (pool: never) => KeyProvider)({ query: vi.fn() } as never);
+    expect(created.activeKeyId()).toBe("aws-kms:1234abcd-12ab-34cd-56ef-1234567890ab");
+  });
+
+  it("only enables organization keys when the AWS credentials are set", () => {
+    expect(contentKeyProviderFromEnv({ MASTER_KEY_PROVIDER: "local" })).toBeUndefined();
+    const local = contentKeyProviderFromEnv({
+      MASTER_KEY_PROVIDER: "local",
+      AWS_KMS_ACCESS_KEY_ID: "id",
+      AWS_KMS_SECRET_ACCESS_KEY: "secret",
+      ENCRYPTION_KEY: "fake-encryption-key-for-tests-0000000000000000000000000000",
+    });
+    expect(typeof local).toBe("function");
   });
 });
