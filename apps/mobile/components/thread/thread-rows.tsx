@@ -157,8 +157,13 @@ export function useThreadRows({
           members={snap?.members}
           readOnly={readOnly}
           onCall={onCall}
-          canAnswer={!readOnly && answerableAskIds.has(message.id)}
-          canDismiss={dismissableAskIds.has(message.id)}
+          canAnswer={!readOnly && !snap?.guest && answerableAskIds.has(message.id)}
+          canDismiss={!snap?.guest && dismissableAskIds.has(message.id)}
+          senderName={
+            message.role === "user" && message.sender && message.sender.userId !== userId
+              ? message.sender.name
+              : undefined
+          }
           highlighted={highlightedMessageId === message.id}
           separator={separatorIds.has(message.id)}
           headerAdjacent={threadHeaderFloats() && message.id === visibleMessages[0]?.id}

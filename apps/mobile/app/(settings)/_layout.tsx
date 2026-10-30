@@ -103,6 +103,21 @@ export default function SettingsLayout() {
           contentStyle: { backgroundColor: native.groupedPage },
         })}
       />
+      <Stack.Screen
+        name="team"
+        options={{
+          ...glassHeaderOptions(t("Team")),
+          contentStyle: { backgroundColor: native.groupedPage },
+        }}
+      />
+      <Stack.Screen
+        name="team-detail"
+        // Named after the team it opened from.
+        options={({ route }) => ({
+          ...glassHeaderOptions((route.params as { name?: string } | undefined)?.name ?? t("Team")),
+          contentStyle: { backgroundColor: native.groupedPage },
+        })}
+      />
       <Stack.Screen name="messaging" options={glassHeaderOptions(t("Messaging"))} />
       <Stack.Screen name="team-conversation" />
       <Stack.Screen name="integrations" options={glassHeaderOptions(t("Integrations"))} />

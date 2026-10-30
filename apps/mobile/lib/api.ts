@@ -49,6 +49,7 @@ import {
   reduceLiveMessageBlocks,
   replyMetadata,
   runFailureError,
+  senderFromPayload,
   settleRunSubagents,
   signupRequiresEmailVerification,
   stopsRunHelpers,
@@ -1092,7 +1093,7 @@ export type MobileGroup = Pick<
   | "updatedAt"
   | "members"
 > &
-  Partial<Pick<Group, "spaceId">>;
+  Partial<Pick<Group, "spaceId" | "participants" | "canManage">>;
 
 export type MobileSpace = Space;
 export type MobileSpaceNavigation = SpaceNavigation;
@@ -1673,6 +1674,7 @@ export function applyMobileThreadEvent(
       blocks: (event.payload?.blocks as MobileMessage["blocks"]) ?? [],
       botId: event.botId ?? (event.payload?.botId ? String(event.payload.botId) : undefined),
       ...replyMetadata(event.payload ?? {}, known),
+      sender: senderFromPayload(event.payload?.sender) ?? known?.sender,
     };
     return {
       ...prev,

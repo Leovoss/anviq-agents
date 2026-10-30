@@ -78,7 +78,10 @@ export function threadsRoutes(ctx: RouterContext) {
           includeArchived: true,
           participant: true,
         });
-        return threadSnapshot(deps, target);
+        const snapshot = await threadSnapshot(deps, target);
+        return target.kind === "group" && target.hostUserId !== context.actor.userId
+          ? { ...snapshot, guest: true }
+          : snapshot;
       }),
       messages: authed.threads.messages.handler(async ({ context, input }) => {
         const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
