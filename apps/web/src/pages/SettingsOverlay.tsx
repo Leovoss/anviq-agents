@@ -14,6 +14,7 @@ import {
   Monitor,
   Settings,
   ShieldCheck,
+  Users,
   Volume2,
   Wallet,
   XIcon,
@@ -23,12 +24,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ApprovalRulesSettings } from "../components/ApprovalRulesSettings";
 import { computersAreUnavailable } from "../components/ComputersUnavailableHint";
 import { SETTINGS_CONTENT_WIDTH, SettingsGroup, SettingsRow } from "../components/SettingsRows";
+import { TeamSettings } from "../components/TeamSettings";
 import { VaultSettings } from "../components/VaultSettings";
 import { desktopBridge } from "../lib/desktop";
 import { SpaceRpcProvider } from "../lib/space-rpc";
 import {
   ComputerSettingsPanel,
   GeneralSettingsPanels,
+  LicenseNotice,
   UpdatesSettingsPanel,
   UsageSettingsPanel,
 } from "./AccountSettingsOverlay";
@@ -63,6 +66,7 @@ export function SettingsOverlay({
   onNameSaved,
   timezone,
   onTimezoneChange,
+  licensee,
   billingEnabled = false,
   sandboxProvider,
   onSandboxProviderChange,
@@ -88,6 +92,8 @@ export function SettingsOverlay({
   onNameSaved?: () => Promise<void>;
   timezone: string | null;
   onTimezoneChange: (timezone: string) => Promise<void>;
+  /** Set from ANVIQ_LICENSEE. Absent on instances that are not a customer deployment. */
+  licensee?: string | null;
   billingEnabled?: boolean;
   sandboxProvider?: string | null;
   onSandboxProviderChange?: (sandboxProvider: string) => void;
@@ -160,6 +166,7 @@ export function SettingsOverlay({
       : []),
     ...(paymentWalletProvider ? [{ id: "wallet" as const, label: t`Wallet`, icon: Wallet }] : []),
     { id: "memory", label: t`Memory`, icon: Brain },
+    { id: "team", label: t`Team`, icon: Users },
     { id: "usage", label: t`Usage`, icon: Gauge },
     ...(showComputer ? [{ id: "computer" as const, label: t`Computer`, icon: Monitor }] : []),
     ...(billingEnabled ? [{ id: "billing" as const, label: t`Billing`, icon: CreditCard }] : []),
@@ -398,6 +405,7 @@ export function SettingsOverlay({
                           ))}
                         </SettingsGroup>
                       ) : null}
+                      <LicenseNotice licensee={licensee} />
                     </div>
                   ) : null}
                   {section === "space" && space ? (
@@ -410,6 +418,7 @@ export function SettingsOverlay({
                       onBusyChange={setVoiceBusy}
                     />
                   ) : null}
+                  {section === "team" ? <TeamSettings /> : null}
                   {section === "confirmations" ? <ApprovalRulesSettings scope="account" /> : null}
                   {section === "vault" ? <VaultSettings scope="account" /> : null}
                   {section === "messaging" && messagingEnabled ? <MessagingSettingsPanel /> : null}

@@ -10,6 +10,7 @@ import { Button } from "@anviq/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Monitor, Settings, X } from "lucide-react";
 import type { ComponentProps, Dispatch, ReactNode, SetStateAction } from "react";
+import { useEffect, useState } from "react";
 import { ComputerMaintenanceActions } from "../../components/ComputerMaintenanceActions";
 import type { Panel } from "../../lib/right-panel-state";
 import type { createSpaceRpc } from "../../lib/rpc";
@@ -88,6 +89,20 @@ export function ShellSidePanel({
 }) {
   const { t } = useLingui();
   const open = Boolean(panel && (active || activeGroup || panel === "import-agent"));
+  const [people, setPeople] = useState<Array<{ userId: string; name: string }>>([]);
+  useEffect(() => {
+    if (panel !== "group-settings") return;
+    let cancelled = false;
+    void rpc.spaces
+      .people()
+      .then((list) => {
+        if (!cancelled) setPeople(list);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [panel, rpc]);
 
   async function createGroup(input: { name: string; botIds: string[] }) {
     const group = await rpc.groups.create(input);
@@ -169,6 +184,31 @@ export function ShellSidePanel({
               key={activeGroup.id}
               group={activeGroup}
               bots={bots}
+              people={people}
+              onShare={async (userIds) => {
+                const updated = await rpc.groups.setParticipants({
+                  groupId: activeGroup.id,
+                  userIds,
+                });
+                setGroups((current) =>
+                  current.map((group) => (group.id === updated.id ? updated : group)),
+                );
+              }}
+              onSetMyBots={async (botIds) => {
+                const updated = await rpc.groups.setMyBots({ groupId: activeGroup.id, botIds });
+                setGroups((current) =>
+                  current.map((group) => (group.id === updated.id ? updated : group)),
+                );
+                void refreshGroupThread(activeGroup.id).catch(() => undefined);
+              }}
+              onLeave={async () => {
+                await rpc.groups.leave({ groupId: activeGroup.id });
+                const remainingGroups = groups.filter((group) => group.id !== activeGroup.id);
+                setGroups(remainingGroups);
+                setPanel(null);
+                navigate(firstThreadRoute(bots, remainingGroups), { replace: true });
+                await refreshBots().catch(() => undefined);
+              }}
               onSave={async (input) => {
                 const updated = await rpc.groups.update({ groupId: activeGroup.id, ...input });
                 setGroups((current) =>

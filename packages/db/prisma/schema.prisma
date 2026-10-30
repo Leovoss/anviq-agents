@@ -62,6 +62,7 @@ model User {
   emailSends                  EmailSend[]
   signupSurvey                SignupSurvey?
   computerRuns                ComputerRun[]
+  chatGroupParticipations     ChatGroupParticipant[]
   devices                     UserDevice[]
 
   @@unique([email])
@@ -221,6 +222,8 @@ model Organization {
   createdAt    DateTime
   metadata     String?
   members      Member[]
+  events       OrganizationEvent[]
+  memoryProposals OrganizationMemoryProposal[]
   invitations  Invitation[]
   spaces       Space[]
   billing      BillingAccount?
@@ -655,6 +658,8 @@ model ChatGroup {
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
   members    ChatGroupMember[]
+  /// People besides the host who read and write in this chat. Empty for a private group.
+  participants ChatGroupParticipant[]
   thread     Thread?
   artifacts  Artifact[]
 
@@ -674,6 +679,53 @@ model ChatGroupMember {
   @@unique([groupId, botId])
   @@index([botId])
   @@map("chat_group_members")
+}
+
+/// What happened in a team, for its admins: membership, sharing and company memory changes.
+/// A member's suggested addition to company memory. The text itself is kept sealed as a memory
+/// document in the team's general space; this row only tracks who asked and what was decided.
+model OrganizationMemoryProposal {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  proposedByUserId String
+  /// pending, approved or rejected
+  status          String       @default("pending")
+  decidedByUserId String?
+  decidedAt       DateTime?
+  createdAt       DateTime     @default(now())
+
+  @@index([organizationId, status, createdAt])
+  @@map("organization_memory_proposals")
+}
+
+model OrganizationEvent {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actorUserId    String
+  type           String
+  /// The person or item the event is about, when there is one.
+  subject        String?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+  @@map("organization_events")
+}
+
+model ChatGroupParticipant {
+  id          String    @id @default(cuid())
+  groupId     String
+  group       ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Highest message seq this person has read; -1 = none. The host's own state stays on the thread.
+  lastReadSeq Int       @default(-1)
+  createdAt   DateTime  @default(now())
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("chat_group_participants")
 }
 
 model Thread {
@@ -719,6 +771,8 @@ model Message {
   replyTo          Message?  @relation("MessageReplies", fields: [replyToMessageId], references: [id], onDelete: SetNull)
   replies          Message[] @relation("MessageReplies")
   runId            String?
+  /// The person who wrote a user message in a chat shared by several people; null otherwise.
+  senderUserId     String?
   clientNonce      String?
   /// Blind-index search tokens for the encrypted blocks; NULL until the row is encrypted.
   searchTokens     Int[]
@@ -786,6 +840,8 @@ model Run {
   taskId               String
   task                 Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId               String
+  /// A teammate who started this run in a chat shared with the bot's owner; the run still acts as `userId`.
+  triggeredByUserId    String?
   status               String
   trigger              String
   modelProvider        String?

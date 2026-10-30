@@ -27,6 +27,8 @@ import {
   shouldForwardPeerThreadEvent,
 } from "../thread-message-pages.js";
 import {
+  markSharedGroupRead,
+  markSharedGroupUnread,
   markThreadRead,
   markThreadUnreadFrom,
   reactToThreadMessage,
@@ -34,6 +36,7 @@ import {
   sendThreadMessage,
   setThreadUnreadState,
   stopThreadRuns,
+  threadActor,
   threadHead,
   threadSnapshot,
 } from "../thread-target.js";
@@ -65,18 +68,22 @@ export function threadsRoutes(ctx: RouterContext) {
   return {
     threads: {
       head: authed.threads.head.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
+          participant: true,
+        });
         return threadHead(deps.prisma, target);
       }),
       get: authed.threads.get.handler(async ({ context, input }) => {
         const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
           includeArchived: true,
+          participant: true,
         });
         return threadSnapshot(deps, target);
       }),
       messages: authed.threads.messages.handler(async ({ context, input }) => {
         const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
           includeArchived: true,
+          participant: true,
         });
         return loadMessagePage(
           deps.prisma,
@@ -89,7 +96,9 @@ export function threadsRoutes(ctx: RouterContext) {
         );
       }),
       subscribe: authed.threads.subscribe.handler(async function* ({ context, input }) {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
+          participant: true,
+        });
         const peerRunCache = new Map<string, Promise<boolean>>();
         const backgroundRunCache = new Map<string, Promise<boolean>>();
         const follow = deps.events.follow(target.threadId, input.cursor, context.signal);
@@ -148,11 +157,18 @@ export function threadsRoutes(ctx: RouterContext) {
         }
       }),
       send: authed.threads.send.handler(async ({ context, input }) => {
-        const setup = await modelSetup(deps, context.actor);
+        // In a shared chat the host's bots answer with the host's models and access, so a group
+        // is resolved first to learn whose they are. A direct chat is always the sender's own.
+        const groupTarget = input.groupId
+          ? await resolveThreadTarget(deps.prisma, context.actor, input, { participant: true })
+          : undefined;
+        const actor = groupTarget ? threadActor(context.actor, groupTarget) : context.actor;
+        const setup = await modelSetup(deps, actor);
         if (setup.needsModel) {
           throw new ORPCError("BAD_REQUEST", { message: MODEL_REQUIRED_SEND_ERROR });
         }
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target =
+          groupTarget ?? (await resolveThreadTarget(deps.prisma, context.actor, input));
         if (target.kind === "bot") {
           await assertTeachingSendAllowed(deps.prisma, context.actor.spaceId, target.botId);
         }
@@ -175,12 +191,13 @@ export function threadsRoutes(ctx: RouterContext) {
                 }
               : undefined,
           },
-          context.actor,
+          actor,
           target,
           input,
           target.kind === "bot"
             ? (runId) => releaseComputerControl(deps, context.actor, target.botId, "done", runId)
             : undefined,
+          { userId: context.actor.userId },
         );
       }),
       react: authed.threads.react.handler(async ({ context, input }) => {
@@ -517,7 +534,16 @@ export function threadsRoutes(ctx: RouterContext) {
         return { ok: true as const };
       }),
       answer: authed.threads.answer.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
+          participant: true,
+        });
+        // In a shared chat each bot asks its own owner, so only that person can answer.
+        if (target.kind === "group" && target.shared) {
+          const asked = await deps.prisma.run.count({
+            where: { id: input.runId, threadId: target.threadId, userId: context.actor.userId },
+          });
+          if (asked === 0) throw new IsolationError();
+        }
         const answered = await deps.events
           .answerRunInput({
             spaceId: context.actor.spaceId,
@@ -549,12 +575,27 @@ export function threadsRoutes(ctx: RouterContext) {
         return { ok: true as const };
       }),
       markRead: authed.threads.markRead.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
+          participant: true,
+        });
+        if (target.kind === "group" && target.shared) {
+          const dividerAfter = await markSharedGroupRead(deps.prisma, context.actor, target);
+          if (target.hostUserId === context.actor.userId) {
+            await markThreadRead(deps.prisma, context.actor, target);
+          }
+          return { ok: true as const, unreadAfterSeq: dividerAfter };
+        }
         const unreadAfterSeq = await markThreadRead(deps.prisma, context.actor, target);
         return { ok: true as const, unreadAfterSeq };
       }),
       markUnread: authed.threads.markUnread.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
+          participant: true,
+        });
+        if (target.kind === "group" && target.shared) {
+          await markSharedGroupUnread(deps.prisma, context.actor, target, input.messageId);
+          if (target.hostUserId !== context.actor.userId) return { ok: true as const };
+        }
         if (input.messageId) {
           await markThreadUnreadFrom(deps.prisma, context.actor, target, input.messageId);
         } else {

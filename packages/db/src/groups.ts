@@ -28,6 +28,7 @@ type GroupRecord = {
   thread: {
     id: string;
     unread: boolean;
+    nextMessageSeq: number;
     messages: Array<{ blocks: unknown }>;
   } | null;
   members: Array<{
@@ -35,10 +36,14 @@ type GroupRecord = {
       id: string;
       name: string;
       color: string;
+      userId?: string;
       runs: Array<{ status: string }>;
     };
   }>;
+  participants?: ParticipantRecord[];
 };
+
+type ParticipantRecord = { userId: string; lastReadSeq: number; user: { name: string } };
 
 type SpaceGroupRecord = Pick<
   GroupRecord,
@@ -46,9 +51,39 @@ type SpaceGroupRecord = Pick<
 > & {
   thread: {
     unread: boolean;
+    nextMessageSeq: number;
     messages: Array<{ blocks: unknown }>;
   } | null;
+  userId: string;
+  participants?: ParticipantRecord[];
 };
+
+/**
+ * What a chat shared with others adds for one viewer: who is in it, whether they may change it,
+ * and whether it is unread by their own reading position. Empty for a private group.
+ */
+function sharedView(
+  group: { userId: string; participants?: ParticipantRecord[] },
+  thread: { unread: boolean; nextMessageSeq: number },
+  viewerUserId: string,
+) {
+  const rows = group.participants ?? [];
+  if (rows.length < 2) return { unread: thread.unread };
+  const mine = rows.find((row) => row.userId === viewerUserId);
+  // The host is always listed first.
+  const ordered = [...rows].sort(
+    (left, right) => Number(right.userId === group.userId) - Number(left.userId === group.userId),
+  );
+  return {
+    participants: ordered.map((row) => ({
+      userId: row.userId,
+      name: row.user.name,
+      host: row.userId === group.userId,
+    })),
+    canManage: group.userId === viewerUserId,
+    unread: mine ? thread.nextMessageSeq - 1 > mine.lastReadSeq : thread.unread,
+  };
+}
 
 function mapGroupMembers(members: GroupRecord["members"]): GroupMember[] {
   return members.map((member) => ({
@@ -56,12 +91,14 @@ function mapGroupMembers(members: GroupRecord["members"]): GroupMember[] {
     name: member.bot.name,
     color: member.bot.color,
     status: primaryActiveRun(member.bot.runs)?.status ?? "idle",
+    ...(member.bot.userId ? { ownerUserId: member.bot.userId } : {}),
   }));
 }
 
-function mapGroup(group: GroupRecord): Group {
+function mapGroup(group: GroupRecord, viewerUserId: string = group.userId): Group {
   if (!group.thread) throw new IsolationError("Group is missing its thread");
   const preview = previewFromBlocks(group.thread.messages[0]?.blocks);
+  const shared = sharedView(group, group.thread, viewerUserId);
   return {
     id: group.id,
     spaceId: group.spaceId,
@@ -72,14 +109,15 @@ function mapGroup(group: GroupRecord): Group {
     members: mapGroupMembers(group.members),
     threadId: group.thread.id,
     preview,
-    unread: group.thread.unread,
+    ...shared,
     updatedAt: group.updatedAt.toISOString(),
     createdAt: group.createdAt.toISOString(),
   };
 }
 
-function mapSpaceGroup(group: SpaceGroupRecord): SpaceGroup {
+function mapSpaceGroup(group: SpaceGroupRecord, viewerUserId: string): SpaceGroup {
   if (!group.thread) throw new IsolationError("Group is missing its thread");
+  const { canManage: _canManage, ...shared } = sharedView(group, group.thread, viewerUserId);
   return {
     id: group.id,
     spaceId: group.spaceId,
@@ -88,7 +126,7 @@ function mapSpaceGroup(group: SpaceGroupRecord): SpaceGroup {
     sectionId: group.sectionId,
     members: mapGroupMembers(group.members),
     preview: previewFromBlocks(group.thread.messages[0]?.blocks),
-    unread: group.thread.unread,
+    ...shared,
     updatedAt: group.updatedAt.toISOString(),
   };
 }
@@ -101,9 +139,12 @@ async function assertOwnedBots(
   prisma: PrismaClient,
   actor: Actor,
   botIds: string[],
+  /** Bots other people already have in a shared chat count toward its size. */
+  othersCount = 0,
 ): Promise<GroupMember[]> {
   const unique = [...new Set(botIds)];
-  if (unique.length < GROUP_MEMBER_MIN || unique.length > GROUP_MEMBER_MAX) {
+  const size = unique.length + othersCount;
+  if (size < GROUP_MEMBER_MIN || size > GROUP_MEMBER_MAX) {
     throw new IsolationError(
       `Groups require ${GROUP_MEMBER_MIN} to ${GROUP_MEMBER_MAX} distinct bots`,
     );
@@ -142,8 +183,21 @@ function memberRowsInOrder(groupId: string, botIds: string[], base = Date.now())
 
 const groupMemberOrder = [{ createdAt: "asc" as const }, { botId: "asc" as const }];
 
+const participantOrder = [{ createdAt: "asc" as const }, { userId: "asc" as const }];
+
+const participantInclude = {
+  select: { userId: true, lastReadSeq: true, user: { select: { name: true } } },
+  orderBy: participantOrder,
+} as const;
+
+/** A group is visible to its host and to the people it is shared with. */
+function visibleTo(userId: string) {
+  return { OR: [{ userId }, { participants: { some: { userId } } }] };
+}
+
 const groupInclude = {
   thread: true,
+  participants: participantInclude,
   members: {
     where: { bot: { archivedAt: null } },
     include: {
@@ -152,6 +206,7 @@ const groupInclude = {
           id: true,
           name: true,
           color: true,
+          userId: true,
           runs: activeRunSelection,
         },
       },
@@ -163,6 +218,7 @@ const groupInclude = {
 // Every member, archived bots included, so a group that can't be opened still names its bots.
 const archivedGroupInclude = {
   thread: groupInclude.thread,
+  participants: participantInclude,
   members: {
     include: {
       bot: { select: { ...groupInclude.members.include.bot.select, archivedAt: true } },
@@ -173,6 +229,7 @@ const archivedGroupInclude = {
 
 const groupTargetInclude = {
   thread: { select: { id: true } },
+  participants: { select: { userId: true } },
   members: {
     where: { bot: { archivedAt: null } },
     include: {
@@ -181,6 +238,7 @@ const groupTargetInclude = {
           id: true,
           name: true,
           color: true,
+          userId: true,
           runs: activeRunSelection,
         },
       },
@@ -293,12 +351,13 @@ export function createGroupRepos(prisma: PrismaClient) {
       await prisma.chatGroup.findMany({
         where: {
           spaceId: { in: spaceIds },
-          userId: actor.userId,
           archivedAt: null,
+          ...visibleTo(actor.userId),
         },
         select: {
           id: true,
           spaceId: true,
+          userId: true,
           name: true,
           pinned: true,
           sectionId: true,
@@ -307,8 +366,10 @@ export function createGroupRepos(prisma: PrismaClient) {
             select: {
               id: true,
               unread: true,
+              nextMessageSeq: true,
             },
           },
+          participants: participantInclude,
           members: groupInclude.members,
         },
         orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
@@ -317,7 +378,7 @@ export function createGroupRepos(prisma: PrismaClient) {
     );
     return groups
       .filter((group) => hasMinimumActiveMembers(group.members))
-      .map((group) => mapSpaceGroup(group));
+      .map((group) => mapSpaceGroup(group, actor.userId));
   }
 
   /**
@@ -347,7 +408,7 @@ export function createGroupRepos(prisma: PrismaClient) {
           group.archivedAt !== null ||
           !hasMinimumActiveMembers(group.members.filter((member) => !member.bot.archivedAt)),
       )
-      .map((group) => mapGroup(group as GroupRecord));
+      .map((group) => mapGroup(group as GroupRecord, actor.userId));
   }
 
   return {
@@ -358,8 +419,8 @@ export function createGroupRepos(prisma: PrismaClient) {
         await prisma.chatGroup.findMany({
           where: {
             spaceId: actor.spaceId,
-            userId: actor.userId,
             archivedAt: null,
+            ...visibleTo(actor.userId),
           },
           include: groupInclude,
           orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
@@ -368,7 +429,7 @@ export function createGroupRepos(prisma: PrismaClient) {
       );
       return groups
         .filter((group) => hasMinimumActiveMembers(group.members))
-        .map((group) => mapGroup(group as GroupRecord));
+        .map((group) => mapGroup(group as GroupRecord, actor.userId));
     },
 
     listSpaceGroupsForSpaces,
@@ -378,7 +439,7 @@ export function createGroupRepos(prisma: PrismaClient) {
         where: {
           id: groupId,
           spaceId: actor.spaceId,
-          userId: actor.userId,
+          ...visibleTo(actor.userId),
           ...(options.includeArchived ? {} : { archivedAt: null }),
         },
         include: groupInclude,
@@ -387,12 +448,13 @@ export function createGroupRepos(prisma: PrismaClient) {
       return (await attachNewestGroupMessage(prisma, group)) as GroupRecord;
     },
 
-    async getGroupTarget(actor: Actor, groupId: string) {
+    /** Host-only unless `participant` lets the people a chat is shared with resolve it too. */
+    async getGroupTarget(actor: Actor, groupId: string, options: { participant?: boolean } = {}) {
       const group = await prisma.chatGroup.findFirst({
         where: {
           id: groupId,
           spaceId: actor.spaceId,
-          userId: actor.userId,
+          ...(options.participant ? visibleTo(actor.userId) : { userId: actor.userId }),
           archivedAt: null,
         },
         include: groupTargetInclude,
@@ -434,7 +496,7 @@ export function createGroupRepos(prisma: PrismaClient) {
         });
         return attachNewestGroupMessage(tx, loaded);
       });
-      return mapGroup(created as GroupRecord);
+      return mapGroup(created as GroupRecord, actor.userId);
     },
 
     async updateGroup(
@@ -448,7 +510,29 @@ export function createGroupRepos(prisma: PrismaClient) {
         sectionId?: string | null;
       },
     ): Promise<{ group: Group; cancelledRunIds: string[] }> {
-      const members = input.botIds ? await assertOwnedBots(prisma, actor, input.botIds) : undefined;
+      // Bots that guests of a shared chat brought in stay as they are; the host edits their own.
+      const guestBotIds = input.botIds
+        ? new Set(
+            (
+              await prisma.chatGroupMember.findMany({
+                where: {
+                  groupId: input.groupId,
+                  group: { spaceId: actor.spaceId, userId: actor.userId },
+                  bot: { userId: { not: actor.userId }, archivedAt: null },
+                },
+                select: { botId: true },
+              })
+            ).map((member) => member.botId),
+          )
+        : new Set<string>();
+      const members = input.botIds
+        ? await assertOwnedBots(
+            prisma,
+            actor,
+            input.botIds.filter((botId) => !guestBotIds.has(botId)),
+            guestBotIds.size,
+          )
+        : undefined;
       const updated = await prisma.$transaction(async (tx) => {
         await lockOwnedGroup(tx, actor, input.groupId);
         const current = await tx.chatGroup.findFirst({
@@ -483,7 +567,9 @@ export function createGroupRepos(prisma: PrismaClient) {
           throw new IsolationError();
         }
         const nextBotIds = new Set(
-          members?.map((member) => member.botId) ?? current.members.map((member) => member.botId),
+          members
+            ? [...members.map((member) => member.botId), ...guestBotIds]
+            : current.members.map((member) => member.botId),
         );
         const removedBotIds = current.members
           .map((member) => member.botId)
@@ -513,10 +599,10 @@ export function createGroupRepos(prisma: PrismaClient) {
         if (members) {
           await tx.chatGroupMember.deleteMany({ where: { groupId: input.groupId } });
           await tx.chatGroupMember.createMany({
-            data: memberRowsInOrder(
-              input.groupId,
-              members.map((member) => member.botId),
-            ),
+            data: memberRowsInOrder(input.groupId, [
+              ...members.map((member) => member.botId),
+              ...guestBotIds,
+            ]),
           });
         }
         await tx.chatGroup.update({
@@ -538,7 +624,7 @@ export function createGroupRepos(prisma: PrismaClient) {
       });
       if (!updated.group.thread) throw new IsolationError();
       return {
-        group: mapGroup(updated.group as GroupRecord),
+        group: mapGroup(updated.group as GroupRecord, actor.userId),
         cancelledRunIds: updated.cancelledRunIds,
       };
     },
@@ -651,6 +737,22 @@ export function createGroupRepos(prisma: PrismaClient) {
 
     mapGroup,
   };
+}
+
+/** Locks a group for whoever holds one of its bots, whoever owns the group. */
+export async function lockGroupOfSpace(
+  prisma: Pick<Prisma.TransactionClient, "$queryRaw">,
+  spaceId: string,
+  groupId: string,
+) {
+  const locked = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT id
+    FROM chat_groups
+    WHERE id = ${groupId}
+      AND "spaceId" = ${spaceId}
+    FOR UPDATE
+  `;
+  if (locked.length !== 1) throw new IsolationError();
 }
 
 export async function lockOwnedGroup(

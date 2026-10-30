@@ -151,6 +151,8 @@ export const GroupMemberSchema = z.object({
   name: z.string(),
   color: z.string(),
   status: z.string().optional(),
+  /** The person who owns this bot, set in a chat shared with other people. */
+  ownerUserId: Id.optional(),
 });
 export type GroupMember = z.infer<typeof GroupMemberSchema>;
 
@@ -175,6 +177,13 @@ export function defaultGroupName(names: readonly string[]): string {
   return (last >= 0xd800 && last <= 0xdbff ? value.slice(0, -1) : value).trim();
 }
 
+export const GroupParticipantSchema = z.object({
+  userId: Id,
+  name: z.string(),
+  host: z.boolean(),
+});
+export type GroupParticipant = z.infer<typeof GroupParticipantSchema>;
+
 export const GroupSchema = z.object({
   id: Id,
   spaceId: Id,
@@ -183,6 +192,10 @@ export const GroupSchema = z.object({
   sectionId: Id.nullable(),
   archivedAt: z.string().nullable(),
   members: z.array(GroupMemberSchema),
+  /** The people in a chat shared with others, host first. Absent for a private group. */
+  participants: z.array(GroupParticipantSchema).optional(),
+  /** False when the viewer is a guest in someone else's chat and may not change it. */
+  canManage: z.boolean().optional(),
   threadId: Id,
   preview: z.string(),
   unread: z.boolean(),
@@ -260,6 +273,7 @@ export const SpaceGroupSchema = GroupSchema.pick({
   pinned: true,
   sectionId: true,
   members: true,
+  participants: true,
   preview: true,
   unread: true,
   updatedAt: true,
@@ -1664,6 +1678,15 @@ export const ServerUpdateRequestSchema = z.object({
 });
 export type ServerUpdateRequest = z.infer<typeof ServerUpdateRequestSchema>;
 
+/** Shown at the bottom of Settings, General on every instance. */
+export const ANVIQ_COPYRIGHT_LINE = "© 2026 Anviq LLC. All rights reserved.";
+export const ANVIQ_ADDRESS_LINE = "30 N Gould St #69062, Sheridan, WY 82801, USA";
+export const LICENSEE_MAX_LENGTH = 80;
+
+export function licensedToLine(licensee: string): string {
+  return `Licensed to ${licensee}`;
+}
+
 export const MeSchema = z.object({
   maxUploadSizeBytes: z.number().int().positive().optional(),
   ticketBoardEnabled: z.boolean(),
@@ -1699,6 +1722,8 @@ export const MeSchema = z.object({
   needsSignupSurvey: z.boolean().optional(),
   /** The wallet bots can spend from, when this deployment offers one. Absent from older servers. */
   paymentWalletProvider: z.object({ id: z.string(), name: z.string() }).nullable().optional(),
+  /** Who this deployment is licensed to. Absent when ANVIQ_LICENSEE is unset. */
+  licensee: z.string().max(LICENSEE_MAX_LENGTH).optional(),
 });
 export type Me = z.infer<typeof MeSchema>;
 

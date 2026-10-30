@@ -230,6 +230,23 @@ describe("runFailureError", () => {
 });
 
 describe("projectMessages", () => {
+  it("keeps who wrote a message in a shared chat, and ignores a malformed sender", () => {
+    const event = (messageId: string, sender: unknown, seq: number) => ({
+      id: `e${seq}`,
+      threadId: "t1",
+      seq,
+      type: "thread.message.created" as const,
+      payload: { messageId, role: "user", blocks: [{ kind: "text", text: "hi" }], sender },
+      createdAt: "2026-01-01T00:00:00.000Z",
+    });
+    const messages = projectMessages([
+      event("m1", { userId: "ben", name: "Ben" }, 0),
+      event("m2", { userId: 7 }, 1),
+    ]);
+    expect(messages[0]?.sender).toEqual({ userId: "ben", name: "Ben" });
+    expect(messages[1]?.sender).toBeUndefined();
+  });
+
   it("replays durable messages and trailing live tokens from progress events", () => {
     const messages = projectMessages([
       {

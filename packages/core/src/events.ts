@@ -3,6 +3,13 @@ import { cloudAgentBlockFromPayload } from "./cloud-agent.js";
 import { preserveIdentitySource } from "./identity-source.js";
 import { modelFallbackFailure, parseModelFallbackFailure } from "./run-error.js";
 
+function senderFromPayload(value: unknown): ThreadMessage["sender"] {
+  const sender = asRecord(value);
+  return typeof sender.userId === "string" && typeof sender.name === "string"
+    ? { userId: sender.userId, name: sender.name }
+    : undefined;
+}
+
 export function projectMessages(
   events: Array<{
     seq: number;
@@ -82,6 +89,7 @@ export function projectMessages(
         blocks,
         botId: event.botId ?? undefined,
         runId: event.runId ?? undefined,
+        sender: senderFromPayload(payload.sender),
         createdAt,
       });
       continue;

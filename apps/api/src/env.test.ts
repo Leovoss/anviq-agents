@@ -42,6 +42,15 @@ describe("loadEnv", () => {
       expect(loadEnv({ ...base, TICKET_BOARD_ENABLED: value }).ticketBoardEnabled).toBe(false);
     expect(loadEnv({ ...base, TICKET_BOARD_ENABLED: "true" }).ticketBoardEnabled).toBe(true);
   });
+  it("shows a licensee only when the deployment sets one", () => {
+    expect(loadEnv(base).licensee).toBeUndefined();
+    expect(loadEnv({ ...base, ANVIQ_LICENSEE: "  " }).licensee).toBeUndefined();
+    expect(loadEnv({ ...base, ANVIQ_LICENSEE: " Example Customer " }).licensee).toBe(
+      "Example Customer",
+    );
+    expect(() => loadEnv({ ...base, ANVIQ_LICENSEE: "x".repeat(81) })).toThrow("ANVIQ_LICENSEE");
+    expect(() => loadEnv({ ...base, ANVIQ_LICENSEE: "line\nbreak" })).toThrow("ANVIQ_LICENSEE");
+  });
   it("loads operator menu links and refuses to start on a bad value", () => {
     expect(loadEnv(base).navLinks).toEqual([]);
     expect(

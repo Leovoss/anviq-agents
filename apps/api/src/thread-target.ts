@@ -35,6 +35,7 @@ import {
   expireComputerExecutionLeases,
   IsolationError,
   lockOwnedGroup,
+  markParticipantRead,
   primaryActiveRun,
   retireWaitingQuestionInTransaction,
   touchGroupUpdatedAt,
@@ -67,6 +68,10 @@ export type ThreadTarget =
       groupName: string;
       members: GroupMember[];
       memberBotIds: string[];
+      /** The person who owns the group and whose bots, apps and credentials its runs use. */
+      hostUserId: string;
+      /** True while the group is shared with other people. */
+      shared: boolean;
     };
 
 const THREAD_MESSAGE_PAGE_SIZE = 100;
@@ -136,6 +141,18 @@ async function resolveOwnedConnectorDisplayNames(
   if (rows.length !== connectionIds.length) throw new IsolationError();
   const byId = new Map(rows.map((row) => [row.id, row.displayName]));
   return connectionIds.map((id) => byId.get(id) ?? "connector");
+}
+
+/** Tells the bot who is speaking when someone other than the host wrote the message. */
+function teammatePrompt(
+  prompt: string,
+  name: string | undefined,
+  teammateUserId: string | undefined,
+) {
+  return teammateUserId && name
+    ? `${name} wrote in this shared chat:
+${prompt}`
+    : prompt;
 }
 
 function sendRunClientNonce(
@@ -292,7 +309,7 @@ async function lockAndLoadGroupMembers(
     include: {
       members: {
         where: { bot: { archivedAt: null } },
-        include: { bot: { select: { id: true, name: true, color: true } } },
+        include: { bot: { select: { id: true, name: true, color: true, userId: true } } },
         orderBy: [{ createdAt: "asc" }, { botId: "asc" }],
       },
     },
@@ -302,14 +319,26 @@ async function lockAndLoadGroupMembers(
     botId: member.bot.id,
     name: member.bot.name,
     color: member.bot.color,
+    ownerUserId: member.bot.userId,
   }));
+}
+
+/**
+ * Inside a chat shared with them, a guest acts as the chat's host: its bots, apps and credentials
+ * are the host's, and each message records who actually wrote it. Everything else keeps the
+ * guest's own identity.
+ */
+export function threadActor(actor: Actor, target: ThreadTarget): Actor {
+  return target.kind === "group" && target.hostUserId !== actor.userId
+    ? { ...actor, userId: target.hostUserId }
+    : actor;
 }
 
 export async function resolveThreadTarget(
   prisma: PrismaClient,
   actor: Actor,
   input: { botId?: string; groupId?: string },
-  options: { includeArchived?: boolean } = {},
+  options: { includeArchived?: boolean; participant?: boolean } = {},
 ): Promise<ThreadTarget> {
   const repos = createRepos(prisma);
   const groupRepos = createGroupRepos(prisma);
@@ -324,13 +353,16 @@ export async function resolveThreadTarget(
     };
   }
   if (input.groupId) {
-    const group = await groupRepos.getGroupTarget(actor, input.groupId);
+    const group = await groupRepos.getGroupTarget(actor, input.groupId, {
+      participant: options.participant,
+    });
     if (!group.thread) throw new IsolationError();
     const members = group.members.map((member) => ({
       botId: member.bot.id,
       name: member.bot.name,
       color: member.bot.color,
       status: primaryActiveRun(member.bot.runs)?.status ?? "idle",
+      ownerUserId: member.bot.userId,
     }));
     return {
       kind: "group",
@@ -339,6 +371,8 @@ export async function resolveThreadTarget(
       groupName: group.name,
       members,
       memberBotIds: members.map((member) => member.botId),
+      hostUserId: group.userId,
+      shared: group.participants.length > 1,
     };
   }
   throw new IsolationError();
@@ -719,6 +753,7 @@ export async function sendThreadMessage(
     clientNonce?: string;
   },
   releaseTakeover?: (runId: string) => Promise<void>,
+  sender?: { userId: string },
 ) {
   const existing = await replayExistingSend(
     deps,
@@ -978,6 +1013,20 @@ export async function sendThreadMessage(
 
       const members = await lockAndLoadGroupMembers(tx, actor, target);
       const memberBotIds = members.map((member) => member.botId);
+      const senderUserId = target.shared ? sender?.userId : undefined;
+      const senderName = senderUserId
+        ? (
+            await tx.user.findUniqueOrThrow({
+              where: { id: senderUserId },
+              select: { name: true },
+            })
+          ).name
+        : undefined;
+      // Each bot acts for its own owner. A message from anyone else is a teammate's request to it.
+      const ownerOfBot = new Map(members.map((member) => [member.botId, member.ownerUserId]));
+      const runOwner = (botId: string) => ownerOfBot.get(botId) ?? actor.userId;
+      const requesterOf = (botId: string) =>
+        senderUserId && senderUserId !== runOwner(botId) ? senderUserId : undefined;
       const mentionTargets = splitMentionTargets(input.mentions);
       const targetBotIds = resolveGroupTargetBotIds({
         text: input.text ?? "",
@@ -1008,8 +1057,10 @@ export async function sendThreadMessage(
           id: true,
           taskId: true,
           botId: true,
+          userId: true,
           status: true,
           trigger: true,
+          triggeredByUserId: true,
           modelProvider: true,
           modelId: true,
           modelPinned: true,
@@ -1035,17 +1086,27 @@ export async function sendThreadMessage(
         blocks,
         replyToMessageId,
         replyQuote,
+        senderUserId,
         clientNonce: input.clientNonce,
       });
+      if (senderUserId) {
+        await markParticipantRead(tx, {
+          groupId: target.groupId,
+          userId: senderUserId,
+          seq: message.seq,
+        });
+      }
       const activeByBotId = new Map<string, (typeof activeRuns)[number]>();
       const answeredByBotId = new Map<string, Array<(typeof activeRuns)[number]>>();
       for (const run of activeRuns) {
         if (run.status === "waiting_input") {
+          // A question is for the bot's owner; anyone else's message never answers it.
+          if (senderUserId && run.userId !== senderUserId) continue;
           const answered = await answerWaitingRunWithTextInTransaction(tx, {
             spaceId: actor.spaceId,
             threadId: target.threadId,
             runId: run.id,
-            answeredByUserId: actor.userId,
+            answeredByUserId: senderUserId ?? actor.userId,
             answer: input.text ?? "",
             beforeMessageSeq: message.seq,
           });
@@ -1079,19 +1140,23 @@ export async function sendThreadMessage(
           );
           for (const run of steered) {
             await tx.steeringMessage.create({
-              data: { messageId: message.id, botId, userId: actor.userId, runId: run.id },
+              data: { messageId: message.id, botId, userId: runOwner(botId), runId: run.id },
             });
           }
           runs.push(...answered);
           continue;
         }
-        const active = activeByBotId.get(botId);
+        // A message never steers a run someone else started: that run keeps the trust of whoever
+        // began it, so the words of anyone else wait for a run of their own.
+        const running = activeByBotId.get(botId);
+        const starter = running ? (running.triggeredByUserId ?? running.userId) : undefined;
+        const active = running && starter === (senderUserId ?? actor.userId) ? running : undefined;
         if (active) {
           await tx.steeringMessage.create({
             data: {
               messageId: message.id,
               botId,
-              userId: actor.userId,
+              userId: runOwner(botId),
               runId: steersUserMessage(active) ? active.id : null,
             },
           });
@@ -1103,8 +1168,12 @@ export async function sendThreadMessage(
             spaceId: actor.spaceId,
             botId,
             threadId: target.threadId,
-            userId: actor.userId,
-            prompt: buildSendPrompt(input.text, artifacts, connectorNames),
+            userId: runOwner(botId),
+            prompt: teammatePrompt(
+              buildSendPrompt(input.text, artifacts, connectorNames),
+              senderName,
+              requesterOf(botId),
+            ),
             status: "queued",
           },
         });
@@ -1114,7 +1183,8 @@ export async function sendThreadMessage(
             botId,
             threadId: target.threadId,
             taskId: task.id,
-            userId: actor.userId,
+            userId: runOwner(botId),
+            triggeredByUserId: requesterOf(botId),
             status: "queued",
             trigger: "user",
             clientNonce: sendRunClientNonce(input.clientNonce, message.id, botId),
@@ -1156,6 +1226,8 @@ export async function sendThreadMessage(
           replyToMessageId,
           replyQuote,
           replyPreview,
+          sender:
+            senderUserId && senderName ? { userId: senderUserId, name: senderName } : undefined,
         },
       });
       return { message, runs, eventSeq: event.seq };
@@ -1616,6 +1688,57 @@ export async function markThreadRead(
     });
     if (result.count > 1) throw new IsolationError();
     return dividerSeq(thread, latestSeq);
+  });
+}
+
+/**
+ * Marks a shared chat read for one person, up to its latest message. Returns the seq they had
+ * read to before, or null when nothing new arrived: the first answer of a visit places the
+ * "New" divider.
+ */
+export async function markSharedGroupRead(
+  prisma: PrismaClient,
+  actor: Actor,
+  target: Extract<ThreadTarget, { kind: "group" }>,
+): Promise<number | null> {
+  const [mine, thread] = await Promise.all([
+    prisma.chatGroupParticipant.findUnique({
+      where: { groupId_userId: { groupId: target.groupId, userId: actor.userId } },
+      select: { lastReadSeq: true },
+    }),
+    prisma.thread.findUnique({ where: { id: target.threadId }, select: { nextMessageSeq: true } }),
+  ]);
+  if (!mine || !thread) return null;
+  const latest = thread.nextMessageSeq - 1;
+  if (mine.lastReadSeq >= latest) return null;
+  await markParticipantRead(prisma, { groupId: target.groupId, userId: actor.userId, seq: latest });
+  return mine.lastReadSeq;
+}
+
+/** Marks a shared chat unread for one person from a message, or from its latest message. */
+export async function markSharedGroupUnread(
+  prisma: PrismaClient,
+  actor: Actor,
+  target: Extract<ThreadTarget, { kind: "group" }>,
+  messageId?: string,
+) {
+  const seq = messageId
+    ? (
+        await prisma.message.findFirst({
+          where: { id: messageId, threadId: target.threadId },
+          select: { seq: true },
+        })
+      )?.seq
+    : (
+        await prisma.thread.findUnique({
+          where: { id: target.threadId },
+          select: { nextMessageSeq: true },
+        })
+      )?.nextMessageSeq;
+  if (seq === undefined) throw new ORPCError("NOT_FOUND");
+  await prisma.chatGroupParticipant.updateMany({
+    where: { groupId: target.groupId, userId: actor.userId },
+    data: { lastReadSeq: Math.max(-1, seq - 1) },
   });
 }
 

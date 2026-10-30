@@ -15,6 +15,7 @@ import { useState } from "react";
 import { PasskeyOffer } from "../../components/PasskeyOffer";
 import { SidebarFooter } from "../../components/SidebarFooter";
 import { useBilling } from "../../components/SubscriptionGate";
+import { useWorkspaces } from "../../components/use-workspaces";
 import { formatBillingDate } from "../../lib/billing";
 import type { BotsSidebarDensity } from "../../lib/bots-sidebar-density-pref";
 import type { Panel } from "../../lib/right-panel-state";
@@ -298,6 +299,7 @@ function ShellSidebarFooter({
     clearSpaceSelection();
     navigate("/");
   }, setLogOutError);
+  const workspaces = useWorkspaces();
   const { label: userName, initial: initials } = accountDisplay(user ?? {}, t`You`);
   const day = freeUntil ? formatBillingDate(freeUntil, i18n.locale || "en") : "";
   return (
@@ -315,6 +317,7 @@ function ShellSidebarFooter({
         </div>
       ) : null}
       <SidebarFooter
+        workspaces={workspaces}
         mini={mini}
         logos={logos}
         name={userName}

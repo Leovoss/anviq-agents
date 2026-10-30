@@ -28,10 +28,14 @@ import {
   commitBotUpdate,
   InstructionConflictError,
   IsolationError,
+  leaveSharedGroup,
   recordComputerRunEnd,
+  recordOrganizationEvent,
   recordSecurityEvent,
   restoreBotUnderComputerQuota,
   SpaceDeletionInProgressError,
+  setGroupParticipants,
+  setMyBotsInSharedGroup,
   settingsTarget,
 } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
@@ -49,6 +53,7 @@ import { requireIdentityConfirmation } from "../identity-confirmation.js";
 import type { RouterDeps } from "../router.js";
 import { loadMessagePage } from "../thread-message-pages.js";
 import type { RouterContext } from "./context.js";
+import { reportRules } from "./organizations.js";
 import { computerContext, modelSetup, THREAD_MESSAGE_PAGE_SIZE } from "./shared.js";
 
 /** Surface a Space deletion race as a retryable conflict instead of a generic failure. */
@@ -241,6 +246,8 @@ export async function enqueueBotIntroRun(deps: RouterDeps, actor: Actor, bot: Bo
 export function botsRoutes(ctx: RouterContext) {
   const { deps, repos, botModelValidation, removeBot, agentImportServices, groupRepos, authed } =
     ctx;
+  const cancelRunJobs = (runIds: string[]) =>
+    Promise.all(runIds.map((runId) => deps.jobs.cancel(runJobKey(runId)).catch(() => undefined)));
   return {
     bots: {
       list: authed.bots.list.handler(async ({ context }) => repos.listBots(context.actor)),
@@ -585,7 +592,7 @@ export function botsRoutes(ctx: RouterContext) {
       get: authed.groups.get.handler(async ({ context, input }) => {
         const group = await groupRepos.getGroup(context.actor, input.groupId);
         return {
-          ...groupRepos.mapGroup(group),
+          ...groupRepos.mapGroup(group, context.actor.userId),
           messages: (
             await loadMessagePage(
               deps.prisma,
@@ -598,6 +605,7 @@ export function botsRoutes(ctx: RouterContext) {
       }),
       duplicate: authed.groups.duplicate.handler(async ({ context, input }) => {
         const source = await groupRepos.getGroup(context.actor, input.groupId);
+        if (source.userId !== context.actor.userId) throw new IsolationError();
         try {
           return await groupRepos.createGroup(context.actor, {
             name: duplicateBotName(source.name),
@@ -606,6 +614,44 @@ export function botsRoutes(ctx: RouterContext) {
         } catch (error) {
           throw mapSpaceLifecycleError(error);
         }
+      }),
+      setParticipants: authed.groups.setParticipants.handler(async ({ context, input }) => {
+        const { cancelledRunIds } = await reportRules(() =>
+          setGroupParticipants(deps.prisma, context.actor, input),
+        );
+        await cancelRunJobs(cancelledRunIds);
+        const space = await deps.prisma.space.findUnique({
+          where: { id: context.actor.spaceId },
+          select: { organizationId: true },
+        });
+        if (space) {
+          await recordOrganizationEvent(deps.prisma, {
+            organizationId: space.organizationId,
+            actorUserId: context.actor.userId,
+            type: input.userIds.length > 0 ? "chat.shared" : "chat.unshared",
+          });
+        }
+        return groupRepos.mapGroup(
+          await groupRepos.getGroup(context.actor, input.groupId),
+          context.actor.userId,
+        );
+      }),
+      leave: authed.groups.leave.handler(async ({ context, input }) => {
+        const { cancelledRunIds } = await reportRules(() =>
+          leaveSharedGroup(deps.prisma, context.actor, input.groupId),
+        );
+        await cancelRunJobs(cancelledRunIds);
+        return { ok: true as const };
+      }),
+      setMyBots: authed.groups.setMyBots.handler(async ({ context, input }) => {
+        const { cancelledRunIds } = await reportRules(() =>
+          setMyBotsInSharedGroup(deps.prisma, context.actor, input),
+        );
+        await cancelRunJobs(cancelledRunIds);
+        return groupRepos.mapGroup(
+          await groupRepos.getGroup(context.actor, input.groupId),
+          context.actor.userId,
+        );
       }),
       update: authed.groups.update.handler(async ({ context, input }) => {
         if (input.sectionId) {

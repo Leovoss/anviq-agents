@@ -79,6 +79,7 @@ import {
   DeploymentSettingsSchema,
   ExportManifestSchema,
   ExternalConversationPolicySchema,
+  GROUP_MEMBER_MAX,
   GroupDetailSchema,
   GroupSchema,
   IntegrationCatalogResultSchema,
@@ -145,6 +146,26 @@ import {
 } from "./integration-settings.js";
 import { ModelHeadersSchema } from "./model-headers.js";
 import { ModelRoleSchema, ModelRoleUpdateSchema, ModelRoleViewSchema } from "./model-roles.js";
+import {
+  AcceptInvitationOutput,
+  CompanyMemorySchema,
+  CreateTeamInput,
+  CreateTeamOutput,
+  DecideMemoryProposalInput,
+  InvitationIdInput,
+  InviteToTeamInput,
+  MemoryProposalSchema,
+  MyTeamInvitationSchema,
+  ProposeMemoryInput,
+  SetCompanyMemoryInput,
+  SetTeamRoleInput,
+  TeamEventSchema,
+  TeamIdInput,
+  TeamInvitationSchema,
+  TeamMemberInput,
+  TeamMemberSchema,
+  TeamSchema,
+} from "./organizations.js";
 import { PaymentWalletStatusSchema } from "./payments.js";
 import { MessageReactionSchema } from "./reactions.js";
 import { RoutineWatchSchema } from "./routine-watch.js";
@@ -282,8 +303,36 @@ export const appContract = {
     /** Saves a detected timezone only while none is saved, so it never replaces a choice. */
     adoptTimezone: oc.input(z.object({ timezone: TimeZoneSchema })).output(MeSchema),
   },
+  organizations: {
+    list: oc.output(z.array(TeamSchema)),
+    personalSpace: oc.output(z.object({ spaceId: Id.nullable() })),
+    create: oc.input(CreateTeamInput).output(CreateTeamOutput),
+    members: oc.input(TeamIdInput).output(z.array(TeamMemberSchema)),
+    setRole: oc.input(SetTeamRoleInput).output(z.object({ ok: z.literal(true) })),
+    transferOwnership: oc.input(TeamMemberInput).output(z.object({ ok: z.literal(true) })),
+    removeMember: oc.input(TeamMemberInput).output(z.object({ ok: z.literal(true) })),
+    leave: oc.input(TeamIdInput).output(z.object({ ok: z.literal(true) })),
+    invitations: oc.input(TeamIdInput).output(z.array(TeamInvitationSchema)),
+    invite: oc.input(InviteToTeamInput).output(TeamInvitationSchema),
+    cancelInvitation: oc.input(InvitationIdInput).output(z.object({ ok: z.literal(true) })),
+    myInvitations: oc.output(z.array(MyTeamInvitationSchema)),
+    acceptInvitation: oc.input(InvitationIdInput).output(AcceptInvitationOutput),
+    /** What every bot in the team knows. Members read it; owners and admins write it. */
+    memory: oc.input(TeamIdInput).output(CompanyMemorySchema),
+    setMemory: oc.input(SetCompanyMemoryInput).output(z.object({ revision: z.number().int() })),
+    /** A member suggests an addition; an owner or admin decides. */
+    proposeMemory: oc.input(ProposeMemoryInput).output(z.object({ id: Id })),
+    memoryProposals: oc.input(TeamIdInput).output(z.array(MemoryProposalSchema)),
+    decideMemoryProposal: oc
+      .input(DecideMemoryProposalInput)
+      .output(z.object({ ok: z.literal(true) })),
+    /** The team's audit log, newest first, for owners and admins. */
+    events: oc.input(TeamIdInput).output(z.array(TeamEventSchema)),
+  },
   spaces: {
     list: oc.output(SpaceNavigationSchema),
+    /** The other people in the current space, for choosing who joins a shared chat. */
+    people: oc.output(z.array(z.object({ userId: Id, name: z.string() }))),
     create: oc.input(z.object({ name: spaceName })).output(SpaceSchema),
     rename: oc
       .input(z.object({ spaceId: Id, name: spaceName }))
@@ -456,6 +505,16 @@ export const appContract = {
     listArchived: oc.output(z.array(GroupSchema)),
     get: oc.input(groupId).output(GroupDetailSchema),
     duplicate: oc.input(groupId).output(GroupSchema),
+    /** The host chooses who else takes part; an empty list makes the group private again. */
+    setParticipants: oc
+      .input(z.object({ groupId: Id, userIds: z.array(Id).max(50) }))
+      .output(GroupSchema),
+    /** A guest leaves a chat shared with them. */
+    leave: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
+    /** A person chooses which of their own bots join a chat shared with them. */
+    setMyBots: oc
+      .input(z.object({ groupId: Id, botIds: z.array(Id).max(GROUP_MEMBER_MAX) }))
+      .output(GroupSchema),
     update: oc.input(UpdateGroupInput).output(GroupSchema),
     archive: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
     restore: oc.input(groupId).output(z.object({ ok: z.literal(true) })),

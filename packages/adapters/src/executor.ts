@@ -26,6 +26,7 @@ import {
   userTurnMessageForRun,
 } from "@anviq/core";
 import {
+  companyMemoryForSpace,
   effectiveMemoryScope,
   isPartialReplyClientNonce,
   isTooManyDatabaseConnections,
@@ -649,7 +650,11 @@ export function createRunExecutor(deps: ExecutorDeps) {
           loadCurrentTurnImages(deps, turnBlocks, context),
           messagingChannelRun
             ? Promise.resolve("")
-            : loadAgentMemoryContext(deps.memory, bot.id, context),
+            : companyMemoryForSpace(deps.prisma, run.spaceId)
+                .catch(() => undefined)
+                .then((companyMemory) =>
+                  loadAgentMemoryContext(deps.memory, bot.id, context, undefined, companyMemory),
+                ),
           messagingChannelRun
             ? Promise.resolve("")
             : loadAgentScratchpadContext(deps, {
@@ -925,7 +930,13 @@ export function createRunExecutor(deps: ExecutorDeps) {
         // Calls carry no schema flag: the sending client encodes them in the clientNonce.
         const sourceClientNonce = sourceMessage?.clientNonce ?? null;
         // A follow-up can be queued by a bot (group handoffs); only the user's own counts.
-        const ownerStartedRun = isOwnerStartedRun(run.trigger, sourceMessage?.role === "user");
+        // A teammate's message in a shared chat runs as the host but is not the host's own
+        // request: it gets the restrictions of any run the owner did not start.
+        const startedByTeammate = Boolean(
+          run.triggeredByUserId && run.triggeredByUserId !== run.userId,
+        );
+        const ownerStartedRun =
+          !startedByTeammate && isOwnerStartedRun(run.trigger, sourceMessage?.role === "user");
         // A hang-up run has no source message: its own nonce carries the call it closes.
         const callEndRun = run.trigger === "call_end";
         const callClientNonceForRun = callEndRun ? run.clientNonce : sourceClientNonce;
@@ -935,7 +946,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
           graphical && browser.describe().capabilities.page && !heldForTakeover;
         const disabledBuiltinTools = disabledBuiltinToolSet(bot.disabledBuiltinTools);
         const userComputerOwnerId = userComputerOwner({
-          trigger: run.trigger,
+          trigger: startedByTeammate ? "teammate" : run.trigger,
           sourceRole: sourceMessage?.role,
           messagingChannelRun,
           runUserId: run.userId,
@@ -973,6 +984,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
             disabledBuiltinTools: bot.disabledBuiltinTools,
             fleetManagement: bot.fleetManagement,
             followUpFromUser: sourceMessage?.role === "user",
+            startedByTeammate,
             userComputer: userComputer === "connected",
           }),
           // Cross-owner agent connections only exist for chat-linked bots.

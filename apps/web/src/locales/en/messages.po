@@ -463,6 +463,7 @@ msgstr "Actions for space"
 msgid "Active"
 msgstr "Active"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Activity"
 msgstr "Activity"
@@ -474,6 +475,12 @@ msgstr "Activity"
 #: src/pages/shell/agent-import.tsx
 msgid "Add"
 msgstr "Add"
+
+#. placeholder {0}: bot.name
+#. placeholder {0}: person.name
+#: src/pages/GroupPanel.tsx
+msgid "Add {0} to the chat"
+msgstr "Add {0} to the chat"
 
 #. placeholder {0}: bot.name
 #: src/pages/GroupPanel.tsx
@@ -608,6 +615,10 @@ msgstr "Added"
 #: src/pages/PluginsOverlay.tsx
 msgid "Adding…"
 msgstr "Adding…"
+
+#: src/components/TeamSettings.tsx
+msgid "Admin"
+msgstr "Admin"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -815,6 +826,7 @@ msgstr "Approval model"
 msgid "Approvals"
 msgstr "Approvals"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
@@ -823,6 +835,10 @@ msgstr "Approve"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
 msgstr "Approve this server to let your agent use its tools."
+
+#: src/components/TeamSettings.tsx
+msgid "approved a suggestion"
+msgstr "approved a suggestion"
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -939,6 +955,7 @@ msgstr "Avatar Studio"
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Board.tsx
 #: src/pages/NavLinkPage.tsx
@@ -1106,6 +1123,7 @@ msgstr "Can't read images"
 #: src/components/markdown-link-prompt.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
+#: src/components/TeamSettings.tsx
 #: src/components/VaultSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Artifacts.tsx
@@ -1167,6 +1185,10 @@ msgstr "Change model"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Change password"
 msgstr "Change password"
+
+#: src/components/TeamSettings.tsx
+msgid "changed a role"
+msgstr "changed a role"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Changing…"
@@ -1449,6 +1471,10 @@ msgstr "Communication"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Compact"
 msgstr "Compact"
+
+#: src/components/TeamSettings.tsx
+msgid "Company memory"
+msgstr "Company memory"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Complete"
@@ -1949,6 +1975,10 @@ msgstr "Could not load sign-in options"
 msgid "Could not load skill"
 msgstr "Could not load skill"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Could not load the invitation"
+msgstr "Could not load the invitation"
+
 #: src/pages/Artifacts.tsx
 msgid "Could not load this artifact."
 msgstr "Could not load this artifact."
@@ -2058,6 +2088,7 @@ msgid "Could not run routine"
 msgstr "Could not run routine"
 
 #: src/pages/ExternalConversationSettings.tsx
+#: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -2215,6 +2246,7 @@ msgstr "Couldn't update your timezone"
 msgid "Couldn't update your wallet"
 msgstr "Couldn't update your wallet"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
@@ -2252,6 +2284,10 @@ msgstr "Create your Anviq Agents"
 #: src/components/AskCard.tsx
 msgid "Created"
 msgstr "Created"
+
+#: src/components/TeamSettings.tsx
+msgid "created the team"
+msgstr "created the team"
 
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/agent-import.tsx
@@ -2547,10 +2583,6 @@ msgstr "Docker is configured but computers are not responding. Confirm the sandb
 msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
 msgstr "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
 
-#: src/components/SidebarFooter.tsx
-msgid "Docs"
-msgstr "Docs"
-
 #: src/pages/KnowledgeSection.tsx
 msgid "Document changed. Reopen to edit the latest version."
 msgstr "Document changed. Reopen to edit the latest version."
@@ -2631,6 +2663,11 @@ msgstr "Edit name"
 msgid "Edit Profile"
 msgstr "Edit Profile"
 
+#: src/components/TeamSettings.tsx
+msgid "edited company memory"
+msgstr "edited company memory"
+
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "Email"
@@ -2945,10 +2982,6 @@ msgstr "Gateway ID"
 msgid "General"
 msgstr "General"
 
-#: src/components/SidebarFooter.tsx
-msgid "Get the mobile app"
-msgstr "Get the mobile app"
-
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Getting ready"
 msgstr "Getting ready"
@@ -2971,6 +3004,10 @@ msgstr "Group settings"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Group updates"
 msgstr "Group updates"
+
+#: src/components/TeamSettings.tsx
+msgid "handed over ownership"
+msgstr "handed over ownership"
 
 #: src/components/call/CallCard.tsx
 msgid "Hang up"
@@ -3224,6 +3261,18 @@ msgstr "Interval unit"
 msgid "Invalid code"
 msgstr "Invalid code"
 
+#: src/components/TeamSettings.tsx
+msgid "Invitations"
+msgstr "Invitations"
+
+#: src/components/TeamSettings.tsx
+msgid "Invite"
+msgstr "Invite"
+
+#: src/components/TeamSettings.tsx
+msgid "invited"
+msgstr "invited"
+
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Isolated"
@@ -3260,6 +3309,15 @@ msgstr "Its model changed since the import, so it stays."
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Its model goes back to before the import."
 msgstr "Its model goes back to before the import."
+
+#: src/components/TeamSettings.tsx
+#: src/pages/AcceptInvitation.tsx
+msgid "Join"
+msgstr "Join"
+
+#: src/components/TeamSettings.tsx
+msgid "joined"
+msgstr "joined"
 
 #: src/pages/shell/transcript.tsx
 msgid "Jump to latest"
@@ -3314,6 +3372,23 @@ msgstr "Later"
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Leave"
 msgstr "Leave"
+
+#. placeholder {0}: team.name
+#: src/components/TeamSettings.tsx
+msgid "Leave {0}?"
+msgstr "Leave {0}?"
+
+#: src/pages/GroupPanel.tsx
+msgid "Leave chat"
+msgstr "Leave chat"
+
+#: src/components/TeamSettings.tsx
+msgid "Leave team"
+msgstr "Leave team"
+
+#: src/components/TeamSettings.tsx
+msgid "left"
+msgstr "left"
 
 #: src/components/ComputerDeviceSettings.tsx
 msgid "Let bots use this computer"
@@ -3449,13 +3524,30 @@ msgstr "Lowercase letters, numbers, hyphens and underscores, starting with a let
 msgid "Main model"
 msgstr "Main model"
 
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Make {0} the owner"
+msgstr "Make {0} the owner"
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Make {0} the owner?"
+msgstr "Make {0} the owner?"
+
+#: src/components/TeamSettings.tsx
+msgid "Make owner"
+msgstr "Make owner"
+
+#: src/components/TeamSettings.tsx
 #: src/pages/BillingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Manage"
 msgstr "Manage"
 
+#. placeholder {0}: item.name
 #. placeholder {0}: option.name
 #. placeholder {0}: providerName(choice)
+#: src/components/TeamSettings.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Manage {0}"
@@ -3550,6 +3642,7 @@ msgstr "Medium"
 msgid "Medium"
 msgstr "Medium"
 
+#: src/components/TeamSettings.tsx
 #: src/lib/identity-display.ts
 msgid "Member"
 msgstr "Member"
@@ -3817,6 +3910,10 @@ msgstr "Name this routine"
 msgid "Name your Bot"
 msgstr "Name your Bot"
 
+#: src/components/TeamSettings.tsx
+msgid "name@company.com"
+msgstr "name@company.com"
+
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
 msgstr "Needs an answer"
@@ -3890,6 +3987,10 @@ msgstr "New skill"
 #: src/pages/shell/dialogs.tsx
 msgid "New space"
 msgstr "New space"
+
+#: src/components/TeamSettings.tsx
+msgid "New team"
+msgstr "New team"
 
 #: src/pages/Board.tsx
 msgid "New ticket"
@@ -4124,6 +4225,7 @@ msgid "One-time purchase. Credits do not expire."
 msgstr "One-time purchase. Credits do not expire."
 
 #: src/components/markdown-link-prompt.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/computer-panel.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -4170,6 +4272,10 @@ msgstr "Open in full window"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Open navigation"
+
+#: src/pages/AcceptInvitation.tsx
+msgid "Open the app"
+msgstr "Open the app"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
@@ -4221,6 +4327,7 @@ msgstr "Other model…"
 msgid "Output"
 msgstr "Output"
 
+#: src/components/TeamSettings.tsx
 #: src/lib/identity-display.ts
 #: src/pages/Board.tsx
 msgid "Owner"
@@ -4306,6 +4413,11 @@ msgstr "Paused"
 msgid "Pending"
 msgstr "Pending"
 
+#: src/components/TeamSettings.tsx
+#: src/pages/GroupPanel.tsx
+msgid "People"
+msgstr "People"
+
 #: src/pages/shell/bot-panel.tsx
 msgid "Permissions"
 msgstr "Permissions"
@@ -4315,6 +4427,8 @@ msgid "Persona"
 msgstr "Persona"
 
 #: src/components/SignupSurvey.tsx
+#: src/components/TeamSettings.tsx
+#: src/components/use-workspaces.ts
 msgid "Personal"
 msgstr "Personal"
 
@@ -4585,6 +4699,14 @@ msgstr "Refreshing…"
 msgid "Registration is closed"
 msgstr "Registration is closed"
 
+#: src/components/TeamSettings.tsx
+msgid "Reject"
+msgstr "Reject"
+
+#: src/components/TeamSettings.tsx
+msgid "rejected a suggestion"
+msgstr "rejected a suggestion"
+
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Release control"
 msgstr "Release control"
@@ -4596,6 +4718,7 @@ msgstr "Reload"
 #: src/components/ApprovalRulesSettings.tsx
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/LoginFields.tsx
+#: src/components/TeamSettings.tsx
 #: src/components/VaultSettings.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -4606,15 +4729,28 @@ msgstr "Remove"
 
 #. placeholder {0}: attachment.file.name
 #. placeholder {0}: device.name
+#. placeholder {0}: member.name
 #: src/components/ComputerDeviceSettings.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/composer.tsx
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
 #. placeholder {0}: bot.name
+#. placeholder {0}: person.name
+#: src/pages/GroupPanel.tsx
+msgid "Remove {0} from the chat"
+msgstr "Remove {0} from the chat"
+
+#. placeholder {0}: bot.name
 #: src/pages/GroupPanel.tsx
 msgid "Remove {0} from the group"
 msgstr "Remove {0} from the group"
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Remove {0}?"
+msgstr "Remove {0}?"
 
 #: src/components/VaultSettings.tsx
 msgid "Remove {secretName}? Bots will no longer be able to use it."
@@ -4657,6 +4793,10 @@ msgstr "Remove skills"
 #: src/pages/RoutineEditor.tsx
 msgid "Remove webhook"
 msgstr "Remove webhook"
+
+#: src/components/TeamSettings.tsx
+msgid "removed"
+msgstr "removed"
 
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Removed"
@@ -4831,6 +4971,15 @@ msgstr "Review provider settings and test again."
 msgid "Revoke"
 msgstr "Revoke"
 
+#: src/components/TeamSettings.tsx
+msgid "Role"
+msgstr "Role"
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Role of {0}"
+msgstr "Role of {0}"
+
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Room guidance"
 msgstr "Room guidance"
@@ -4904,6 +5053,7 @@ msgstr "Saturday"
 #: src/components/AskCard.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/SkillDraftCard.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
@@ -5059,6 +5209,7 @@ msgstr "Select a bot"
 msgid "Self-hosted"
 msgstr "Self-hosted"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/composer.tsx
 msgid "Send"
 msgstr "Send"
@@ -5164,6 +5315,10 @@ msgstr "Shape {0}"
 #: src/pages/shell/bot-panel.tsx
 msgid "Shared"
 msgstr "Shared"
+
+#: src/components/TeamSettings.tsx
+msgid "shared a chat"
+msgstr "shared a chat"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Shared memory"
@@ -5444,6 +5599,10 @@ msgstr "Stop speaking"
 msgid "Stop teaching"
 msgstr "Stop teaching"
 
+#: src/components/TeamSettings.tsx
+msgid "stopped sharing a chat"
+msgstr "stopped sharing a chat"
+
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
 msgid "Stopped."
@@ -5492,6 +5651,14 @@ msgstr "Subscribe with your own AI"
 msgid "Subscription required"
 msgstr "Subscription required"
 
+#: src/components/TeamSettings.tsx
+msgid "Suggest a note"
+msgstr "Suggest a note"
+
+#: src/components/TeamSettings.tsx
+msgid "suggested a note"
+msgstr "suggested a note"
+
 #: src/lib/cron.ts
 msgid "Sunday"
 msgstr "Sunday"
@@ -5538,6 +5705,7 @@ msgstr "Teach a task"
 msgid "Teaching in progress. Stop teaching before sending a new message."
 msgstr "Teaching in progress. Stop teaching before sending a new message."
 
+#: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Team"
 msgstr "Team"
@@ -5545,6 +5713,14 @@ msgstr "Team"
 #: src/pages/shell/computer-view.tsx
 msgid "Team Computer"
 msgstr "Team Computer"
+
+#: src/components/TeamSettings.tsx
+msgid "Team name"
+msgstr "Team name"
+
+#: src/components/TeamSettings.tsx
+msgid "Teams"
+msgstr "Teams"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Teams message"
@@ -5715,6 +5891,10 @@ msgstr "This import changed. Try again."
 #: src/lib/agent-import-errors.ts
 msgid "This import was already used. Choose the files again."
 msgstr "This import was already used. Choose the files again."
+
+#: src/pages/AcceptInvitation.tsx
+msgid "This invitation is not available"
+msgstr "This invitation is not available"
 
 #: src/pages/HostComputerPrompt.tsx
 msgid "this Mac"
@@ -6122,6 +6302,10 @@ msgstr "Vault"
 msgid "Verify and add"
 msgstr "Verify and add"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr "Verify your email to join"
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"
 msgstr "Verifying…"
@@ -6327,6 +6511,10 @@ msgstr "You have control"
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
 msgstr "Your Anthropic"
+
+#: src/pages/GroupPanel.tsx
+msgid "Your bots"
+msgstr "Your bots"
 
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Your defaults"

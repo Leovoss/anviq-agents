@@ -32,6 +32,9 @@ EMAIL_FROM=Anviq Agents <no-reply@customer.example>
 SANDBOX_COMPUTER_EGRESS=restricted
 ```
 
+Set `ANVIQ_LICENSEE` to the customer's name when this instance is licensed to them. It is shown at
+the bottom of Settings, General. Leave it unset on any instance that is not a customer deployment.
+
 ## Pin the version
 
 `edge` follows every push to `main`, so a customer server must not use it. Pin both image tags to a

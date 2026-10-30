@@ -125,6 +125,10 @@ async function render(
     instance?: string;
     bots?: ComponentProps<typeof GroupSettings>["bots"];
     onOpenBot?: (botId: string) => void;
+    people?: ComponentProps<typeof GroupSettings>["people"];
+    onShare?: ComponentProps<typeof GroupSettings>["onShare"];
+    onLeave?: ComponentProps<typeof GroupSettings>["onLeave"];
+    onSetMyBots?: ComponentProps<typeof GroupSettings>["onSetMyBots"];
   } = {},
 ) {
   const onRemove = vi.fn(options.onRemove ?? (async () => undefined));
@@ -140,10 +144,21 @@ async function render(
         onClose={onClose}
         onOpenBot={options.onOpenBot}
         covered={options.covered}
+        people={options.people}
+        onShare={options.onShare}
+        onLeave={options.onLeave}
+        onSetMyBots={options.onSetMyBots}
       />,
     );
   });
   return { onRemove, onClose };
+}
+
+async function toggle(label: string) {
+  await act(async () => {
+    container.querySelector<HTMLElement>(`[role="checkbox"][aria-label="${label}"]`)?.click();
+    await Promise.resolve();
+  });
 }
 
 function button(name: string): HTMLButtonElement {
@@ -355,5 +370,85 @@ describe("GroupSettings", () => {
         .querySelector('[role="checkbox"][aria-label="Remove Researcher from the group"]')
         ?.getAttribute("aria-checked"),
     ).toBe("true");
+  });
+});
+
+describe("GroupSettings people", () => {
+  const people = [
+    { userId: "ben", name: "Ben" },
+    { userId: "cy", name: "Cy" },
+  ];
+
+  it("shows nothing about people when the space has nobody else", async () => {
+    await render({ people: [] });
+    expect(container.textContent).not.toContain("People");
+  });
+
+  it("lets the host add and remove people", async () => {
+    const onShare = vi.fn(async () => undefined);
+    await render({ people, onShare });
+    await toggle("Add Ben to the chat");
+    expect(onShare).toHaveBeenLastCalledWith(["ben"]);
+    await toggle("Add Cy to the chat");
+    expect(onShare).toHaveBeenLastCalledWith(["cy"]);
+  });
+
+  it("keeps the people already in a shared chat selected", async () => {
+    const onShare = vi.fn(async () => undefined);
+    const shared: Group = {
+      ...group,
+      canManage: true,
+      participants: [
+        { userId: "ana", name: "Ana", host: true },
+        { userId: "ben", name: "Ben", host: false },
+      ],
+    };
+    await render({ people, onShare, group: shared });
+    await toggle("Remove Ben from the chat");
+    expect(onShare).toHaveBeenLastCalledWith([]);
+  });
+
+  it("gives a guest the people and a way out, with no editing", async () => {
+    const onLeave = vi.fn(async () => undefined);
+    const shared: Group = {
+      ...group,
+      canManage: false,
+      participants: [
+        { userId: "ana", name: "Ana", host: true },
+        { userId: "ben", name: "Ben", host: false },
+      ],
+    };
+    await render({ people, onLeave, group: shared });
+    expect(container.textContent).toContain("Ben");
+    expect(container.querySelector("input")).toBeNull();
+    expect(container.textContent).not.toContain("Delete group");
+    await click("Leave chat");
+    expect(onLeave).toHaveBeenCalledOnce();
+  });
+
+  it("lets a guest choose which of their own bots join the chat", async () => {
+    const onSetMyBots = vi.fn(async () => undefined);
+    const shared: Group = {
+      ...group,
+      members: [
+        { botId: "bot-1", name: "Researcher", color: "blue", ownerUserId: "ana" },
+        { botId: "bot-2", name: "Writer", color: "green", ownerUserId: "ben" },
+      ],
+      canManage: false,
+      participants: [
+        { userId: "ana", name: "Ana", host: true },
+        { userId: "ben", name: "Ben", host: false },
+      ],
+    };
+    // The guest's own bots are the ones in their roster.
+    await render({
+      group: shared,
+      bots: [fakeBot("bot-2", "Writer", ""), fakeBot("bot-3", "Runner", "")],
+      onSetMyBots,
+    });
+    await toggle("Add Runner to the chat");
+    expect(onSetMyBots).toHaveBeenLastCalledWith(["bot-2", "bot-3"]);
+    await toggle("Remove Writer from the chat");
+    expect(onSetMyBots).toHaveBeenLastCalledWith([]);
   });
 });

@@ -1,16 +1,8 @@
 import type { NavLink } from "@anviq/contracts";
-import { ANDROID_APK_URL, IOS_APP_STORE_URL } from "@anviq/contracts";
-import {
-  AppMarkStack,
-  Button,
-  buttonVariants,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@anviq/ui-web";
+import { AppMarkStack, Button, Popover, PopoverContent, PopoverTrigger } from "@anviq/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
-  BookOpen,
+  Check,
   Download,
   FolderOpen,
   Gauge,
@@ -19,13 +11,13 @@ import {
   Plug,
   ScrollText,
   Settings,
-  Smartphone,
   SquareKanban,
   UserRound,
 } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useSidebarUpdate } from "./DesktopUpdates";
 import { IconTooltip } from "./IconTooltip";
+import type { Workspace } from "./use-workspaces";
 
 type Props = {
   mini?: boolean;
@@ -47,6 +39,7 @@ type Props = {
   onLogOut: () => void;
   signingOut: boolean;
   logOutError: string | null;
+  workspaces?: Workspace[];
 };
 
 // Marks are 24px wide, overlap by 2px, and need 2px for the outer ring.
@@ -74,6 +67,7 @@ export function SidebarFooter({
   onLogOut,
   signingOut,
   logOutError,
+  workspaces = [],
 }: Props) {
   const { t } = useLingui();
   const update = useSidebarUpdate();
@@ -141,6 +135,22 @@ export function SidebarFooter({
                 <p className="truncate text-xs text-muted-foreground">{email}</p>
               ) : null}
             </div>
+            {workspaces.length > 1 ? (
+              <div data-testid="workspace-switcher" className="mb-1 border-b border-border pb-1">
+                {workspaces.map((workspace) => (
+                  <Button
+                    key={workspace.id}
+                    variant="ghost"
+                    aria-current={workspace.current ? "true" : undefined}
+                    className="h-9 w-full justify-start gap-2.5 font-normal"
+                    onClick={workspace.open}
+                  >
+                    <span className="min-w-0 flex-1 truncate text-start">{workspace.name}</span>
+                    {workspace.current ? <Check className="size-4" strokeWidth={1.75} /> : null}
+                  </Button>
+                ))}
+              </div>
+            ) : null}
             {mini ? (
               <Button
                 variant="ghost"
@@ -167,24 +177,6 @@ export function SidebarFooter({
               <Gauge className="text-muted-foreground" strokeWidth={1.75} />
               <Trans>Usage</Trans>
             </Button>
-            <a
-              className={`${buttonVariants({ variant: "ghost" })} h-9 w-full justify-start gap-2.5 font-normal`}
-              href={/Android/i.test(navigator.userAgent) ? ANDROID_APK_URL : IOS_APP_STORE_URL}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Smartphone className="text-muted-foreground" strokeWidth={1.75} />
-              <Trans>Get the mobile app</Trans>
-            </a>
-            <a
-              className={`${buttonVariants({ variant: "ghost" })} h-9 w-full justify-start gap-2.5 font-normal`}
-              href="https://github.com/leovoss/anviq-agents/blob/main/docs/self-host.md"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <BookOpen className="text-muted-foreground" strokeWidth={1.75} />
-              <Trans>Docs</Trans>
-            </a>
             {onBoard ? (
               <Button
                 variant="ghost"

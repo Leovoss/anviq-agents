@@ -15,6 +15,7 @@ import {
   isActive,
   isRunWorking,
   memberName,
+  ownAskIds,
 } from "@anviq/core";
 import { fetchFresh, writeSaved } from "@anviq/core/query";
 import type { GroupAvatarMember } from "@anviq/ui-web";
@@ -404,10 +405,22 @@ function SpaceShell() {
       ? snapshot
       : null;
   const currentRuns = activeThreadRuns(activeSnapshot);
-  const answerableAskIds = useMemo(() => answerableAskMessageIds(activeSnapshot), [activeSnapshot]);
+  // In a chat shared by several people each bot asks its own owner, so a reader answers only
+  // for the bots they own.
+  const sharedChat = inGroup && (activeGroup?.participants?.length ?? 0) > 1;
+  const answerableAskIds = useMemo(
+    () => ownAskIds(activeSnapshot, answerableAskMessageIds(activeSnapshot), sharedChat, userId),
+    [activeSnapshot, sharedChat, userId],
+  );
   const dismissableAskIds = useMemo(
-    () => dismissableAskMessageIds(activeSnapshot, userId),
-    [activeSnapshot, userId],
+    () =>
+      ownAskIds(
+        activeSnapshot,
+        dismissableAskMessageIds(activeSnapshot, userId),
+        sharedChat,
+        userId,
+      ),
+    [activeSnapshot, sharedChat, userId],
   );
   const workingRuns = currentRuns.filter((run) => isRunWorking(run.status));
   const transcriptRunning = workingRuns.length > 0;
@@ -850,6 +863,7 @@ function SpaceShell() {
               loadingOlder={loadingOlder}
               answerableAskIds={answerableAskIds}
               dismissableAskIds={dismissableAskIds}
+              viewerUserId={userId}
               running={transcriptRunning}
               workingBots={workingBots}
               userBubble={userBubble}
