@@ -24,7 +24,7 @@ function harness(
         name: "Project",
         thread: { id: run.threadId },
         members: ["bot-a", "bot-b", "bot-c"].map((id) => ({
-          bot: { id, name: id.toUpperCase() },
+          bot: { id, name: id.toUpperCase(), userId: run.userId },
         })),
       })),
       update: vi.fn(async () => ({ id: "group-1" })),
@@ -168,7 +168,7 @@ describe("explicit group destinations", () => {
       id: "group-1",
       name: "Project",
       thread: { id: "group-thread" },
-      members: ["bot-a", "bot-b"].map((id) => ({ bot: { id, name: id } })),
+      members: ["bot-a", "bot-b"].map((id) => ({ bot: { id, name: id, userId: run.userId } })),
     });
     h.tx.run.findFirst.mockResolvedValue({
       id: run.id,
@@ -390,7 +390,35 @@ describe("explicit group destinations", () => {
       }),
     ).resolves.toMatchObject({ error: "group is no longer available" });
     expect(h.messageCreate).not.toHaveBeenCalled();
-    expect(h.tx.$queryRaw.mock.calls[0]?.slice(1)).toEqual(["group-1", run.spaceId, run.userId]);
+    expect(h.tx.$queryRaw.mock.calls[0]?.slice(1)).toEqual(["group-1", run.spaceId]);
+  });
+
+  it("queues the next stage for the next bot's own owner when they differ", async () => {
+    const h = privateTurn();
+    h.tx.chatGroup.findFirst.mockResolvedValue({
+      id: "group-1",
+      name: "Project",
+      thread: { id: "group-thread" },
+      members: [
+        { bot: { id: "bot-a", name: "bot-a", userId: run.userId } },
+        { bot: { id: "bot-b", name: "bot-b", userId: "someone-else" } },
+      ],
+    });
+    await handoffToGroupBot(h.deps as never, run, "group-1", {
+      bot_id: "bot-b",
+      message: "Please review",
+    });
+    expect(h.tx.task.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ userId: "someone-else" }) }),
+    );
+    expect(h.runCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          userId: "someone-else",
+          triggeredByUserId: run.userId,
+        }),
+      }),
+    );
   });
 
   it("requires both bots to be active members of the destination", async () => {
@@ -400,7 +428,7 @@ describe("explicit group destinations", () => {
         id: "group-1",
         name: "Project",
         thread: { id: "group-thread" },
-        members: memberIds.map((id) => ({ bot: { id, name: id } })),
+        members: memberIds.map((id) => ({ bot: { id, name: id, userId: run.userId } })),
       });
       await expect(
         handoffToGroupBot(h.deps as never, run, "group-1", {
@@ -425,7 +453,7 @@ describe("explicit group destinations", () => {
   });
 });
 
-it("discovers only active groups the bot belongs to under the same owner and space", async () => {
+it("discovers only active groups the bot belongs to in the same space", async () => {
   const findMany = vi.fn(async () => []);
   await expect(
     loadBotGroupDirectory({ chatGroup: { findMany } } as unknown as PrismaClient, run),
@@ -434,7 +462,6 @@ it("discovers only active groups the bot belongs to under the same owner and spa
     expect.objectContaining({
       where: {
         spaceId: run.spaceId,
-        userId: run.userId,
         archivedAt: null,
         members: { some: { botId: run.botId, bot: { archivedAt: null } } },
         thread: { isNot: null },

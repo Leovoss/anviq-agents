@@ -537,7 +537,16 @@ export function threadsRoutes(ctx: RouterContext) {
         return { ok: true as const };
       }),
       answer: authed.threads.answer.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
+          participant: true,
+        });
+        // In a shared chat each bot asks its own owner, so only that person can answer.
+        if (target.kind === "group" && target.shared) {
+          const asked = await deps.prisma.run.count({
+            where: { id: input.runId, threadId: target.threadId, userId: context.actor.userId },
+          });
+          if (asked === 0) throw new IsolationError();
+        }
         const answered = await deps.events
           .answerRunInput({
             spaceId: context.actor.spaceId,
