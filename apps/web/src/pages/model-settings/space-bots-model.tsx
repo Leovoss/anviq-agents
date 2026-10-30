@@ -72,7 +72,7 @@ export function SpaceBotsModelNotice({ refreshKey }: { refreshKey?: unknown }) {
     <section
       data-testid="space-bots-model"
       aria-labelledby="space-bots-model-title"
-      className="mt-6 border-t border-border pt-5"
+      className="mb-6 mt-6 border-t border-border pt-5"
     >
       <h3 id="space-bots-model-title" className="text-[13.5px] text-muted-foreground">
         <Trans>Bot models</Trans>
