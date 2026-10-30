@@ -59,6 +59,7 @@ export const MessageView = memo(function MessageView({
   onRefresh,
   onBotChanged,
   onAddRoutine,
+  senderName,
   voiceReady,
   speaking,
   onSpeak,
@@ -89,6 +90,8 @@ export const MessageView = memo(function MessageView({
   peerReplies?: "collapsed" | "expanded";
   onTogglePeerReplies: (markerId: string) => void;
   speakerName?: string;
+  /** The person who wrote this message, when it is someone other than the viewer. */
+  senderName?: string;
   memberName?: (botId: string | undefined) => string | undefined;
   peerBot: (botId: string) => { name?: string; color: string; status?: string } | undefined;
   replyParent?: ThreadMessage;
@@ -158,6 +161,11 @@ export const MessageView = memo(function MessageView({
             size={22}
           />
           {speakerName}
+        </div>
+      ) : null}
+      {senderName ? (
+        <div className="mb-1 text-end text-[13px] font-medium text-muted-foreground" dir="auto">
+          {senderName}
         </div>
       ) : null}
       <ReplyLine
