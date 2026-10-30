@@ -609,6 +609,10 @@ msgstr "נוסף"
 msgid "Adding…"
 msgstr "מוסיף…"
 
+#: src/components/TeamSettings.tsx
+msgid "Admin"
+msgstr ""
+
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
@@ -939,6 +943,7 @@ msgstr "Avatar Studio"
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Board.tsx
 #: src/pages/NavLinkPage.tsx
@@ -1106,6 +1111,7 @@ msgstr "לא ניתן לקרוא תמונות"
 #: src/components/markdown-link-prompt.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
+#: src/components/TeamSettings.tsx
 #: src/components/VaultSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Artifacts.tsx
@@ -1949,6 +1955,10 @@ msgstr "לא ניתן לטעון את אפשרויות ההתחברות"
 msgid "Could not load skill"
 msgstr "לא ניתן לטעון את המיומנות"
 
+#: src/pages/AcceptInvitation.tsx
+msgid "Could not load the invitation"
+msgstr ""
+
 #: src/pages/Artifacts.tsx
 msgid "Could not load this artifact."
 msgstr "לא ניתן לטעון את התוצר הזה."
@@ -2215,6 +2225,7 @@ msgstr ""
 msgid "Couldn't update your wallet"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
 #: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
@@ -2627,6 +2638,7 @@ msgstr "עריכת שם"
 msgid "Edit Profile"
 msgstr "עריכת פרופיל"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "אימייל"
@@ -3216,6 +3228,14 @@ msgstr "יחידת המרווח"
 msgid "Invalid code"
 msgstr "קוד לא תקין"
 
+#: src/components/TeamSettings.tsx
+msgid "Invitations"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Invite"
+msgstr ""
+
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Isolated"
@@ -3252,6 +3272,11 @@ msgstr "המודל שלו השתנה מאז הייבוא, ולכן הוא נשא
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Its model goes back to before the import."
 msgstr "המודל שלו יחזור לזה שלפני הייבוא."
+
+#: src/components/TeamSettings.tsx
+#: src/pages/AcceptInvitation.tsx
+msgid "Join"
+msgstr ""
 
 #: src/pages/shell/transcript.tsx
 msgid "Jump to latest"
@@ -3306,6 +3331,15 @@ msgstr "מאוחר יותר"
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Leave"
 msgstr "יציאה"
+
+#. placeholder {0}: team.name
+#: src/components/TeamSettings.tsx
+msgid "Leave {0}?"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Leave team"
+msgstr ""
 
 #: src/components/ComputerDeviceSettings.tsx
 msgid "Let bots use this computer"
@@ -3441,13 +3475,30 @@ msgstr "אותיות לטיניות קטנות, ספרות, מקפים וקוו�
 msgid "Main model"
 msgstr "מודל ראשי"
 
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Make {0} the owner"
+msgstr ""
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Make {0} the owner?"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Make owner"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
 #: src/pages/BillingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Manage"
 msgstr "ניהול"
 
+#. placeholder {0}: item.name
 #. placeholder {0}: option.name
 #. placeholder {0}: providerName(choice)
+#: src/components/TeamSettings.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/SettingsOverlay.tsx
 msgid "Manage {0}"
@@ -3542,6 +3593,7 @@ msgstr "בינוני"
 msgid "Medium"
 msgstr "בינוני"
 
+#: src/components/TeamSettings.tsx
 #: src/lib/identity-display.ts
 msgid "Member"
 msgstr "חבר"
@@ -3809,6 +3861,10 @@ msgstr "שם לרוטינה"
 msgid "Name your Bot"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "name@company.com"
+msgstr ""
+
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
 msgstr "ממתין לתשובה"
@@ -3882,6 +3938,10 @@ msgstr "מיומנות חדשה"
 #: src/pages/shell/dialogs.tsx
 msgid "New space"
 msgstr "מרחב חדש"
+
+#: src/components/TeamSettings.tsx
+msgid "New team"
+msgstr ""
 
 #: src/pages/Board.tsx
 msgid "New ticket"
@@ -4116,6 +4176,7 @@ msgid "One-time purchase. Credits do not expire."
 msgstr ""
 
 #: src/components/markdown-link-prompt.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/computer-panel.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -4162,6 +4223,10 @@ msgstr "פתיחה בחלון מלא"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "פתיחת הניווט"
+
+#: src/pages/AcceptInvitation.tsx
+msgid "Open the app"
+msgstr ""
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
@@ -4213,6 +4278,7 @@ msgstr "מודל אחר…"
 msgid "Output"
 msgstr "פלט"
 
+#: src/components/TeamSettings.tsx
 #: src/lib/identity-display.ts
 #: src/pages/Board.tsx
 msgid "Owner"
@@ -4298,6 +4364,10 @@ msgstr "מושהה"
 msgid "Pending"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "People"
+msgstr ""
+
 #: src/pages/shell/bot-panel.tsx
 msgid "Permissions"
 msgstr "הרשאות"
@@ -4307,6 +4377,8 @@ msgid "Persona"
 msgstr "פרסונה"
 
 #: src/components/SignupSurvey.tsx
+#: src/components/TeamSettings.tsx
+#: src/components/use-workspaces.ts
 msgid "Personal"
 msgstr ""
 
@@ -4588,6 +4660,7 @@ msgstr "טעינה מחדש"
 #: src/components/ApprovalRulesSettings.tsx
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/LoginFields.tsx
+#: src/components/TeamSettings.tsx
 #: src/components/VaultSettings.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -4598,7 +4671,9 @@ msgstr "הסרה"
 
 #. placeholder {0}: attachment.file.name
 #. placeholder {0}: device.name
+#. placeholder {0}: member.name
 #: src/components/ComputerDeviceSettings.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/composer.tsx
 msgid "Remove {0}"
 msgstr "הסרת {0}"
@@ -4606,6 +4681,11 @@ msgstr "הסרת {0}"
 #. placeholder {0}: bot.name
 #: src/pages/GroupPanel.tsx
 msgid "Remove {0} from the group"
+msgstr ""
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Remove {0}?"
 msgstr ""
 
 #: src/components/VaultSettings.tsx
@@ -4822,6 +4902,15 @@ msgstr "יש לבדוק את הגדרות הספק ולבדוק שוב."
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "ביטול הרשאה"
+
+#: src/components/TeamSettings.tsx
+msgid "Role"
+msgstr ""
+
+#. placeholder {0}: member.name
+#: src/components/TeamSettings.tsx
+msgid "Role of {0}"
+msgstr ""
 
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Room guidance"
@@ -5051,6 +5140,7 @@ msgstr "בחירת בוט"
 msgid "Self-hosted"
 msgstr "באירוח עצמי"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/composer.tsx
 msgid "Send"
 msgstr "שליחה"
@@ -5530,6 +5620,7 @@ msgstr "לימוד משימה"
 msgid "Teaching in progress. Stop teaching before sending a new message."
 msgstr "לימוד בתהליך. יש להפסיק את הלימוד לפני שליחת הודעה חדשה."
 
+#: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Team"
 msgstr "צוות"
@@ -5537,6 +5628,14 @@ msgstr "צוות"
 #: src/pages/shell/computer-view.tsx
 msgid "Team Computer"
 msgstr "מחשב הצוות"
+
+#: src/components/TeamSettings.tsx
+msgid "Team name"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Teams"
+msgstr ""
 
 #: src/pages/RoutineEditor.tsx
 msgid "Teams message"
@@ -5707,6 +5806,10 @@ msgstr "הייבוא הזה השתנה. יש לנסות שוב."
 #: src/lib/agent-import-errors.ts
 msgid "This import was already used. Choose the files again."
 msgstr "הייבוא הזה כבר נוצל. יש לבחור את הקבצים שוב."
+
+#: src/pages/AcceptInvitation.tsx
+msgid "This invitation is not available"
+msgstr ""
 
 #: src/pages/HostComputerPrompt.tsx
 msgid "this Mac"
@@ -6113,6 +6216,10 @@ msgstr "כספת"
 #: src/pages/PluginsOverlay.tsx
 msgid "Verify and add"
 msgstr "אימות והוספה"
+
+#: src/pages/AcceptInvitation.tsx
+msgid "Verify your email to join"
+msgstr ""
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Verifying…"

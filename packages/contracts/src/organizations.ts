@@ -13,6 +13,7 @@ export const TeamSchema = z.object({
   name: z.string(),
   role: OrganizationRoleSchema,
   memberCount: z.number().int().nonnegative(),
+  spaceId: Id,
 });
 export type Team = z.infer<typeof TeamSchema>;
 

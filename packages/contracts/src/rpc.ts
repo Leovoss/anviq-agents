@@ -298,6 +298,7 @@ export const appContract = {
   },
   organizations: {
     list: oc.output(z.array(TeamSchema)),
+    personalSpace: oc.output(z.object({ spaceId: Id.nullable() })),
     create: oc.input(CreateTeamInput).output(CreateTeamOutput),
     members: oc.input(TeamIdInput).output(z.array(TeamMemberSchema)),
     setRole: oc.input(SetTeamRoleInput).output(z.object({ ok: z.literal(true) })),

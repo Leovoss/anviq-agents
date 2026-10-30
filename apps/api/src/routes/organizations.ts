@@ -11,6 +11,7 @@ import {
   listOrganizationMembers,
   listTeams,
   OrganizationError,
+  personalSpaceId,
   removeMember,
   runAsSystem,
   setMemberRole,
@@ -55,6 +56,9 @@ export function organizationsRoutes(ctx: RouterContext) {
     organizations: {
       list: authed.organizations.list.handler(({ context }) =>
         system(() => listTeams(prisma, context.actor.userId)),
+      ),
+      personalSpace: authed.organizations.personalSpace.handler(({ context }) =>
+        system(async () => ({ spaceId: await personalSpaceId(prisma, context.actor.userId) })),
       ),
       create: authed.organizations.create.handler(({ context, input }) =>
         system(() =>
