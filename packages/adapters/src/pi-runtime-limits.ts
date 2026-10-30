@@ -21,14 +21,14 @@ export function modelStreamMaxRetries(): number {
 
 /** Smallest per-result bound, used when the model's context window is unknown. */
 export const TOOL_RESULT_TEXT_LIMIT = 12_000;
-const TOOL_RESULT_TEXT_CEILING = 120_000;
+const TOOL_RESULT_TEXT_CEILING = 250_000;
 
-/** About 30% of the window in characters, so a large-window model reads a long result whole. */
+/** About 12% of the window (half its size in characters), so a large-window model reads a long result whole. */
 export function toolResultTextLimit(contextWindow?: number): number {
   if (!contextWindow || !Number.isFinite(contextWindow)) return TOOL_RESULT_TEXT_LIMIT;
   return Math.min(
     TOOL_RESULT_TEXT_CEILING,
-    Math.max(TOOL_RESULT_TEXT_LIMIT, Math.floor(contextWindow * 0.3)),
+    Math.max(TOOL_RESULT_TEXT_LIMIT, Math.floor(contextWindow * 0.5)),
   );
 }
 

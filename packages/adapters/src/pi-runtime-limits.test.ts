@@ -185,7 +185,7 @@ describe("toolResultTextLimit", () => {
   it("scales with the context window within fixed bounds", () => {
     expect(toolResultTextLimit()).toBe(TOOL_RESULT_TEXT_LIMIT);
     expect(toolResultTextLimit(8_000)).toBe(TOOL_RESULT_TEXT_LIMIT);
-    expect(toolResultTextLimit(200_000)).toBe(60_000);
-    expect(toolResultTextLimit(2_000_000)).toBe(120_000);
+    expect(toolResultTextLimit(200_000)).toBe(100_000);
+    expect(toolResultTextLimit(2_000_000)).toBe(250_000);
   });
 });
