@@ -124,7 +124,7 @@ export function PluginRow({
           ) : null}
         </span>
       </button>
-      <Button type="button" variant="secondary" size="sm" onClick={onOpen}>
+      <Button type="button" variant="secondary" size="sm" className="min-w-20" onClick={onOpen}>
         {installed ? <Trans>Added</Trans> : <Trans>Add</Trans>}
       </Button>
     </div>
