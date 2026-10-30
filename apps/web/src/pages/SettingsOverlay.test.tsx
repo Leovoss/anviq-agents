@@ -37,6 +37,7 @@ vi.mock("@anviq/ui-web", () => ({
 vi.mock("./AccountSettingsOverlay", () => ({
   ComputerSettingsPanel: () => null,
   GeneralSettingsPanels: () => null,
+  LicenseNotice: () => null,
   UpdatesSettingsPanel: () => null,
   UsageSettingsPanel: () => null,
 }));
