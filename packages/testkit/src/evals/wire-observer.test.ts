@@ -96,6 +96,7 @@ it("bounds records, declares unsupported evidence and propagates aborts", async 
 });
 
 it("observes actual Pi post-selection JSON controls through twelve dependent compressed results", async () => {
+  vi.stubEnv("TOOL_RESULT_MAX_CHARS", "12000");
   const services = new EvalServices();
   services.enableDiagnosticChain();
   const server = await startModelEmulator({

@@ -1676,6 +1676,15 @@ export const ServerUpdateRequestSchema = z.object({
 });
 export type ServerUpdateRequest = z.infer<typeof ServerUpdateRequestSchema>;
 
+/** Shown at the bottom of Settings, General on every instance. */
+export const ANVIQ_COPYRIGHT_LINE = "© 2026 Anviq LLC. All rights reserved.";
+export const ANVIQ_ADDRESS_LINE = "30 N Gould St #69062, Sheridan, WY 82801, USA";
+export const LICENSEE_MAX_LENGTH = 80;
+
+export function licensedToLine(licensee: string): string {
+  return `Licensed to ${licensee}`;
+}
+
 export const MeSchema = z.object({
   maxUploadSizeBytes: z.number().int().positive().optional(),
   ticketBoardEnabled: z.boolean(),
@@ -1711,6 +1720,8 @@ export const MeSchema = z.object({
   needsSignupSurvey: z.boolean().optional(),
   /** The wallet bots can spend from, when this deployment offers one. Absent from older servers. */
   paymentWalletProvider: z.object({ id: z.string(), name: z.string() }).nullable().optional(),
+  /** Who this deployment is licensed to. Absent when ANVIQ_LICENSEE is unset. */
+  licensee: z.string().max(LICENSEE_MAX_LENGTH).optional(),
 });
 export type Me = z.infer<typeof MeSchema>;
 
