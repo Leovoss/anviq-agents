@@ -100,7 +100,7 @@ export function ConfirmIdentityDialog({
           }}
         >
           {security?.hasPassword ? (
-            <div>
+            <div className="space-y-1.5">
               <Label htmlFor="confirm-identity-password">
                 <Trans>Password</Trans>
               </Label>
@@ -143,7 +143,7 @@ export function ConfirmIdentityDialog({
                 </Button>
               ) : null}
               {security.emailDeletion && sent ? (
-                <div>
+                <div className="space-y-1.5">
                   <Label htmlFor="confirm-identity-code">
                     <Trans>Code</Trans>
                   </Label>
