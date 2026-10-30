@@ -2267,7 +2267,7 @@ describe("Pi connector tool dispatch", () => {
       description: "Large skill",
       source: "user",
       readOnly: false,
-      content: `---\nname: large-skill\n---\n${"1. Step kept for skill_update.\n".repeat(2500)}`,
+      content: `---\nname: large-skill\n---\n${"1. Step kept for skill_update.\n".repeat(600)}`,
     };
     fakeAgentState.invoke = { name: "skill_read", args: { name: skill.name } };
     const runtime = new PiAgentRuntime();
@@ -2308,7 +2308,7 @@ describe("Pi connector tool dispatch", () => {
 
   it("delivers full child instructions and their version past the tool result bound", async () => {
     const listing = {
-      bot: { id: "child", instructionsVersion: "v2", instructions: "x".repeat(80_000) },
+      bot: { id: "child", instructionsVersion: "v2", instructions: "x".repeat(20_000) },
       bots: [],
       groups: [],
       sections: [],

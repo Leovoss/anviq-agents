@@ -24,6 +24,7 @@ import {
   clipToolResultContent,
   clipToolResultText,
   TOOL_RESULT_TEXT_LIMIT,
+  toolResultTextLimit,
 } from "./pi-runtime-limits.js";
 import type { RuntimeModelTarget } from "./pi-runtime-models.js";
 import { executeSubagent } from "./pi-runtime-subagent.js";
@@ -436,6 +437,7 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
                           host.request.contextStrategy,
                           tool.name,
                           args,
+                          toolResultTextLimit(host.model.contextWindow),
                         ),
                       },
                     ],
@@ -470,7 +472,10 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
                 );
                 if (isAgentToolExecutionResult(result)) {
                   if (isToolPauseResult(result)) host.pausePending = true;
-                  return boundAgentToolResult(result);
+                  return boundAgentToolResult(
+                    result,
+                    toolResultTextLimit(host.model.contextWindow),
+                  );
                 }
                 return {
                   content: [
@@ -481,6 +486,7 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
                         host.request.contextStrategy,
                         tool.name,
                         args,
+                        toolResultTextLimit(host.model.contextWindow),
                       ),
                     },
                   ],
@@ -498,7 +504,10 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
               };
             })();
             if (VERBATIM_TOOL_RESULTS.has(tool.name)) return result as AgentToolResult<unknown>;
-            return boundAgentToolResult(result as AgentToolResult<unknown>);
+            return boundAgentToolResult(
+              result as AgentToolResult<unknown>,
+              toolResultTextLimit(host.model.contextWindow),
+            );
           } catch (error) {
             failure = error;
             throw error;
@@ -563,25 +572,26 @@ export function serializeToolResult(
   strategy: AgentRunRequest["contextStrategy"],
   name: string,
   args: Record<string, unknown>,
+  limit = TOOL_RESULT_TEXT_LIMIT,
 ) {
   try {
     const text = JSON.stringify(result);
     if (!text) return "ok";
     // skill-tools.ts already bounds skill content; the context budget selector may still shorten it.
-    if (text.length <= TOOL_RESULT_TEXT_LIMIT || VERBATIM_TOOL_RESULTS.has(name)) return text;
+    if (text.length <= limit || VERBATIM_TOOL_RESULTS.has(name)) return text;
     return (strategy ?? DEFAULT_CONTEXT_STRATEGY) === "current"
-      ? clipToolResultText(text)
-      : shortenToolResultText(text, TOOL_RESULT_TEXT_LIMIT, { name, arguments: args });
+      ? clipToolResultText(text, limit)
+      : shortenToolResultText(text, limit, { name, arguments: args });
   } catch {
     return "ok";
   }
 }
 
-function boundAgentToolResult<T>(result: AgentToolResult<T>): AgentToolResult<T> {
+function boundAgentToolResult<T>(result: AgentToolResult<T>, limit: number): AgentToolResult<T> {
   if (!result || !Array.isArray(result.content)) return result;
   return {
     ...result,
-    content: clipToolResultContent(result.content),
+    content: clipToolResultContent(result.content, limit),
   };
 }
 

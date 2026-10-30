@@ -12,7 +12,7 @@ import {
 } from "./pi-runtime-errors.js";
 import type { FallbackStreamState } from "./pi-runtime-fallback.js";
 import { fallbackAwareModelStream } from "./pi-runtime-fallback.js";
-import { clipToolResultText } from "./pi-runtime-limits.js";
+import { clipToolResultText, toolResultTextLimit } from "./pi-runtime-limits.js";
 import {
   cardOutputCeiling,
   modelForCompletion,
@@ -341,7 +341,7 @@ export async function executeSubagent(
       budgetMessage && streamed.trim()
         ? `${streamed.trim()}\n\n${budgetMessage}`
         : budgetMessage || streamed || assistantText(nested.state.messages.at(-1)) || "done.";
-    const clipped = clipToolResultText(result);
+    const clipped = clipToolResultText(result, toolResultTextLimit(host.model.contextWindow));
     host.queue.push({
       type: "subagent",
       agentId,
