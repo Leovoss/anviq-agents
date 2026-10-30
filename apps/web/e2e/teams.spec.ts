@@ -25,6 +25,6 @@ test("creating a team opens its space and invites a colleague", async ({ page },
   await team.getByRole("button", { name: "Manage Acme" }).click();
   await team.getByLabel("Email").fill(`colleague-${stamp}@anviq.test`);
   await team.getByRole("button", { name: "Send" }).click();
-  await expect(team.getByText(`colleague-${stamp}@anviq.test`)).toBeVisible();
+  await expect(team.getByText(`colleague-${stamp}@anviq.test`, { exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "team-settings");
 });
