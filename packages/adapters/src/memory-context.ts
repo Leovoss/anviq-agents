@@ -14,11 +14,15 @@ export async function loadAgentMemoryContext(
   context: AdapterContext,
   maxBytes = MAX_AGENT_MEMORY_BYTES,
   companyMemory?: string,
+  includePrivate = true,
 ): Promise<string | undefined> {
-  const [botMemory, userMemory] = await Promise.all([
-    memory.read({ scope: "bot", botId }, context),
-    memory.read({ scope: "user" }, context),
-  ]);
+  const empty = { documents: [] };
+  const [botMemory, userMemory] = includePrivate
+    ? await Promise.all([
+        memory.read({ scope: "bot", botId }, context),
+        memory.read({ scope: "user" }, context),
+      ])
+    : [empty, empty];
   const documents: ScopedMemoryDocument[] = [
     ...botMemory.documents.map((document) => ({ ...document, scope: "bot" as const })),
     ...userMemory.documents.map((document) => ({ ...document, scope: "user" as const })),

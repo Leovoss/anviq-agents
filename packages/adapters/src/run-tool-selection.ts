@@ -57,6 +57,8 @@ export function selectBuiltinToolsForRun(options: {
   groupId: string | null;
   trigger: string;
   semanticMemoryEnabled: boolean;
+  /** Other people read this chat, so the bot's own notes and scratchpad are not offered. */
+  sharedChat?: boolean;
   /** The configured provider can forget individual facts. */
   semanticMemoryForgets?: boolean;
   cloudAgentEnabled?: boolean;
@@ -128,6 +130,9 @@ export function selectBuiltinToolsForRun(options: {
         tool.name !== "call_user") &&
       (options.historyRetrievalEnabled ||
         !["search_history", "read_history"].includes(tool.name)) &&
+      (!options.sharedChat ||
+        (!["remember", "save_memory", "recall_memory", "forget_memory"].includes(tool.name) &&
+          !tool.name.startsWith("scratchpad_"))) &&
       (!options.messagingChannelRun ||
         (![
           "remember",

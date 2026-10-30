@@ -33,6 +33,23 @@ describe("agent memory context", () => {
     expect(result!.indexOf("user fact")).toBeLessThan(result!.indexOf("bot fact"));
   });
 
+  it("leaves the bot's own and the user's notes out when asked", async () => {
+    const read = vi.fn(async () =>
+      snapshot([document("d", "a.md", "private fact", 1, "2026-08-15T12:00:00.000Z")]),
+    );
+    const result = await loadAgentMemoryContext(
+      storeWith(read),
+      "bot-1",
+      context,
+      undefined,
+      "Company rule.",
+      false,
+    );
+    expect(read).not.toHaveBeenCalled();
+    expect(result).toContain("Company rule.");
+    expect(result).not.toContain("private fact");
+  });
+
   it("puts company memory first and returns it even when nothing else is saved", async () => {
     const read = vi.fn(async () => snapshot([]));
     const alone = await loadAgentMemoryContext(

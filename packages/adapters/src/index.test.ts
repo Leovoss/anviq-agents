@@ -238,6 +238,18 @@ describe("builtin tools", () => {
         disabledBuiltinTools: ticketNames,
       }).map((tool) => tool.name),
     ).toEqual(disabled);
+    const privateNotes = ["remember", "save_memory", "recall_memory", "forget_memory"];
+    const alone = selectBuiltinToolsForRun({ ...options, semanticMemoryForgets: true }).map(
+      (tool) => tool.name,
+    );
+    const inSharedChat = selectBuiltinToolsForRun({
+      ...options,
+      semanticMemoryForgets: true,
+      sharedChat: true,
+    }).map((tool) => tool.name);
+    expect(alone).toEqual(expect.arrayContaining(privateNotes));
+    expect(inSharedChat.filter((name) => privateNotes.includes(name))).toEqual([]);
+    expect(inSharedChat.some((name) => name.startsWith("scratchpad_"))).toBe(false);
     const purchaseNames = ["request_purchase", "purchase_status", "paid_request"];
     expect(enabled.filter((name) => purchaseNames.includes(name))).toEqual([]);
     expect(
