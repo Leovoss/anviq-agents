@@ -145,6 +145,20 @@ import {
 } from "./integration-settings.js";
 import { ModelHeadersSchema } from "./model-headers.js";
 import { ModelRoleSchema, ModelRoleUpdateSchema, ModelRoleViewSchema } from "./model-roles.js";
+import {
+  AcceptInvitationOutput,
+  CreateTeamInput,
+  CreateTeamOutput,
+  InvitationIdInput,
+  InviteToTeamInput,
+  MyTeamInvitationSchema,
+  SetTeamRoleInput,
+  TeamIdInput,
+  TeamInvitationSchema,
+  TeamMemberInput,
+  TeamMemberSchema,
+  TeamSchema,
+} from "./organizations.js";
 import { PaymentWalletStatusSchema } from "./payments.js";
 import { MessageReactionSchema } from "./reactions.js";
 import { RoutineWatchSchema } from "./routine-watch.js";
@@ -281,6 +295,20 @@ export const appContract = {
       .output(MeSchema),
     /** Saves a detected timezone only while none is saved, so it never replaces a choice. */
     adoptTimezone: oc.input(z.object({ timezone: TimeZoneSchema })).output(MeSchema),
+  },
+  organizations: {
+    list: oc.output(z.array(TeamSchema)),
+    create: oc.input(CreateTeamInput).output(CreateTeamOutput),
+    members: oc.input(TeamIdInput).output(z.array(TeamMemberSchema)),
+    setRole: oc.input(SetTeamRoleInput).output(z.object({ ok: z.literal(true) })),
+    transferOwnership: oc.input(TeamMemberInput).output(z.object({ ok: z.literal(true) })),
+    removeMember: oc.input(TeamMemberInput).output(z.object({ ok: z.literal(true) })),
+    leave: oc.input(TeamIdInput).output(z.object({ ok: z.literal(true) })),
+    invitations: oc.input(TeamIdInput).output(z.array(TeamInvitationSchema)),
+    invite: oc.input(InviteToTeamInput).output(TeamInvitationSchema),
+    cancelInvitation: oc.input(InvitationIdInput).output(z.object({ ok: z.literal(true) })),
+    myInvitations: oc.output(z.array(MyTeamInvitationSchema)),
+    acceptInvitation: oc.input(InvitationIdInput).output(AcceptInvitationOutput),
   },
   spaces: {
     list: oc.output(SpaceNavigationSchema),

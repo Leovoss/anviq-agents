@@ -686,6 +686,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
   reconciler?.start();
 
   const router = createRouter({
+    email,
     speechSummary:
       env.voiceSummaryMinChars === undefined
         ? undefined
