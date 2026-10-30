@@ -47,6 +47,7 @@ function fixture(activeIds: string[]) {
   };
   const prisma = {
     bot: { findMany: vi.fn().mockResolvedValue(owned) },
+    chatGroupMember: { findMany: vi.fn().mockResolvedValue([]) },
     $transaction: async (run: (client: typeof tx) => unknown) => run(tx),
   };
   return { repos: createGroupRepos(prisma as unknown as PrismaClient), write, remove, create };
