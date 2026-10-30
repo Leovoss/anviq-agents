@@ -14,7 +14,7 @@ import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   IsolationError,
-  lockOwnedGroup,
+  lockGroupOfSpace,
   touchGroupUpdatedAt,
 } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
@@ -38,19 +38,19 @@ export async function handoffToGroupBot(
   }
   const committed = await deps.prisma.$transaction(async (tx) => {
     try {
-      await lockOwnedGroup(tx, run, groupId);
+      await lockGroupOfSpace(tx, run.spaceId, groupId);
     } catch (error) {
       if (error instanceof IsolationError)
         return { error: "group is no longer available" } as const;
       throw error;
     }
     const group = await tx.chatGroup.findFirst({
-      where: { id: groupId, spaceId: run.spaceId, userId: run.userId, archivedAt: null },
+      where: { id: groupId, spaceId: run.spaceId, archivedAt: null },
       include: {
         thread: { select: { id: true } },
         members: {
           where: { bot: { archivedAt: null } },
-          include: { bot: { select: { id: true, name: true } } },
+          include: { bot: { select: { id: true, name: true, userId: true } } },
           orderBy: { createdAt: "asc" },
         },
       },
@@ -172,12 +172,14 @@ export async function handoffToGroupBot(
       runId: inGroup ? run.id : undefined,
       clientNonce: deliveryKey,
     });
+    // The next bot acts for its own owner; when that is someone else, the source's owner is asking.
+    const targetOwner = target.userId;
     const task = await tx.task.create({
       data: {
         spaceId: run.spaceId,
         botId: targetId,
         threadId: targetThreadId,
-        userId: run.userId,
+        userId: targetOwner,
         prompt: text,
         status: "queued",
       },
@@ -188,7 +190,8 @@ export async function handoffToGroupBot(
         botId: targetId,
         threadId: targetThreadId,
         taskId: task.id,
-        userId: run.userId,
+        userId: targetOwner,
+        triggeredByUserId: targetOwner === run.userId ? undefined : run.userId,
         status: "queued",
         trigger: "follow_up",
         sourceMessageId: message.id,
@@ -270,7 +273,6 @@ export async function loadBotGroupDirectory(
 ): Promise<string | undefined> {
   const groups = await prisma.chatGroup.findMany({
     where: {
-      userId: actor.userId,
       spaceId: actor.spaceId,
       archivedAt: null,
       members: { some: { botId: actor.botId, bot: { archivedAt: null } } },

@@ -476,6 +476,7 @@ msgstr "Actividad"
 msgid "Add"
 msgstr "Agregar"
 
+#. placeholder {0}: bot.name
 #. placeholder {0}: person.name
 #: src/pages/GroupPanel.tsx
 msgid "Add {0} to the chat"
@@ -4743,6 +4744,7 @@ msgstr "Quitar"
 msgid "Remove {0}"
 msgstr "Quitar {0}"
 
+#. placeholder {0}: bot.name
 #. placeholder {0}: person.name
 #: src/pages/GroupPanel.tsx
 msgid "Remove {0} from the chat"
@@ -6517,6 +6519,10 @@ msgstr "Tienes el control"
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
 msgstr "Tu Anthropic"
+
+#: src/pages/GroupPanel.tsx
+msgid "Your bots"
+msgstr ""
 
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Your defaults"

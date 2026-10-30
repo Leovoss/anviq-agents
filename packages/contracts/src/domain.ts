@@ -151,6 +151,8 @@ export const GroupMemberSchema = z.object({
   name: z.string(),
   color: z.string(),
   status: z.string().optional(),
+  /** The person who owns this bot, set in a chat shared with other people. */
+  ownerUserId: Id.optional(),
 });
 export type GroupMember = z.infer<typeof GroupMemberSchema>;
 

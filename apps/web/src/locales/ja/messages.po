@@ -476,6 +476,7 @@ msgstr "アクティビティ"
 msgid "Add"
 msgstr "追加"
 
+#. placeholder {0}: bot.name
 #. placeholder {0}: person.name
 #: src/pages/GroupPanel.tsx
 msgid "Add {0} to the chat"
@@ -4743,6 +4744,7 @@ msgstr "削除"
 msgid "Remove {0}"
 msgstr "{0}を削除"
 
+#. placeholder {0}: bot.name
 #. placeholder {0}: person.name
 #: src/pages/GroupPanel.tsx
 msgid "Remove {0} from the chat"
@@ -6517,6 +6519,10 @@ msgstr "あなたが操作中"
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
 msgstr "お使いのAnthropic"
+
+#: src/pages/GroupPanel.tsx
+msgid "Your bots"
+msgstr ""
 
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Your defaults"

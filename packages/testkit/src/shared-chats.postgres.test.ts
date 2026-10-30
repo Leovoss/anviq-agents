@@ -30,6 +30,7 @@ describeWithDatabase("shared chats", () => {
   let groupId: string;
   let privateGroupId: string;
   let botIds: string[];
+  let guestBotId: string;
 
   const spoken = (page: MessagePage, text: string) =>
     page.messages.find((message) => JSON.stringify(message.blocks).includes(text));
@@ -196,8 +197,70 @@ describeWithDatabase("shared chats", () => {
     await harness.denied(dee, "threads/messages", { groupId: privateGroupId });
   });
 
+  it("lets a guest bring their own bot, which answers for them and asks them", async () => {
+    const bot = await harness.ok<{ id: string }>(ben, "bots/create", {
+      name: "Bea",
+      title: "",
+      description: "",
+      instructions: "",
+      notifyOnFinish: false,
+    });
+    guestBotId = bot.id;
+    const joined = await harness.ok<
+      GroupView & { members: Array<{ botId: string; ownerUserId?: string }> }
+    >(ben, "groups/setMyBots", { groupId, botIds: [guestBotId] });
+    const owners = new Map(joined.members.map((member) => [member.botId, member.ownerUserId]));
+    expect(owners.get(guestBotId)).toBe(ben.userId);
+    expect(owners.get(botIds[0] as string)).toBe(ana.userId);
+
+    // The host asks the guest's bot: it runs as Ben, at Ana's request.
+    await harness.ok(ana, "threads/send", {
+      groupId,
+      text: "Bea, please review the plan",
+      mentions: [guestBotId],
+    });
+    const threadId = await threadIdOf(groupId);
+    const run = await harness.db.run.findFirstOrThrow({
+      where: { threadId, botId: guestBotId },
+      select: { id: true, userId: true, triggeredByUserId: true },
+    });
+    expect(run).toMatchObject({ userId: ben.userId, triggeredByUserId: ana.userId });
+
+    // Only the bot's owner answers what it asks.
+    const answer = (person: Person) =>
+      harness.call(person, "threads/answer", {
+        groupId,
+        runId: run.id,
+        messageId: "message",
+        answer: "yes",
+      });
+    expect((await answer(ana)).status).not.toBe(409);
+    expect((await answer(ben)).status).toBe(409);
+  });
+
+  it("keeps a guest's bots when the host edits the group", async () => {
+    const group = await harness.ok<{ members: Array<{ botId: string }> }>(ana, "groups/update", {
+      groupId,
+      botIds: botIds,
+    });
+    expect(group.members.map((member) => member.botId)).toContain(guestBotId);
+    const withGuest = await harness.ok<{ members: Array<{ botId: string }> }>(
+      ana,
+      "groups/update",
+      {
+        groupId,
+        botIds: [...botIds, guestBotId],
+      },
+    );
+    expect(withGuest.members.length).toBe(3);
+  });
+
   it("lets a guest leave and then loses access", async () => {
     await harness.ok(ben, "groups/leave", { groupId });
+    const afterLeave = await harness.ok<{ members: Array<{ botId: string }> }>(ana, "groups/get", {
+      groupId,
+    });
+    expect(afterLeave.members.map((member) => member.botId)).not.toContain(guestBotId);
     await harness.denied(ben, "threads/messages", { groupId });
     const groups = await harness.ok<GroupView[]>(ben, "groups/list");
     expect(groups.map((group) => group.id)).not.toContain(groupId);

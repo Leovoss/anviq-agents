@@ -309,7 +309,7 @@ async function lockAndLoadGroupMembers(
     include: {
       members: {
         where: { bot: { archivedAt: null } },
-        include: { bot: { select: { id: true, name: true, color: true } } },
+        include: { bot: { select: { id: true, name: true, color: true, userId: true } } },
         orderBy: [{ createdAt: "asc" }, { botId: "asc" }],
       },
     },
@@ -319,6 +319,7 @@ async function lockAndLoadGroupMembers(
     botId: member.bot.id,
     name: member.bot.name,
     color: member.bot.color,
+    ownerUserId: member.bot.userId,
   }));
 }
 
@@ -361,6 +362,7 @@ export async function resolveThreadTarget(
       name: member.bot.name,
       color: member.bot.color,
       status: primaryActiveRun(member.bot.runs)?.status ?? "idle",
+      ownerUserId: member.bot.userId,
     }));
     return {
       kind: "group",
@@ -1012,9 +1014,6 @@ export async function sendThreadMessage(
       const members = await lockAndLoadGroupMembers(tx, actor, target);
       const memberBotIds = members.map((member) => member.botId);
       const senderUserId = target.shared ? sender?.userId : undefined;
-      // A guest's message runs the host's bots with the host's access, but never as the host.
-      const teammateUserId =
-        senderUserId && senderUserId !== actor.userId ? senderUserId : undefined;
       const senderName = senderUserId
         ? (
             await tx.user.findUniqueOrThrow({
@@ -1023,6 +1022,11 @@ export async function sendThreadMessage(
             })
           ).name
         : undefined;
+      // Each bot acts for its own owner. A message from anyone else is a teammate's request to it.
+      const ownerOfBot = new Map(members.map((member) => [member.botId, member.ownerUserId]));
+      const runOwner = (botId: string) => ownerOfBot.get(botId) ?? actor.userId;
+      const requesterOf = (botId: string) =>
+        senderUserId && senderUserId !== runOwner(botId) ? senderUserId : undefined;
       const mentionTargets = splitMentionTargets(input.mentions);
       const targetBotIds = resolveGroupTargetBotIds({
         text: input.text ?? "",
@@ -1053,6 +1057,7 @@ export async function sendThreadMessage(
           id: true,
           taskId: true,
           botId: true,
+          userId: true,
           status: true,
           trigger: true,
           triggeredByUserId: true,
@@ -1095,13 +1100,13 @@ export async function sendThreadMessage(
       const answeredByBotId = new Map<string, Array<(typeof activeRuns)[number]>>();
       for (const run of activeRuns) {
         if (run.status === "waiting_input") {
-          // A question is for the host; a guest's message never answers it.
-          if (teammateUserId) continue;
+          // A question is for the bot's owner; anyone else's message never answers it.
+          if (senderUserId && run.userId !== senderUserId) continue;
           const answered = await answerWaitingRunWithTextInTransaction(tx, {
             spaceId: actor.spaceId,
             threadId: target.threadId,
             runId: run.id,
-            answeredByUserId: actor.userId,
+            answeredByUserId: senderUserId ?? actor.userId,
             answer: input.text ?? "",
             beforeMessageSeq: message.seq,
           });
@@ -1135,25 +1140,23 @@ export async function sendThreadMessage(
           );
           for (const run of steered) {
             await tx.steeringMessage.create({
-              data: { messageId: message.id, botId, userId: actor.userId, runId: run.id },
+              data: { messageId: message.id, botId, userId: runOwner(botId), runId: run.id },
             });
           }
           runs.push(...answered);
           continue;
         }
-        // A guest's message never steers a run someone else started: that run keeps the trust of
-        // whoever began it, so the guest's words wait for a run of their own.
+        // A message never steers a run someone else started: that run keeps the trust of whoever
+        // began it, so the words of anyone else wait for a run of their own.
         const running = activeByBotId.get(botId);
-        const active =
-          running && teammateUserId && running.triggeredByUserId !== teammateUserId
-            ? undefined
-            : running;
+        const starter = running ? (running.triggeredByUserId ?? running.userId) : undefined;
+        const active = running && starter === (senderUserId ?? actor.userId) ? running : undefined;
         if (active) {
           await tx.steeringMessage.create({
             data: {
               messageId: message.id,
               botId,
-              userId: actor.userId,
+              userId: runOwner(botId),
               runId: steersUserMessage(active) ? active.id : null,
             },
           });
@@ -1165,11 +1168,11 @@ export async function sendThreadMessage(
             spaceId: actor.spaceId,
             botId,
             threadId: target.threadId,
-            userId: actor.userId,
+            userId: runOwner(botId),
             prompt: teammatePrompt(
               buildSendPrompt(input.text, artifacts, connectorNames),
               senderName,
-              teammateUserId,
+              requesterOf(botId),
             ),
             status: "queued",
           },
@@ -1180,8 +1183,8 @@ export async function sendThreadMessage(
             botId,
             threadId: target.threadId,
             taskId: task.id,
-            userId: actor.userId,
-            triggeredByUserId: teammateUserId,
+            userId: runOwner(botId),
+            triggeredByUserId: requesterOf(botId),
             status: "queued",
             trigger: "user",
             clientNonce: sendRunClientNonce(input.clientNonce, message.id, botId),
