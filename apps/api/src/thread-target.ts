@@ -1055,6 +1055,7 @@ export async function sendThreadMessage(
           botId: true,
           status: true,
           trigger: true,
+          triggeredByUserId: true,
           modelProvider: true,
           modelId: true,
           modelPinned: true,
@@ -1140,7 +1141,13 @@ export async function sendThreadMessage(
           runs.push(...answered);
           continue;
         }
-        const active = activeByBotId.get(botId);
+        // A guest's message never steers a run someone else started: that run keeps the trust of
+        // whoever began it, so the guest's words wait for a run of their own.
+        const running = activeByBotId.get(botId);
+        const active =
+          running && teammateUserId && running.triggeredByUserId !== teammateUserId
+            ? undefined
+            : running;
         if (active) {
           await tx.steeringMessage.create({
             data: {
