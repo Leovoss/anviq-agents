@@ -57,6 +57,20 @@ export const SetCompanyMemoryInput = z.object({
   expectedRevision: z.number().int().nonnegative().optional(),
 });
 
+export const MemoryProposalSchema = z.object({
+  id: Id,
+  content: z.string(),
+  proposedBy: z.string(),
+  mine: z.boolean(),
+  createdAt: IsoDate,
+});
+export type MemoryProposal = z.infer<typeof MemoryProposalSchema>;
+export const ProposeMemoryInput = z.object({
+  organizationId: Id,
+  content: z.string().trim().min(1).max(4000),
+});
+export const DecideMemoryProposalInput = z.object({ proposalId: Id, approve: z.boolean() });
+
 export const TeamEventSchema = z.object({
   id: Id,
   type: z.string(),

@@ -825,6 +825,7 @@ msgstr "승인 모델"
 msgid "Approvals"
 msgstr "승인"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
@@ -833,6 +834,10 @@ msgstr "승인"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
 msgstr "이 서버를 승인하면 Bot이 제공되는 도구를 사용할 수 있습니다."
+
+#: src/components/TeamSettings.tsx
+msgid "approved a suggestion"
+msgstr ""
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -4693,6 +4698,14 @@ msgstr "새로고침 중…"
 msgid "Registration is closed"
 msgstr "가입이 마감되었습니다"
 
+#: src/components/TeamSettings.tsx
+msgid "Reject"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "rejected a suggestion"
+msgstr ""
+
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Release control"
 msgstr "제어권 넘기기"
@@ -5634,6 +5647,14 @@ msgstr "내 AI로 구독"
 
 #: src/pages/Paywall.tsx
 msgid "Subscription required"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Suggest a note"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "suggested a note"
 msgstr ""
 
 #: src/lib/cron.ts

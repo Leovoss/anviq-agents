@@ -223,6 +223,7 @@ model Organization {
   metadata     String?
   members      Member[]
   events       OrganizationEvent[]
+  memoryProposals OrganizationMemoryProposal[]
   invitations  Invitation[]
   spaces       Space[]
   billing      BillingAccount?
@@ -681,6 +682,23 @@ model ChatGroupMember {
 }
 
 /// What happened in a team, for its admins: membership, sharing and company memory changes.
+/// A member's suggested addition to company memory. The text itself is kept sealed as a memory
+/// document in the team's general space; this row only tracks who asked and what was decided.
+model OrganizationMemoryProposal {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  proposedByUserId String
+  /// pending, approved or rejected
+  status          String       @default("pending")
+  decidedByUserId String?
+  decidedAt       DateTime?
+  createdAt       DateTime     @default(now())
+
+  @@index([organizationId, status, createdAt])
+  @@map("organization_memory_proposals")
+}
+
 model OrganizationEvent {
   id             String       @id @default(cuid())
   organizationId String

@@ -138,3 +138,150 @@ export async function companyMemoryForSpace(
     return doc?.content.trim() ? doc.content : undefined;
   });
 }
+
+const PROPOSAL_SCOPE = "org_proposal";
+export const COMPANY_MEMORY_PROPOSAL_MAX_CHARS = 4000;
+const MAX_PENDING_PROPOSALS = 50;
+const proposalPath = (id: string) => `proposals/${id}.md`;
+
+export interface MemoryProposalView {
+  id: string;
+  content: string;
+  proposedBy: string;
+  mine: boolean;
+  createdAt: Date;
+}
+
+/** Any member may suggest an addition. It joins company memory only when an owner or admin approves it. */
+export async function proposeCompanyMemory(
+  prisma: PrismaClient,
+  input: { userId: string; organizationId: string; content: string },
+): Promise<{ id: string }> {
+  await membership(prisma, input.userId, input.organizationId);
+  const text = input.content.trim();
+  if (!text || text.length > COMPANY_MEMORY_PROPOSAL_MAX_CHARS)
+    throw new OrganizationError("INVALID", "Suggest a short note");
+  const spaceId = await generalSpaceOf(prisma, input.organizationId);
+  const pending = await prisma.organizationMemoryProposal.count({
+    where: { organizationId: input.organizationId, status: "pending" },
+  });
+  if (pending >= MAX_PENDING_PROPOSALS)
+    throw new OrganizationError("LIMIT", "Too many suggestions are waiting");
+  return runAsSystem("suggest company memory", () =>
+    prisma.$transaction(async (tx) => {
+      const proposal = await tx.organizationMemoryProposal.create({
+        data: { organizationId: input.organizationId, proposedByUserId: input.userId },
+      });
+      await tx.memoryDocument.create({
+        data: {
+          spaceId,
+          userId: companyOwner(input.organizationId),
+          scope: PROPOSAL_SCOPE,
+          path: proposalPath(proposal.id),
+          content: text,
+        },
+      });
+      return { id: proposal.id };
+    }),
+  );
+}
+
+/** Owners and admins see every waiting suggestion; a member sees only their own. */
+export async function listMemoryProposals(
+  prisma: PrismaClient,
+  userId: string,
+  organizationId: string,
+): Promise<MemoryProposalView[]> {
+  const role = await membership(prisma, userId, organizationId);
+  const manager = role === "owner" || role === "admin";
+  const rows = await prisma.organizationMemoryProposal.findMany({
+    where: {
+      organizationId,
+      status: "pending",
+      ...(manager ? {} : { proposedByUserId: userId }),
+    },
+    orderBy: { createdAt: "asc" },
+  });
+  if (rows.length === 0) return [];
+  const spaceId = await generalSpaceOf(prisma, organizationId);
+  const [docs, people] = await Promise.all([
+    runAsSystem("read company memory suggestions", () =>
+      prisma.memoryDocument.findMany({
+        where: {
+          spaceId,
+          userId: companyOwner(organizationId),
+          scope: PROPOSAL_SCOPE,
+          path: { in: rows.map((row) => proposalPath(row.id)) },
+        },
+        select: { path: true, content: true },
+      }),
+    ),
+    prisma.user.findMany({
+      where: { id: { in: [...new Set(rows.map((row) => row.proposedByUserId))] } },
+      select: { id: true, name: true },
+    }),
+  ]);
+  const contentByPath = new Map(docs.map((doc) => [doc.path, doc.content]));
+  const names = new Map(people.map((person) => [person.id, person.name]));
+  return rows.map((row) => ({
+    id: row.id,
+    content: contentByPath.get(proposalPath(row.id)) ?? "",
+    proposedBy: names.get(row.proposedByUserId) ?? "Someone",
+    mine: row.proposedByUserId === userId,
+    createdAt: row.createdAt,
+  }));
+}
+
+/** Approving appends the note to company memory; rejecting discards it. Either way it is decided once. */
+export async function decideMemoryProposal(
+  prisma: PrismaClient,
+  input: { userId: string; proposalId: string; approve: boolean },
+): Promise<{ organizationId: string; proposedByUserId: string }> {
+  const proposal = await prisma.organizationMemoryProposal.findUnique({
+    where: { id: input.proposalId },
+  });
+  if (!proposal || proposal.status !== "pending")
+    throw new OrganizationError("NOT_FOUND", "Suggestion not found");
+  await managerOf(prisma, input.userId, proposal.organizationId);
+  const claimed = await prisma.organizationMemoryProposal.updateMany({
+    where: { id: proposal.id, status: "pending" },
+    data: {
+      status: input.approve ? "approved" : "rejected",
+      decidedByUserId: input.userId,
+      decidedAt: new Date(),
+    },
+  });
+  if (claimed.count !== 1) throw new OrganizationError("NOT_FOUND", "Suggestion not found");
+  const spaceId = await generalSpaceOf(prisma, proposal.organizationId);
+  const where = {
+    spaceId,
+    userId: companyOwner(proposal.organizationId),
+    scope: PROPOSAL_SCOPE,
+    path: proposalPath(proposal.id),
+  };
+  try {
+    if (input.approve) {
+      const note = await runAsSystem("read a company memory suggestion", () =>
+        prisma.memoryDocument.findFirst({ where, select: { content: true } }),
+      );
+      const current = await readCompanyMemory(prisma, input.userId, proposal.organizationId);
+      const base = current.content.trimEnd();
+      await writeCompanyMemory(prisma, {
+        userId: input.userId,
+        organizationId: proposal.organizationId,
+        content: base ? `${base}\n\n${note?.content ?? ""}` : (note?.content ?? ""),
+        expectedRevision: current.revision,
+      });
+    }
+  } catch (error) {
+    await prisma.organizationMemoryProposal.update({
+      where: { id: proposal.id },
+      data: { status: "pending", decidedByUserId: null, decidedAt: null },
+    });
+    throw error;
+  }
+  await runAsSystem("discard a decided company memory suggestion", () =>
+    prisma.memoryDocument.deleteMany({ where }),
+  );
+  return { organizationId: proposal.organizationId, proposedByUserId: proposal.proposedByUserId };
+}

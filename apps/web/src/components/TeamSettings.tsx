@@ -187,19 +187,20 @@ function CompanyMemory({ team }: { team: Team }) {
   const [draft, setDraft] = useState<string | null>(null);
   if (!memory.data) return null;
   const { canEdit, content, revision } = memory.data;
-  if (!canEdit && !content) return null;
   const text = draft ?? content;
   return (
     <SettingsGroup title={t`Company memory`}>
       <div className="space-y-3 px-4 py-3">
-        <Textarea
-          value={text}
-          readOnly={!canEdit}
-          rows={6}
-          maxLength={20000}
-          aria-label={t`Company memory`}
-          onChange={(event) => setDraft(event.target.value)}
-        />
+        {canEdit || content ? (
+          <Textarea
+            value={text}
+            readOnly={!canEdit}
+            rows={6}
+            maxLength={20000}
+            aria-label={t`Company memory`}
+            onChange={(event) => setDraft(event.target.value)}
+          />
+        ) : null}
         {canEdit ? (
           <div className="flex items-center justify-end gap-2">
             {error ? (
@@ -228,7 +229,106 @@ function CompanyMemory({ team }: { team: Team }) {
           </div>
         ) : null}
       </div>
+      <Suggestions team={team} canDecide={canEdit} />
     </SettingsGroup>
+  );
+}
+
+/** A member suggests a note; an owner or admin approves or rejects what is waiting. */
+function Suggestions({ team, canDecide }: { team: Team; canDecide: boolean }) {
+  const { t } = useLingui();
+  const { run, busy, error } = useAction();
+  const queryClient = useQueryClient();
+  const [note, setNote] = useState("");
+  const proposals = useQuery({
+    queryKey: [...TEAMS, "proposals", team.id],
+    queryFn: () => rpc.organizations.memoryProposals({ organizationId: team.id }),
+  });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: [...TEAMS] });
+  return (
+    <>
+      {proposals.data?.map((proposal) => (
+        <SettingsRow
+          key={proposal.id}
+          label={
+            <>
+              <p className="whitespace-pre-wrap break-words">{proposal.content}</p>
+              <p className="text-[13px] text-muted-foreground">{proposal.proposedBy}</p>
+            </>
+          }
+          control={
+            canDecide ? (
+              <>
+                <Button
+                  size="sm"
+                  className="rounded-full"
+                  disabled={busy}
+                  onClick={() =>
+                    void run(async () => {
+                      await rpc.organizations.decideMemoryProposal({
+                        proposalId: proposal.id,
+                        approve: true,
+                      });
+                      await refresh();
+                    })
+                  }
+                >
+                  {t`Approve`}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full"
+                  disabled={busy}
+                  onClick={() =>
+                    void run(async () => {
+                      await rpc.organizations.decideMemoryProposal({
+                        proposalId: proposal.id,
+                        approve: false,
+                      });
+                      await refresh();
+                    })
+                  }
+                >
+                  {t`Reject`}
+                </Button>
+              </>
+            ) : undefined
+          }
+        />
+      ))}
+      {canDecide ? null : (
+        <form
+          className="flex items-center gap-2 px-4 py-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const text = note.trim();
+            if (!text) return;
+            void run(async () => {
+              await rpc.organizations.proposeMemory({ organizationId: team.id, content: text });
+              setNote("");
+              await refresh();
+            });
+          }}
+        >
+          <Input
+            value={note}
+            maxLength={4000}
+            aria-label={t`Suggest a note`}
+            placeholder={t`Suggest a note`}
+            onChange={(event) => setNote(event.target.value)}
+          />
+          <Button type="submit" size="sm" className="rounded-full" disabled={busy || !note.trim()}>
+            {t`Send`}
+          </Button>
+        </form>
+      )}
+      {error ? (
+        <p role="alert" className="px-4 pb-3 text-[13px] text-destructive">
+          {error}
+        </p>
+      ) : null}
+    </>
   );
 }
 
@@ -249,6 +349,9 @@ function TeamActivity({ organizationId }: { organizationId: string }) {
     "member.role_changed": t`changed a role`,
     "ownership.transferred": t`handed over ownership`,
     "memory.updated": t`edited company memory`,
+    "memory.proposed": t`suggested a note`,
+    "memory.approved": t`approved a suggestion`,
+    "memory.rejected": t`rejected a suggestion`,
     "chat.shared": t`shared a chat`,
     "chat.unshared": t`stopped sharing a chat`,
   };

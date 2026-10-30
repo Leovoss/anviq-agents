@@ -825,6 +825,7 @@ msgstr "Goedkeuringsmodel"
 msgid "Approvals"
 msgstr "Goedkeuringen"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
@@ -833,6 +834,10 @@ msgstr "Goedkeuren"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
 msgstr "Keur deze server goed zodat je agent zijn tools kan gebruiken."
+
+#: src/components/TeamSettings.tsx
+msgid "approved a suggestion"
+msgstr ""
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -4693,6 +4698,14 @@ msgstr "Bezig met vernieuwen…"
 msgid "Registration is closed"
 msgstr "Registratie is gesloten"
 
+#: src/components/TeamSettings.tsx
+msgid "Reject"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "rejected a suggestion"
+msgstr ""
+
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Release control"
 msgstr "Controle vrijgeven"
@@ -5635,6 +5648,14 @@ msgstr "Abonneren met je eigen AI"
 #: src/pages/Paywall.tsx
 msgid "Subscription required"
 msgstr "Abonnement vereist"
+
+#: src/components/TeamSettings.tsx
+msgid "Suggest a note"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "suggested a note"
+msgstr ""
 
 #: src/lib/cron.ts
 msgid "Sunday"

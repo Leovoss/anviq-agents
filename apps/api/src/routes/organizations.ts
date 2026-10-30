@@ -4,15 +4,18 @@ import {
   acceptInvitation,
   cancelInvitation,
   createOrganization,
+  decideMemoryProposal,
   inviteToOrganization,
   leaveOrganization,
   listInvitations,
+  listMemoryProposals,
   listMyInvitations,
   listOrganizationEvents,
   listOrganizationMembers,
   listTeams,
   OrganizationError,
   personalSpaceId,
+  proposeCompanyMemory,
   readCompanyMemory,
   recordOrganizationEvent,
   removeMember,
@@ -219,6 +222,41 @@ export function organizationsRoutes(ctx: RouterContext) {
           await note(context.actor.userId, input.organizationId, "memory.updated");
           return saved;
         }),
+      ),
+      proposeMemory: authed.organizations.proposeMemory.handler(({ context, input }) =>
+        system(async () => {
+          const proposal = await proposeCompanyMemory(prisma, {
+            userId: context.actor.userId,
+            organizationId: input.organizationId,
+            content: input.content,
+          });
+          await note(context.actor.userId, input.organizationId, "memory.proposed");
+          return proposal;
+        }),
+      ),
+      memoryProposals: authed.organizations.memoryProposals.handler(({ context, input }) =>
+        system(async () =>
+          (await listMemoryProposals(prisma, context.actor.userId, input.organizationId)).map(
+            (proposal) => ({ ...proposal, createdAt: iso(proposal.createdAt) }),
+          ),
+        ),
+      ),
+      decideMemoryProposal: authed.organizations.decideMemoryProposal.handler(
+        ({ context, input }) =>
+          system(async () => {
+            const decided = await decideMemoryProposal(prisma, {
+              userId: context.actor.userId,
+              proposalId: input.proposalId,
+              approve: input.approve,
+            });
+            await note(
+              context.actor.userId,
+              decided.organizationId,
+              input.approve ? "memory.approved" : "memory.rejected",
+              decided.proposedByUserId,
+            );
+            return done;
+          }),
       ),
       events: authed.organizations.events.handler(({ context, input }) =>
         system(async () =>

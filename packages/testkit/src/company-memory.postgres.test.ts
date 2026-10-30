@@ -94,11 +94,78 @@ describeWithDatabase("company memory and the team log", () => {
     expect(await companyMemoryForSpace(harness.db, personal?.id as string)).toBeUndefined();
   });
 
+  it("lets a member suggest a note that only an admin can approve into company memory", async () => {
+    const note = `Greet customers by first name ${harness.stamp}.`;
+    const proposed = await harness.ok<{ id: string }>(ana, "organizations/proposeMemory", {
+      organizationId,
+      content: note,
+    });
+    type Proposal = { id: string; content: string; proposedBy: string; mine: boolean };
+    const mine = await harness.ok<Proposal[]>(ana, "organizations/memoryProposals", {
+      organizationId,
+    });
+    expect(mine.map((proposal) => proposal.content)).toEqual([note]);
+    expect(mine[0]?.mine).toBe(true);
+    expect(
+      await harness.ok<Proposal[]>(ben, "organizations/memoryProposals", { organizationId }),
+    ).toEqual([]);
+    const waiting = await harness.ok<Proposal[]>(cy, "organizations/memoryProposals", {
+      organizationId,
+    });
+    expect(waiting.map((proposal) => [proposal.proposedBy, proposal.content])).toEqual([
+      ["ana", note],
+    ]);
+
+    await harness.denied(ana, "organizations/decideMemoryProposal", {
+      proposalId: proposed.id,
+      approve: true,
+    });
+    const before = await harness.ok<Memory>(cy, "organizations/memory", { organizationId });
+    expect(before.content).not.toContain(note);
+    await harness.ok(cy, "organizations/decideMemoryProposal", {
+      proposalId: proposed.id,
+      approve: true,
+    });
+    const after = await harness.ok<Memory>(cy, "organizations/memory", { organizationId });
+    expect(after.content).toContain(note);
+    expect(after.content).toContain(rule());
+    expect(after.revision).toBe(before.revision + 1);
+    await harness.denied(cy, "organizations/decideMemoryProposal", {
+      proposalId: proposed.id,
+      approve: false,
+    });
+    expect(
+      await harness.ok<Proposal[]>(cy, "organizations/memoryProposals", { organizationId }),
+    ).toEqual([]);
+    const leftover = await harness.db.memoryDocument.count({
+      where: { userId: `org:${organizationId}`, scope: "org_proposal" },
+    });
+    expect(leftover).toBe(0);
+  });
+
+  it("discards a rejected suggestion without touching company memory", async () => {
+    const proposed = await harness.ok<{ id: string }>(ben, "organizations/proposeMemory", {
+      organizationId,
+      content: "Never mention pricing.",
+    });
+    const before = await harness.ok<Memory>(cy, "organizations/memory", { organizationId });
+    await harness.ok(cy, "organizations/decideMemoryProposal", {
+      proposalId: proposed.id,
+      approve: false,
+    });
+    const after = await harness.ok<Memory>(cy, "organizations/memory", { organizationId });
+    expect(after).toMatchObject({ content: before.content, revision: before.revision });
+    await harness.denied(ben, "organizations/proposeMemory", { organizationId, content: "   " });
+  });
+
   it("keeps a log for admins that members cannot read", async () => {
     await harness.denied(ana, "organizations/events", { organizationId });
     const events = await harness.ok<TeamEvent[]>(cy, "organizations/events", { organizationId });
     const types = events.map((event) => event.type);
     expect(types).toContain("memory.updated");
     expect(events.find((event) => event.type === "memory.updated")?.actorName).toBe("cy");
+    expect(types).toEqual(
+      expect.arrayContaining(["memory.proposed", "memory.approved", "memory.rejected"]),
+    );
   });
 });

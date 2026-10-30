@@ -825,6 +825,7 @@ msgstr "Модель проверки действий"
 msgid "Approvals"
 msgstr "Подтверждения"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
@@ -833,6 +834,10 @@ msgstr "Утвердить"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
 msgstr "Одобрите этот сервер, чтобы ваш агент мог использовать его инструменты."
+
+#: src/components/TeamSettings.tsx
+msgid "approved a suggestion"
+msgstr ""
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -4693,6 +4698,14 @@ msgstr "Обновление…"
 msgid "Registration is closed"
 msgstr "Регистрация закрыта"
 
+#: src/components/TeamSettings.tsx
+msgid "Reject"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "rejected a suggestion"
+msgstr ""
+
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Release control"
 msgstr "Передать управление"
@@ -5634,6 +5647,14 @@ msgstr "Оформить подписку со своим ИИ"
 
 #: src/pages/Paywall.tsx
 msgid "Subscription required"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Suggest a note"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "suggested a note"
 msgstr ""
 
 #: src/lib/cron.ts
