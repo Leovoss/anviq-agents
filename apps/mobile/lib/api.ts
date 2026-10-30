@@ -1069,6 +1069,7 @@ export type MobileMe = Pick<
   | "needsSignupSurvey"
   | "billingEnabled"
   | "paymentWalletProvider"
+  | "licensee"
 >;
 
 export type MobileModel = ModelCatalogEntry;

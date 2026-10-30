@@ -452,7 +452,7 @@ export function SidebarRoster({
                             {!compact && item.kind === "bot" && item.chat.title ? (
                               <span
                                 data-roster-bot-title
-                                className="min-w-0 truncate rounded-md border border-border bg-muted px-1.5 text-caption font-normal text-muted-foreground"
+                                className="min-w-0 truncate text-caption font-normal text-muted-foreground"
                               >
                                 {item.chat.title}
                               </span>
