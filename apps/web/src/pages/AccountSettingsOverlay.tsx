@@ -1,4 +1,5 @@
 import type { AccountSecurity, UsageSummary } from "@anviq/contracts";
+import { ANVIQ_ADDRESS_LINE, ANVIQ_COPYRIGHT_LINE, licensedToLine } from "@anviq/contracts";
 import { accountDisplay, displayName, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "@anviq/core";
 import {
   Button,
@@ -461,6 +462,26 @@ export function GeneralSettingsPanels({
 
       <AccountAccess onSecurity={setAccountSecurity} />
     </div>
+  );
+}
+
+export function LicenseNotice({ licensee }: { licensee?: string | null }) {
+  const name = licensee?.trim();
+  return (
+    <p
+      className="pt-4 text-center text-[12px] leading-5 text-muted-foreground"
+      data-testid="license-notice"
+    >
+      {ANVIQ_COPYRIGHT_LINE}
+      <br />
+      {ANVIQ_ADDRESS_LINE}
+      {name ? (
+        <>
+          <br />
+          {licensedToLine(name)}
+        </>
+      ) : null}
+    </p>
   );
 }
 

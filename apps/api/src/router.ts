@@ -114,6 +114,7 @@ export interface RouterDeps {
   env: {
     ticketBoardEnabled?: boolean;
     navLinks?: NavLink[];
+    licensee?: string;
     phoneCallsEnabled?: boolean;
     phoneCallRingSeconds?: number;
     maxUploadSizeBytes?: number;

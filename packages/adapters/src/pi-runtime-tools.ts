@@ -20,7 +20,12 @@ import {
 import { shortenToolResultText } from "./context-selection.js";
 import type { PiAgentRuntimeOptions } from "./pi-runtime.js";
 import { sanitizeSensitiveText } from "./pi-runtime-errors.js";
-import { clipToolResultContent, clipToolResultText } from "./pi-runtime-limits.js";
+import {
+  clipToolResultContent,
+  clipToolResultText,
+  TOOL_RESULT_TEXT_LIMIT,
+  toolResultTextLimit,
+} from "./pi-runtime-limits.js";
 import type { RuntimeModelTarget } from "./pi-runtime-models.js";
 import { executeSubagent } from "./pi-runtime-subagent.js";
 import { parametersFor, prepareFleetArguments } from "./pi-runtime-tool-parameters.js";
@@ -432,6 +437,7 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
                           host.request.contextStrategy,
                           tool.name,
                           args,
+                          resultLimit(host, tool.name),
                         ),
                       },
                     ],
@@ -466,7 +472,7 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
                 );
                 if (isAgentToolExecutionResult(result)) {
                   if (isToolPauseResult(result)) host.pausePending = true;
-                  return boundAgentToolResult(result);
+                  return boundAgentToolResult(result, resultLimit(host, tool.name));
                 }
                 return {
                   content: [
@@ -477,6 +483,7 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
                         host.request.contextStrategy,
                         tool.name,
                         args,
+                        resultLimit(host, tool.name),
                       ),
                     },
                   ],
@@ -494,7 +501,10 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
               };
             })();
             if (VERBATIM_TOOL_RESULTS.has(tool.name)) return result as AgentToolResult<unknown>;
-            return boundAgentToolResult(result as AgentToolResult<unknown>);
+            return boundAgentToolResult(
+              result as AgentToolResult<unknown>,
+              resultLimit(host, tool.name),
+            );
           } catch (error) {
             failure = error;
             throw error;
@@ -559,25 +569,26 @@ export function serializeToolResult(
   strategy: AgentRunRequest["contextStrategy"],
   name: string,
   args: Record<string, unknown>,
+  limit = TOOL_RESULT_TEXT_LIMIT,
 ) {
   try {
     const text = JSON.stringify(result);
     if (!text) return "ok";
     // skill-tools.ts already bounds skill content; the context budget selector may still shorten it.
-    if (text.length <= 12_000 || VERBATIM_TOOL_RESULTS.has(name)) return text;
+    if (text.length <= limit || VERBATIM_TOOL_RESULTS.has(name)) return text;
     return (strategy ?? DEFAULT_CONTEXT_STRATEGY) === "current"
-      ? clipToolResultText(text)
-      : shortenToolResultText(text, 12_000, { name, arguments: args });
+      ? clipToolResultText(text, limit)
+      : shortenToolResultText(text, limit, { name, arguments: args });
   } catch {
     return "ok";
   }
 }
 
-function boundAgentToolResult<T>(result: AgentToolResult<T>): AgentToolResult<T> {
+function boundAgentToolResult<T>(result: AgentToolResult<T>, limit: number): AgentToolResult<T> {
   if (!result || !Array.isArray(result.content)) return result;
   return {
     ...result,
-    content: clipToolResultContent(result.content),
+    content: clipToolResultContent(result.content, limit),
   };
 }
 
@@ -691,4 +702,11 @@ function beginToolCall(host: ToolHost): boolean {
 function endToolCall(host: ToolHost) {
   host.toolCallBudget.inFlight = Math.max(0, host.toolCallBudget.inFlight - 1);
   maybeAbortToolCallBudget(host);
+}
+
+/** History reads page by cursor and are sized for the base bound, whatever the window. */
+function resultLimit(host: ToolHost, toolName: string): number {
+  return toolName === "read_history" || toolName === "search_history"
+    ? TOOL_RESULT_TEXT_LIMIT
+    : toolResultTextLimit(host.model.contextWindow);
 }

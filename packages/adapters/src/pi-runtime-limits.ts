@@ -19,7 +19,20 @@ export function modelStreamMaxRetries(): number {
   return Number.isInteger(raw) && raw >= 0 && raw <= 5 ? raw : DEFAULT_MODEL_STREAM_MAX_RETRIES;
 }
 
+/** Smallest per-result bound, used when the model's context window is unknown. */
 export const TOOL_RESULT_TEXT_LIMIT = 12_000;
+const TOOL_RESULT_TEXT_CEILING = 250_000;
+
+/** About 12% of the window (half its size in characters), so a large-window model reads a long result whole. */
+export function toolResultTextLimit(contextWindow?: number): number {
+  const pinned = Number(process.env.TOOL_RESULT_MAX_CHARS?.trim());
+  if (Number.isInteger(pinned) && pinned >= 1_000) return pinned;
+  if (!contextWindow || !Number.isFinite(contextWindow)) return TOOL_RESULT_TEXT_LIMIT;
+  return Math.min(
+    TOOL_RESULT_TEXT_CEILING,
+    Math.max(TOOL_RESULT_TEXT_LIMIT, Math.floor(contextWindow * 0.5)),
+  );
+}
 
 export function clipToolResultText(text: string, limit: number = TOOL_RESULT_TEXT_LIMIT): string {
   return text.length > limit ? `${text.slice(0, limit)}…` : text;
