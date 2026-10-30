@@ -29,6 +29,7 @@ import { SpaceRpcProvider } from "../lib/space-rpc";
 import {
   ComputerSettingsPanel,
   GeneralSettingsPanels,
+  LicenseNotice,
   UpdatesSettingsPanel,
   UsageSettingsPanel,
 } from "./AccountSettingsOverlay";
@@ -63,6 +64,7 @@ export function SettingsOverlay({
   onNameSaved,
   timezone,
   onTimezoneChange,
+  licensee,
   billingEnabled = false,
   sandboxProvider,
   onSandboxProviderChange,
@@ -88,6 +90,8 @@ export function SettingsOverlay({
   onNameSaved?: () => Promise<void>;
   timezone: string | null;
   onTimezoneChange: (timezone: string) => Promise<void>;
+  /** Set from ANVIQ_LICENSEE. Absent on instances that are not a customer deployment. */
+  licensee?: string | null;
   billingEnabled?: boolean;
   sandboxProvider?: string | null;
   onSandboxProviderChange?: (sandboxProvider: string) => void;
@@ -398,6 +402,7 @@ export function SettingsOverlay({
                           ))}
                         </SettingsGroup>
                       ) : null}
+                      <LicenseNotice licensee={licensee} />
                     </div>
                   ) : null}
                   {section === "space" && space ? (
