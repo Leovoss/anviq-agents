@@ -66,7 +66,8 @@ export function contentRoutes(ctx: RouterContext) {
       create: authed.artifacts.create.handler(async ({ context, input }) => {
         const botId = input.botId
           ? (await repos.getBot(context.actor, input.botId)).id
-          : (await groupRepos.getGroupTarget(context.actor, input.groupId!)).members[0]?.bot.id;
+          : (await groupRepos.getGroupTarget(context.actor, input.groupId!, { participant: true }))
+              .members[0]?.bot.id;
         if (!botId) throw new IsolationError();
         try {
           return await createOwnedArtifact(
@@ -83,7 +84,9 @@ export function contentRoutes(ctx: RouterContext) {
       }),
       get: authed.artifacts.get.handler(async ({ context, input }) => {
         if (input.groupId) {
-          const group = await groupRepos.getGroupTarget(context.actor, input.groupId);
+          const group = await groupRepos.getGroupTarget(context.actor, input.groupId, {
+            participant: true,
+          });
           const contextBotId = group.members[0]?.bot.id;
           if (!contextBotId) throw new IsolationError();
           return getSpaceArtifact(deps, context.actor, {

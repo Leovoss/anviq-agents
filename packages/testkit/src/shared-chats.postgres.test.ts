@@ -255,6 +255,33 @@ describeWithDatabase("shared chats", () => {
     expect(withGuest.members.length).toBe(3);
   });
 
+  it("lets people in the chat open each other's files, and nobody else", async () => {
+    const make = (person: Person, name: string) =>
+      harness.ok<{ id: string }>(person, "artifacts/create", {
+        groupId,
+        name,
+        mimeType: "text/plain",
+        contentBase64: Buffer.from(name).toString("base64"),
+      });
+    const fromGuest = await make(ben, "guest-notes.txt");
+    const fromHost = await make(ana, "host-notes.txt");
+    await harness.ok(ana, "artifacts/get", { groupId, artifactId: fromGuest.id });
+    await harness.ok(ben, "artifacts/get", { groupId, artifactId: fromHost.id });
+    for (const outsider of [cy, dee]) {
+      await harness.denied(outsider, "artifacts/get", { groupId, artifactId: fromGuest.id });
+      await harness.denied(outsider, "artifacts/create", {
+        groupId,
+        name: "x.txt",
+        mimeType: "text/plain",
+        contentBase64: "eA==",
+      });
+    }
+    await harness.denied(ben, "artifacts/get", {
+      groupId: privateGroupId,
+      artifactId: fromHost.id,
+    });
+  });
+
   it("lets a guest leave and then loses access", async () => {
     await harness.ok(ben, "groups/leave", { groupId });
     const afterLeave = await harness.ok<{ members: Array<{ botId: string }> }>(ana, "groups/get", {
