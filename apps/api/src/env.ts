@@ -11,7 +11,7 @@ import {
 } from "@anviq/adapters";
 import type { OidcConfig } from "@anviq/auth";
 import type { MinimumClientBuilds, NavLink } from "@anviq/contracts";
-import { parseMinimumClientBuilds, parseNavLinks } from "@anviq/contracts";
+import { LICENSEE_MAX_LENGTH, parseMinimumClientBuilds, parseNavLinks } from "@anviq/contracts";
 import { parseCrispWebsiteId } from "@anviq/contracts/content-security-policy";
 import {
   phoneCallSettings,
@@ -60,6 +60,8 @@ export interface AppEnv {
   userDevicesEnabled: boolean;
   /** Operator menu links that frame a same-origin page (ANVIQ_NAV_LINKS). */
   navLinks?: NavLink[];
+  /** Customer name on the settings license notice (ANVIQ_LICENSEE). Unset shows no licensee. */
+  licensee?: string;
   phoneCallsEnabled: boolean;
   phoneCallRingSeconds: number;
   phoneCallCooldownMinutes: number;
@@ -234,6 +236,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     ticketBoardEnabled: source.TICKET_BOARD_ENABLED === "true",
     userDevicesEnabled: source.USER_DEVICES_ENABLED !== "false",
     navLinks: parseNavLinks(source.ANVIQ_NAV_LINKS),
+    licensee: licenseeFromEnv(source.ANVIQ_LICENSEE),
     ...phoneCallSettings(source),
     maxUploadSizeBytes: uploadSizeFromEnv(source),
     voiceSummaryMinChars: voiceSummaryMinCharsFromEnv(source.VOICE_SUMMARY_MIN_CHARS),
@@ -348,6 +351,19 @@ function voiceSummaryMinCharsFromEnv(value: string | undefined): number | undefi
 function optional(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed || undefined;
+}
+
+function licenseeFromEnv(value: string | undefined): string | undefined {
+  const licensee = optional(value);
+  if (!licensee) return undefined;
+  const broken = [...licensee].some((char) => {
+    const code = char.charCodeAt(0);
+    return code < 32 || code === 127;
+  });
+  if (licensee.length > LICENSEE_MAX_LENGTH || broken) {
+    throw new Error(`ANVIQ_LICENSEE must be one line of at most ${LICENSEE_MAX_LENGTH} characters`);
+  }
+  return licensee;
 }
 
 function list(value: string | undefined): string[] {

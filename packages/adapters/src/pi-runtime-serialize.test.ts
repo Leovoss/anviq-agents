@@ -40,3 +40,16 @@ describe("serializeToolResult", () => {
     expect(text.length).toBeLessThan(20_000);
   });
 });
+
+describe("serializeToolResult limit", () => {
+  it("keeps a result whole when the model's limit allows it", () => {
+    const text = serializeToolResult(
+      { output: "x".repeat(20_000) },
+      "current",
+      "shell",
+      {},
+      60_000,
+    );
+    expect(text.length).toBeGreaterThan(20_000);
+  });
+});

@@ -661,7 +661,7 @@ export function BotSettings({
                         onPressedChange={(pressed) => {
                           if (pressed) setMemoryScope(option.value);
                         }}
-                        className="flex-1 aria-pressed:border-foreground/40 aria-pressed:text-foreground"
+                        className="h-auto min-h-8 min-w-0 flex-1 whitespace-normal py-1 aria-pressed:border-foreground/40 aria-pressed:text-foreground"
                       >
                         {option.label}
                       </Toggle>
