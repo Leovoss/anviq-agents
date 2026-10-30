@@ -189,3 +189,13 @@ describe("toolResultTextLimit", () => {
     expect(toolResultTextLimit(2_000_000)).toBe(250_000);
   });
 });
+
+describe("TOOL_RESULT_MAX_CHARS", () => {
+  it("pins the limit whatever the window", () => {
+    vi.stubEnv("TOOL_RESULT_MAX_CHARS", "30000");
+    expect(toolResultTextLimit(2_000_000)).toBe(30_000);
+    vi.stubEnv("TOOL_RESULT_MAX_CHARS", "nonsense");
+    expect(toolResultTextLimit(200_000)).toBe(100_000);
+    vi.unstubAllEnvs();
+  });
+});

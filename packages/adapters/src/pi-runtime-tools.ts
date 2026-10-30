@@ -437,7 +437,7 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
                           host.request.contextStrategy,
                           tool.name,
                           args,
-                          toolResultTextLimit(host.model.contextWindow),
+                          resultLimit(host, tool.name),
                         ),
                       },
                     ],
@@ -472,10 +472,7 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
                 );
                 if (isAgentToolExecutionResult(result)) {
                   if (isToolPauseResult(result)) host.pausePending = true;
-                  return boundAgentToolResult(
-                    result,
-                    toolResultTextLimit(host.model.contextWindow),
-                  );
+                  return boundAgentToolResult(result, resultLimit(host, tool.name));
                 }
                 return {
                   content: [
@@ -486,7 +483,7 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
                         host.request.contextStrategy,
                         tool.name,
                         args,
-                        toolResultTextLimit(host.model.contextWindow),
+                        resultLimit(host, tool.name),
                       ),
                     },
                   ],
@@ -506,7 +503,7 @@ function toAgentTool(tool: ConnectorTool, host: ToolHost, exposedName: string): 
             if (VERBATIM_TOOL_RESULTS.has(tool.name)) return result as AgentToolResult<unknown>;
             return boundAgentToolResult(
               result as AgentToolResult<unknown>,
-              toolResultTextLimit(host.model.contextWindow),
+              resultLimit(host, tool.name),
             );
           } catch (error) {
             failure = error;
@@ -705,4 +702,11 @@ function beginToolCall(host: ToolHost): boolean {
 function endToolCall(host: ToolHost) {
   host.toolCallBudget.inFlight = Math.max(0, host.toolCallBudget.inFlight - 1);
   maybeAbortToolCallBudget(host);
+}
+
+/** History reads page by cursor and are sized for the base bound, whatever the window. */
+function resultLimit(host: ToolHost, toolName: string): number {
+  return toolName === "read_history" || toolName === "search_history"
+    ? TOOL_RESULT_TEXT_LIMIT
+    : toolResultTextLimit(host.model.contextWindow);
 }
