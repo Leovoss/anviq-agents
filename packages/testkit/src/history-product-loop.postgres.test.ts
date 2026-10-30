@@ -2,7 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { PiAgentRuntime } from "@anviq/adapters";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { HISTORY_EVAL_CASES } from "./evals/cases.js";
 import { runTrial } from "./evals/runner.js";
 import type { ModelEmulatorRequest } from "./model-emulator.js";
@@ -12,6 +12,7 @@ const enabled = process.env.VERIFY_DATABASE === "1" && Boolean(process.env.DATAB
 
 describe.skipIf(!enabled)("product history diagnostic loop", () => {
   it("follows actual outgoing diagnostic cursors with the product default and full product instructions", async () => {
+    vi.stubEnv("TOOL_RESULT_MAX_CHARS", "12000");
     const scenario = HISTORY_EVAL_CASES.find((row) => row.id === "history-1000-long-tool-loop")!;
     expect(scenario.history?.messages).toHaveLength(1000);
     expect(scenario.history?.summary).toBeDefined();
