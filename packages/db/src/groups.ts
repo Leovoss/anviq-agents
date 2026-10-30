@@ -69,8 +69,12 @@ function sharedView(
   const rows = group.participants ?? [];
   if (rows.length < 2) return { unread: thread.unread };
   const mine = rows.find((row) => row.userId === viewerUserId);
+  // The host is always listed first.
+  const ordered = [...rows].sort(
+    (left, right) => Number(right.userId === group.userId) - Number(left.userId === group.userId),
+  );
   return {
-    participants: rows.map((row) => ({
+    participants: ordered.map((row) => ({
       userId: row.userId,
       name: row.user.name,
       host: row.userId === group.userId,
