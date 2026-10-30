@@ -12,6 +12,7 @@ import {
   Input,
   NativeSelect,
   NativeSelectOption,
+  Textarea,
 } from "@anviq/ui-web";
 import { useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -174,6 +175,105 @@ export function TeamSettings() {
   );
 }
 
+/** What every bot in the team knows. Members read it; owners and admins edit it. */
+function CompanyMemory({ team }: { team: Team }) {
+  const { t } = useLingui();
+  const { run, busy, error } = useAction();
+  const queryClient = useQueryClient();
+  const memory = useQuery({
+    queryKey: [...TEAMS, "memory", team.id],
+    queryFn: () => rpc.organizations.memory({ organizationId: team.id }),
+  });
+  const [draft, setDraft] = useState<string | null>(null);
+  if (!memory.data) return null;
+  const { canEdit, content, revision } = memory.data;
+  if (!canEdit && !content) return null;
+  const text = draft ?? content;
+  return (
+    <SettingsGroup title={t`Company memory`}>
+      <div className="space-y-3 px-4 py-3">
+        <Textarea
+          value={text}
+          readOnly={!canEdit}
+          rows={6}
+          maxLength={20000}
+          aria-label={t`Company memory`}
+          onChange={(event) => setDraft(event.target.value)}
+        />
+        {canEdit ? (
+          <div className="flex items-center justify-end gap-2">
+            {error ? (
+              <p role="alert" className="me-auto text-[13px] text-destructive">
+                {error}
+              </p>
+            ) : null}
+            <Button
+              size="sm"
+              className="rounded-full"
+              disabled={busy || draft === null || draft === content}
+              onClick={() =>
+                void run(async () => {
+                  await rpc.organizations.setMemory({
+                    organizationId: team.id,
+                    content: text,
+                    expectedRevision: revision,
+                  });
+                  await queryClient.invalidateQueries({ queryKey: [...TEAMS, "memory", team.id] });
+                  setDraft(null);
+                })
+              }
+            >
+              {t`Save`}
+            </Button>
+          </div>
+        ) : null}
+      </div>
+    </SettingsGroup>
+  );
+}
+
+/** The team's log for its admins. */
+function TeamActivity({ organizationId }: { organizationId: string }) {
+  const { t } = useLingui();
+  const events = useQuery({
+    queryKey: [...TEAMS, "events", organizationId],
+    queryFn: () => rpc.organizations.events({ organizationId }),
+  });
+  if (!events.data?.length) return null;
+  const what: Record<string, string> = {
+    "team.created": t`created the team`,
+    "member.invited": t`invited`,
+    "member.joined": t`joined`,
+    "member.removed": t`removed`,
+    "member.left": t`left`,
+    "member.role_changed": t`changed a role`,
+    "ownership.transferred": t`handed over ownership`,
+    "memory.updated": t`edited company memory`,
+    "chat.shared": t`shared a chat`,
+    "chat.unshared": t`stopped sharing a chat`,
+  };
+  return (
+    <SettingsGroup title={t`Activity`}>
+      {events.data.map((event) => (
+        <SettingsRow
+          key={event.id}
+          label={
+            <p className="break-words">
+              {event.actorName} {what[event.type] ?? event.type}
+              {event.subject && event.type === "member.invited" ? ` ${event.subject}` : ""}
+            </p>
+          }
+          control={
+            <span className="text-[13px] text-muted-foreground">
+              {new Date(event.createdAt).toLocaleDateString()}
+            </span>
+          }
+        />
+      ))}
+    </SettingsGroup>
+  );
+}
+
 function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
   const { t } = useLingui();
   const { run, busy, error } = useAction();
@@ -205,6 +305,8 @@ function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
         </Button>
         <h3 className="min-w-0 break-words text-[15px] font-medium">{team.name}</h3>
       </div>
+
+      <CompanyMemory team={team} />
 
       <SettingsGroup title={t`People`}>
         {members.data?.map((member) => {
@@ -363,6 +465,8 @@ function TeamDetail({ team, onBack }: { team: Team; onBack: () => void }) {
           </form>
         </SettingsGroup>
       ) : null}
+
+      {manager ? <TeamActivity organizationId={organizationId} /> : null}
 
       {team.role !== "owner" ? (
         <Button

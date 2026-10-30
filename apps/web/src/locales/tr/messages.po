@@ -463,6 +463,7 @@ msgstr ""
 msgid "Active"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Activity"
 msgstr "Etkinlik"
@@ -1179,6 +1180,10 @@ msgstr "Modeli değiştir"
 msgid "Change password"
 msgstr "Parolayı değiştir"
 
+#: src/components/TeamSettings.tsx
+msgid "changed a role"
+msgstr ""
+
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Changing…"
 msgstr "Değiştiriliyor…"
@@ -1459,6 +1464,10 @@ msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Compact"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "Company memory"
 msgstr ""
 
 #: src/pages/ScratchpadSection.tsx
@@ -2270,6 +2279,10 @@ msgstr "Anviq Agents hesabını oluştur"
 msgid "Created"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "created the team"
+msgstr ""
+
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2645,6 +2658,10 @@ msgid "Edit Profile"
 msgstr "Profili Düzenle"
 
 #: src/components/TeamSettings.tsx
+msgid "edited company memory"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "E-posta"
@@ -2982,6 +2999,10 @@ msgstr "Grup ayarları"
 msgid "Group updates"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "handed over ownership"
+msgstr ""
+
 #: src/components/call/CallCard.tsx
 msgid "Hang up"
 msgstr "Aramayı sonlandır"
@@ -3242,6 +3263,10 @@ msgstr ""
 msgid "Invite"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "invited"
+msgstr ""
+
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Isolated"
@@ -3282,6 +3307,10 @@ msgstr "Modeli içe aktarmadan önceki haline döner."
 #: src/components/TeamSettings.tsx
 #: src/pages/AcceptInvitation.tsx
 msgid "Join"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "joined"
 msgstr ""
 
 #: src/pages/shell/transcript.tsx
@@ -3349,6 +3378,10 @@ msgstr ""
 
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "left"
 msgstr ""
 
 #: src/components/ComputerDeviceSettings.tsx
@@ -4746,6 +4779,10 @@ msgstr ""
 msgid "Remove webhook"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "removed"
+msgstr ""
+
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Removed"
 msgstr "Kaldırılır"
@@ -5001,6 +5038,7 @@ msgstr "Cumartesi"
 #: src/components/AskCard.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/SkillDraftCard.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
@@ -5262,6 +5300,10 @@ msgstr ""
 #: src/pages/shell/bot-panel.tsx
 msgid "Shared"
 msgstr "Ortak"
+
+#: src/components/TeamSettings.tsx
+msgid "shared a chat"
+msgstr ""
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Shared memory"
@@ -5541,6 +5583,10 @@ msgstr "Seslendirmeyi durdur"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Stop teaching"
 msgstr "Öğretmeyi durdur"
+
+#: src/components/TeamSettings.tsx
+msgid "stopped sharing a chat"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts

@@ -29,6 +29,7 @@ vi.mock("@anviq/ui-web", () => ({
   Input: (props: ComponentProps<"input">) => <input {...props} />,
   NativeSelect: (props: ComponentProps<"select">) => <select {...props} />,
   NativeSelectOption: (props: ComponentProps<"option">) => <option {...props} />,
+  Textarea: (props: ComponentProps<"textarea">) => <textarea {...props} />,
 }));
 vi.mock("lucide-react", () => ({ ChevronLeft: () => null }));
 
@@ -47,6 +48,9 @@ const rpc = vi.hoisted(() => ({
     transferOwnership: vi.fn(),
     cancelInvitation: vi.fn(),
     leave: vi.fn(),
+    memory: vi.fn(),
+    setMemory: vi.fn(),
+    events: vi.fn(),
   },
 }));
 const selectSpace = vi.hoisted(() => vi.fn(() => true));
@@ -94,6 +98,13 @@ beforeEach(() => {
     { userId: "u3", name: "Cy", email: "cy@anviq.test", role: "member", joinedAt: "2026-01-03" },
   ]);
   rpc.organizations.invitations.mockResolvedValue([]);
+  rpc.organizations.memory.mockResolvedValue({
+    content: "Refunds need a manager",
+    revision: 2,
+    updatedAt: null,
+    canEdit: false,
+  });
+  rpc.organizations.events.mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -169,5 +180,33 @@ describe("TeamSettings", () => {
     expect(rpc.organizations.acceptInvitation).toHaveBeenCalledWith({ invitationId: "inv-1" });
     expect(selectSpace).toHaveBeenCalledWith("s-globex");
     vi.unstubAllGlobals();
+  });
+
+  it("shows company memory read-only to a member and editable to an admin", async () => {
+    rpc.organizations.setMemory.mockResolvedValue({ revision: 3 });
+    await render();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Manage Acme"]')?.click(),
+    );
+    await settle();
+    const box = container.querySelector<HTMLTextAreaElement>("textarea");
+    expect(box?.value).toBe("Refunds need a manager");
+    expect(box?.readOnly).toBe(true);
+    expect(button("Save")).toBeUndefined();
+
+    rpc.organizations.memory.mockResolvedValue({
+      content: "Refunds need a manager",
+      revision: 2,
+      updatedAt: null,
+      canEdit: true,
+    });
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>('[aria-label="Back"]')?.click();
+    });
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Manage Acme"]')?.click(),
+    );
+    await settle();
+    expect(container.querySelector<HTMLTextAreaElement>("textarea")?.readOnly).toBe(false);
   });
 });

@@ -464,6 +464,7 @@ msgstr "空間操作"
 msgid "Active"
 msgstr "啟用"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Activity"
 msgstr "動態"
@@ -1180,6 +1181,10 @@ msgstr "更換模型"
 msgid "Change password"
 msgstr "修改密碼"
 
+#: src/components/TeamSettings.tsx
+msgid "changed a role"
+msgstr ""
+
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Changing…"
 msgstr "正在修改…"
@@ -1461,6 +1466,10 @@ msgstr ""
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Compact"
 msgstr "緊湊"
+
+#: src/components/TeamSettings.tsx
+msgid "Company memory"
+msgstr ""
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Complete"
@@ -2271,6 +2280,10 @@ msgstr "建立你的 Anviq Agents"
 msgid "Created"
 msgstr "已建立"
 
+#: src/components/TeamSettings.tsx
+msgid "created the team"
+msgstr ""
+
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2646,6 +2659,10 @@ msgid "Edit Profile"
 msgstr "編輯資料"
 
 #: src/components/TeamSettings.tsx
+msgid "edited company memory"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "電子信箱"
@@ -2983,6 +3000,10 @@ msgstr "群組設定"
 msgid "Group updates"
 msgstr "群組更新"
 
+#: src/components/TeamSettings.tsx
+msgid "handed over ownership"
+msgstr ""
+
 #: src/components/call/CallCard.tsx
 msgid "Hang up"
 msgstr "結束通話"
@@ -3243,6 +3264,10 @@ msgstr ""
 msgid "Invite"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "invited"
+msgstr ""
+
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Isolated"
@@ -3283,6 +3308,10 @@ msgstr "模型會還原為匯入前的設定。"
 #: src/components/TeamSettings.tsx
 #: src/pages/AcceptInvitation.tsx
 msgid "Join"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "joined"
 msgstr ""
 
 #: src/pages/shell/transcript.tsx
@@ -3350,6 +3379,10 @@ msgstr ""
 
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "left"
 msgstr ""
 
 #: src/components/ComputerDeviceSettings.tsx
@@ -4747,6 +4780,10 @@ msgstr ""
 msgid "Remove webhook"
 msgstr "移除 Webhook"
 
+#: src/components/TeamSettings.tsx
+msgid "removed"
+msgstr ""
+
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Removed"
 msgstr "已移除"
@@ -5002,6 +5039,7 @@ msgstr "週六"
 #: src/components/AskCard.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/SkillDraftCard.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
@@ -5263,6 +5301,10 @@ msgstr "形狀 {0}"
 #: src/pages/shell/bot-panel.tsx
 msgid "Shared"
 msgstr "共享"
+
+#: src/components/TeamSettings.tsx
+msgid "shared a chat"
+msgstr ""
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Shared memory"
@@ -5542,6 +5584,10 @@ msgstr "停止朗讀"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Stop teaching"
 msgstr "停止示範"
+
+#: src/components/TeamSettings.tsx
+msgid "stopped sharing a chat"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts

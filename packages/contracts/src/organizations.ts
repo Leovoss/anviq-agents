@@ -44,6 +44,28 @@ export const MyTeamInvitationSchema = z.object({
 });
 export type MyTeamInvitation = z.infer<typeof MyTeamInvitationSchema>;
 
+export const CompanyMemorySchema = z.object({
+  content: z.string(),
+  revision: z.number().int().nonnegative(),
+  updatedAt: IsoDate.nullable(),
+  canEdit: z.boolean(),
+});
+export type CompanyMemory = z.infer<typeof CompanyMemorySchema>;
+export const SetCompanyMemoryInput = z.object({
+  organizationId: Id,
+  content: z.string().max(20_000),
+  expectedRevision: z.number().int().nonnegative().optional(),
+});
+
+export const TeamEventSchema = z.object({
+  id: Id,
+  type: z.string(),
+  actorName: z.string(),
+  subject: z.string().nullable(),
+  createdAt: IsoDate,
+});
+export type TeamEvent = z.infer<typeof TeamEventSchema>;
+
 export const CreateTeamInput = z.object({ name: teamName });
 export const CreateTeamOutput = z.object({ id: Id, defaultSpaceId: Id });
 export const TeamIdInput = z.object({ organizationId: Id });

@@ -147,12 +147,15 @@ import { ModelHeadersSchema } from "./model-headers.js";
 import { ModelRoleSchema, ModelRoleUpdateSchema, ModelRoleViewSchema } from "./model-roles.js";
 import {
   AcceptInvitationOutput,
+  CompanyMemorySchema,
   CreateTeamInput,
   CreateTeamOutput,
   InvitationIdInput,
   InviteToTeamInput,
   MyTeamInvitationSchema,
+  SetCompanyMemoryInput,
   SetTeamRoleInput,
+  TeamEventSchema,
   TeamIdInput,
   TeamInvitationSchema,
   TeamMemberInput,
@@ -310,6 +313,11 @@ export const appContract = {
     cancelInvitation: oc.input(InvitationIdInput).output(z.object({ ok: z.literal(true) })),
     myInvitations: oc.output(z.array(MyTeamInvitationSchema)),
     acceptInvitation: oc.input(InvitationIdInput).output(AcceptInvitationOutput),
+    /** What every bot in the team knows. Members read it; owners and admins write it. */
+    memory: oc.input(TeamIdInput).output(CompanyMemorySchema),
+    setMemory: oc.input(SetCompanyMemoryInput).output(z.object({ revision: z.number().int() })),
+    /** The team's audit log, newest first, for owners and admins. */
+    events: oc.input(TeamIdInput).output(z.array(TeamEventSchema)),
   },
   spaces: {
     list: oc.output(SpaceNavigationSchema),

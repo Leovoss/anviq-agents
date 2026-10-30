@@ -463,6 +463,7 @@ msgstr "פעולות למרחב"
 msgid "Active"
 msgstr "פעיל"
 
+#: src/components/TeamSettings.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Activity"
 msgstr "פעילות"
@@ -1179,6 +1180,10 @@ msgstr "החלפת מודל"
 msgid "Change password"
 msgstr "שינוי סיסמה"
 
+#: src/components/TeamSettings.tsx
+msgid "changed a role"
+msgstr ""
+
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Changing…"
 msgstr "משנה…"
@@ -1460,6 +1465,10 @@ msgstr ""
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Compact"
 msgstr "צפוף"
+
+#: src/components/TeamSettings.tsx
+msgid "Company memory"
+msgstr ""
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Complete"
@@ -2270,6 +2279,10 @@ msgstr "יצירת Anviq Agents משלך"
 msgid "Created"
 msgstr "נוצר"
 
+#: src/components/TeamSettings.tsx
+msgid "created the team"
+msgstr ""
+
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2645,6 +2658,10 @@ msgid "Edit Profile"
 msgstr "עריכת פרופיל"
 
 #: src/components/TeamSettings.tsx
+msgid "edited company memory"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "אימייל"
@@ -2982,6 +2999,10 @@ msgstr "הגדרות קבוצה"
 msgid "Group updates"
 msgstr "עדכוני קבוצה"
 
+#: src/components/TeamSettings.tsx
+msgid "handed over ownership"
+msgstr ""
+
 #: src/components/call/CallCard.tsx
 msgid "Hang up"
 msgstr "ניתוק שיחה"
@@ -3242,6 +3263,10 @@ msgstr ""
 msgid "Invite"
 msgstr ""
 
+#: src/components/TeamSettings.tsx
+msgid "invited"
+msgstr ""
+
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Isolated"
@@ -3282,6 +3307,10 @@ msgstr "המודל שלו יחזור לזה שלפני הייבוא."
 #: src/components/TeamSettings.tsx
 #: src/pages/AcceptInvitation.tsx
 msgid "Join"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "joined"
 msgstr ""
 
 #: src/pages/shell/transcript.tsx
@@ -3349,6 +3378,10 @@ msgstr ""
 
 #: src/components/TeamSettings.tsx
 msgid "Leave team"
+msgstr ""
+
+#: src/components/TeamSettings.tsx
+msgid "left"
 msgstr ""
 
 #: src/components/ComputerDeviceSettings.tsx
@@ -4746,6 +4779,10 @@ msgstr ""
 msgid "Remove webhook"
 msgstr "הסרת ה-webhook"
 
+#: src/components/TeamSettings.tsx
+msgid "removed"
+msgstr ""
+
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Removed"
 msgstr "יוסר"
@@ -5001,6 +5038,7 @@ msgstr "שבת"
 #: src/components/AskCard.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/teach/SkillDraftCard.tsx
+#: src/components/TeamSettings.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
@@ -5262,6 +5300,10 @@ msgstr ""
 #: src/pages/shell/bot-panel.tsx
 msgid "Shared"
 msgstr "משותף"
+
+#: src/components/TeamSettings.tsx
+msgid "shared a chat"
+msgstr ""
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Shared memory"
@@ -5541,6 +5583,10 @@ msgstr "הפסקת ההקראה"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Stop teaching"
 msgstr "הפסקת הלימוד"
+
+#: src/components/TeamSettings.tsx
+msgid "stopped sharing a chat"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts

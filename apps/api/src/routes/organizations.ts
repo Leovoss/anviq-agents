@@ -8,14 +8,18 @@ import {
   leaveOrganization,
   listInvitations,
   listMyInvitations,
+  listOrganizationEvents,
   listOrganizationMembers,
   listTeams,
   OrganizationError,
   personalSpaceId,
+  readCompanyMemory,
+  recordOrganizationEvent,
   removeMember,
   runAsSystem,
   setMemberRole,
   transferOwnership,
+  writeCompanyMemory,
 } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
 import { ORPCError } from "@orpc/server";
@@ -52,6 +56,12 @@ export function organizationsRoutes(ctx: RouterContext) {
   const prisma = deps.prisma;
   const system = <T>(work: () => Promise<T>) =>
     reportRules(() => runAsSystem("team membership", work));
+  const note = (
+    actorUserId: string,
+    organizationId: string,
+    type: Parameters<typeof recordOrganizationEvent>[1]["type"],
+    subject?: string,
+  ) => recordOrganizationEvent(prisma, { organizationId, actorUserId, type, subject });
   return {
     organizations: {
       list: authed.organizations.list.handler(({ context }) =>
@@ -61,9 +71,14 @@ export function organizationsRoutes(ctx: RouterContext) {
         system(async () => ({ spaceId: await personalSpaceId(prisma, context.actor.userId) })),
       ),
       create: authed.organizations.create.handler(({ context, input }) =>
-        system(() =>
-          createOrganization(prisma, { userId: context.actor.userId, name: input.name }),
-        ),
+        system(async () => {
+          const team = await createOrganization(prisma, {
+            userId: context.actor.userId,
+            name: input.name,
+          });
+          await note(context.actor.userId, team.id, "team.created");
+          return team;
+        }),
       ),
       members: authed.organizations.members.handler(({ context, input }) =>
         system(async () =>
@@ -80,6 +95,12 @@ export function organizationsRoutes(ctx: RouterContext) {
             targetUserId: input.userId,
             role: input.role,
           });
+          await note(
+            context.actor.userId,
+            input.organizationId,
+            "member.role_changed",
+            input.userId,
+          );
           return done;
         }),
       ),
@@ -90,6 +111,12 @@ export function organizationsRoutes(ctx: RouterContext) {
             organizationId: input.organizationId,
             targetUserId: input.userId,
           });
+          await note(
+            context.actor.userId,
+            input.organizationId,
+            "ownership.transferred",
+            input.userId,
+          );
           return done;
         }),
       ),
@@ -100,6 +127,7 @@ export function organizationsRoutes(ctx: RouterContext) {
             organizationId: input.organizationId,
             targetUserId: input.userId,
           });
+          await note(context.actor.userId, input.organizationId, "member.removed", input.userId);
           return done;
         }),
       ),
@@ -109,6 +137,7 @@ export function organizationsRoutes(ctx: RouterContext) {
             userId: context.actor.userId,
             organizationId: input.organizationId,
           });
+          await note(context.actor.userId, input.organizationId, "member.left");
           return done;
         }),
       ),
@@ -127,6 +156,12 @@ export function organizationsRoutes(ctx: RouterContext) {
             email: input.email,
             role: input.role,
           });
+          await note(
+            context.actor.userId,
+            input.organizationId,
+            "member.invited",
+            invitation.email,
+          );
           if (deps.email) {
             const url = new URL(`/accept-invitation/${invitation.id}`, deps.env.webOrigin).href;
             // The invitation exists either way; a delivery failure is reported, and the invite can be resent.
@@ -154,11 +189,42 @@ export function organizationsRoutes(ctx: RouterContext) {
         ),
       ),
       acceptInvitation: authed.organizations.acceptInvitation.handler(({ context, input }) =>
-        system(() =>
-          acceptInvitation(prisma, {
+        system(async () => {
+          const joined = await acceptInvitation(prisma, {
             userId: context.actor.userId,
             invitationId: input.invitationId,
-          }),
+          });
+          await note(context.actor.userId, joined.organizationId, "member.joined");
+          return joined;
+        }),
+      ),
+      memory: authed.organizations.memory.handler(({ context, input }) =>
+        system(async () => {
+          const memory = await readCompanyMemory(
+            prisma,
+            context.actor.userId,
+            input.organizationId,
+          );
+          return { ...memory, updatedAt: memory.updatedAt ? iso(memory.updatedAt) : null };
+        }),
+      ),
+      setMemory: authed.organizations.setMemory.handler(({ context, input }) =>
+        system(async () => {
+          const saved = await writeCompanyMemory(prisma, {
+            userId: context.actor.userId,
+            organizationId: input.organizationId,
+            content: input.content,
+            expectedRevision: input.expectedRevision,
+          });
+          await note(context.actor.userId, input.organizationId, "memory.updated");
+          return saved;
+        }),
+      ),
+      events: authed.organizations.events.handler(({ context, input }) =>
+        system(async () =>
+          (await listOrganizationEvents(prisma, context.actor.userId, input.organizationId)).map(
+            (event) => ({ ...event, createdAt: iso(event.createdAt) }),
+          ),
         ),
       ),
     },

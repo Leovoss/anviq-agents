@@ -2,6 +2,7 @@ import type { AdapterContext, MemorySnapshot, MemoryStore } from "@anviq/adapter
 import { byteLength, truncateUtf8 } from "./utf8.js";
 
 const MAX_AGENT_MEMORY_BYTES = 32 * 1024;
+const MAX_COMPANY_MEMORY_BYTES = 12 * 1024;
 
 type ScopedMemoryDocument = MemorySnapshot["documents"][number] & {
   scope: "bot" | "user";
@@ -12,6 +13,7 @@ export async function loadAgentMemoryContext(
   botId: string,
   context: AdapterContext,
   maxBytes = MAX_AGENT_MEMORY_BYTES,
+  companyMemory?: string,
 ): Promise<string | undefined> {
   const [botMemory, userMemory] = await Promise.all([
     memory.read({ scope: "bot", botId }, context),
@@ -21,7 +23,7 @@ export async function loadAgentMemoryContext(
     ...botMemory.documents.map((document) => ({ ...document, scope: "bot" as const })),
     ...userMemory.documents.map((document) => ({ ...document, scope: "user" as const })),
   ];
-  if (documents.length === 0) return undefined;
+  if (documents.length === 0 && !companyMemory) return undefined;
 
   documents.sort(
     (left, right) =>
@@ -39,6 +41,16 @@ export async function loadAgentMemoryContext(
 
   const sections: string[] = [];
   let remainingBytes = maxBytes - fixedBytes;
+  // Company memory comes first and is capped, so it can never crowd out what the user saved.
+  if (companyMemory) {
+    const heading = "## company: notes every bot in this team knows\n";
+    const room = Math.min(remainingBytes, MAX_COMPANY_MEMORY_BYTES);
+    if (byteLength(heading) < room) {
+      const content = truncateUtf8(companyMemory, room - byteLength(heading), "end");
+      sections.push(heading, content);
+      remainingBytes -= byteLength(heading) + byteLength(content);
+    }
+  }
   for (const document of documents) {
     const heading = `${sections.length === 0 ? "" : "\n\n"}## ${document.scope}: ${document.path} (revision ${document.revision})\n`;
     const headingBytes = byteLength(heading);
