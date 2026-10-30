@@ -4,6 +4,7 @@ import {
   dismissableAskMessageIds,
   groupVoiceChats,
   memberName,
+  ownAskIds,
   timeSeparatorIds,
   unreadDividerMessageId,
   voiceChatHoldsMessage,
@@ -103,8 +104,19 @@ export function useThreadRows({
   const { t, locale } = useI18n();
   const { showBotSenderName, peerTranscript, reactionView, expandedPeerMarkers } = transcript;
   const visibleMessages = reactionView.visibleMessages;
-  const answerableAskIds = useMemo(() => answerableAskMessageIds(snap), [snap]);
-  const dismissableAskIds = useMemo(() => dismissableAskMessageIds(snap, userId), [snap, userId]);
+  // In a chat with bots of several people each bot asks its own owner, so a reader answers only
+  // for the bots they own.
+  const sharedChat = (snap?.members ?? []).some(
+    (member) => member.ownerUserId && member.ownerUserId !== userId,
+  );
+  const answerableAskIds = useMemo(
+    () => ownAskIds(snap, answerableAskMessageIds(snap), sharedChat, userId),
+    [snap, sharedChat, userId],
+  );
+  const dismissableAskIds = useMemo(
+    () => ownAskIds(snap, dismissableAskMessageIds(snap, userId), sharedChat, userId),
+    [snap, sharedChat, userId],
+  );
   const separatorIds = useMemo(() => timeSeparatorIds(visibleMessages), [visibleMessages]);
   const unreadDividerId = useMemo(
     () => unreadDividerMessageId(visibleMessages, readSeq, snap?.olderCursor ?? null),
@@ -157,8 +169,8 @@ export function useThreadRows({
           members={snap?.members}
           readOnly={readOnly}
           onCall={onCall}
-          canAnswer={!readOnly && !snap?.guest && answerableAskIds.has(message.id)}
-          canDismiss={!snap?.guest && dismissableAskIds.has(message.id)}
+          canAnswer={!readOnly && answerableAskIds.has(message.id)}
+          canDismiss={dismissableAskIds.has(message.id)}
           senderName={
             message.role === "user" && message.sender && message.sender.userId !== userId
               ? message.sender.name

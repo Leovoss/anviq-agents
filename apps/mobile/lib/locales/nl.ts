@@ -1213,4 +1213,5 @@ export const NL_MESSAGES: Record<string, string> = {
   "suggested a note": "heeft een notitie voorgesteld",
   "Add {name} to the chat": "{name} aan de chat toevoegen",
   "Leave chat": "Chat verlaten",
+  "Your bots": "Jouw bots",
 };

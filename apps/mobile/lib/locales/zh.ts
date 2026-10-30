@@ -1208,4 +1208,5 @@ export const ZH_MESSAGES: Record<string, string> = {
   "suggested a note": "建议了一条笔记",
   "Add {name} to the chat": "将 {name} 添加到聊天",
   "Leave chat": "退出聊天",
+  "Your bots": "你的机器人",
 };

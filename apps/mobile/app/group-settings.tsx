@@ -65,6 +65,19 @@ export default function GroupSettingsScreen() {
     }
   }
 
+  async function setMyBots(botIds: string[]) {
+    if (!groupId || pending) return;
+    setPending(true);
+    setError(null);
+    try {
+      setGroup(await rpc("groups/setMyBots", { groupId, botIds }));
+    } catch (err) {
+      setError(errorText(err, t("Could not save group")));
+    } finally {
+      setPending(false);
+    }
+  }
+
   async function leave() {
     if (!groupId || pending) return;
     setPending(true);
@@ -122,6 +135,36 @@ export default function GroupSettingsScreen() {
                 <SettingsRow key={person.userId} title={person.name} />
               ))}
             </SettingsGroup>
+            {bots.length > 0 ? (
+              <SettingsGroup label={t("Your bots")}>
+                {bots.map((bot) => {
+                  const inChat = group.members.some((member) => member.botId === bot.id);
+                  return (
+                    <SettingsRow
+                      key={bot.id}
+                      title={bot.name}
+                      trailing={
+                        <NativeSwitch
+                          accessibilityLabel={t("Add {name} to the chat", { name: bot.name })}
+                          value={inChat}
+                          disabled={pending}
+                          onValueChange={(next) => {
+                            const mine = new Set(
+                              group.members
+                                .filter((member) => bots.some((own) => own.id === member.botId))
+                                .map((member) => member.botId),
+                            );
+                            if (next) mine.add(bot.id);
+                            else mine.delete(bot.id);
+                            void setMyBots([...mine]);
+                          }}
+                        />
+                      }
+                    />
+                  );
+                })}
+              </SettingsGroup>
+            ) : null}
             {error ? (
               <Text style={{ color: tokens.destructive, marginTop: 12 }}>{error}</Text>
             ) : null}

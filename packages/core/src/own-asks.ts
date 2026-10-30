@@ -1,12 +1,16 @@
 // Copyright 2026 Anviq LLC. All rights reserved.
-import type { ThreadSnapshot } from "@anviq/contracts";
+
+interface ChatWithOwners {
+  members?: ReadonlyArray<{ botId: string; ownerUserId?: string }>;
+  messages: ReadonlyArray<{ id: string; botId?: string }>;
+}
 
 /**
  * In a chat shared by several people each bot asks its own owner, so the reader may answer only
  * the questions and approvals of bots they own. In any other chat nothing is filtered.
  */
 export function ownAskIds(
-  snapshot: ThreadSnapshot | null,
+  snapshot: ChatWithOwners | null,
   ids: ReadonlySet<string>,
   shared: boolean,
   userId: string | undefined,

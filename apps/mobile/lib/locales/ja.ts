@@ -1246,4 +1246,5 @@ export const JA_MESSAGES: Record<string, string> = {
   "suggested a note": "メモを提案しました",
   "Add {name} to the chat": "{name} をチャットに追加",
   "Leave chat": "チャットを退出",
+  "Your bots": "あなたのボット",
 };

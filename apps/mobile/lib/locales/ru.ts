@@ -1251,4 +1251,5 @@ export const RU_MESSAGES: Record<string, string> = {
   "suggested a note": "предложил(а) заметку",
   "Add {name} to the chat": "Добавить {name} в чат",
   "Leave chat": "Покинуть чат",
+  "Your bots": "Ваши боты",
 };

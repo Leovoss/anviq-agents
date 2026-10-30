@@ -1228,4 +1228,5 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   "suggested a note": "建議了一則筆記",
   "Add {name} to the chat": "將 {name} 加入聊天",
   "Leave chat": "退出聊天",
+  "Your bots": "你的機器人",
 };

@@ -1221,4 +1221,5 @@ export const DE_MESSAGES: Record<string, string> = {
   "suggested a note": "hat eine Notiz vorgeschlagen",
   "Add {name} to the chat": "{name} zum Chat hinzufügen",
   "Leave chat": "Chat verlassen",
+  "Your bots": "Deine Bots",
 };
