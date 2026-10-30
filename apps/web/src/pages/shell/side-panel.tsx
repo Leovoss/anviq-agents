@@ -194,6 +194,13 @@ export function ShellSidePanel({
                   current.map((group) => (group.id === updated.id ? updated : group)),
                 );
               }}
+              onSetMyBots={async (botIds) => {
+                const updated = await rpc.groups.setMyBots({ groupId: activeGroup.id, botIds });
+                setGroups((current) =>
+                  current.map((group) => (group.id === updated.id ? updated : group)),
+                );
+                void refreshGroupThread(activeGroup.id).catch(() => undefined);
+              }}
               onLeave={async () => {
                 await rpc.groups.leave({ groupId: activeGroup.id });
                 const remainingGroups = groups.filter((group) => group.id !== activeGroup.id);

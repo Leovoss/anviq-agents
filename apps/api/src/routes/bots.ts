@@ -35,6 +35,7 @@ import {
   restoreBotUnderComputerQuota,
   SpaceDeletionInProgressError,
   setGroupParticipants,
+  setMyBotsInSharedGroup,
   settingsTarget,
 } from "@anviq/db";
 import { getLogger } from "@anviq/logging";
@@ -245,6 +246,8 @@ export async function enqueueBotIntroRun(deps: RouterDeps, actor: Actor, bot: Bo
 export function botsRoutes(ctx: RouterContext) {
   const { deps, repos, botModelValidation, removeBot, agentImportServices, groupRepos, authed } =
     ctx;
+  const cancelRunJobs = (runIds: string[]) =>
+    Promise.all(runIds.map((runId) => deps.jobs.cancel(runJobKey(runId)).catch(() => undefined)));
   return {
     bots: {
       list: authed.bots.list.handler(async ({ context }) => repos.listBots(context.actor)),
@@ -613,7 +616,10 @@ export function botsRoutes(ctx: RouterContext) {
         }
       }),
       setParticipants: authed.groups.setParticipants.handler(async ({ context, input }) => {
-        await reportRules(() => setGroupParticipants(deps.prisma, context.actor, input));
+        const { cancelledRunIds } = await reportRules(() =>
+          setGroupParticipants(deps.prisma, context.actor, input),
+        );
+        await cancelRunJobs(cancelledRunIds);
         const space = await deps.prisma.space.findUnique({
           where: { id: context.actor.spaceId },
           select: { organizationId: true },
@@ -631,8 +637,21 @@ export function botsRoutes(ctx: RouterContext) {
         );
       }),
       leave: authed.groups.leave.handler(async ({ context, input }) => {
-        await reportRules(() => leaveSharedGroup(deps.prisma, context.actor, input.groupId));
+        const { cancelledRunIds } = await reportRules(() =>
+          leaveSharedGroup(deps.prisma, context.actor, input.groupId),
+        );
+        await cancelRunJobs(cancelledRunIds);
         return { ok: true as const };
+      }),
+      setMyBots: authed.groups.setMyBots.handler(async ({ context, input }) => {
+        const { cancelledRunIds } = await reportRules(() =>
+          setMyBotsInSharedGroup(deps.prisma, context.actor, input),
+        );
+        await cancelRunJobs(cancelledRunIds);
+        return groupRepos.mapGroup(
+          await groupRepos.getGroup(context.actor, input.groupId),
+          context.actor.userId,
+        );
       }),
       update: authed.groups.update.handler(async ({ context, input }) => {
         if (input.sectionId) {

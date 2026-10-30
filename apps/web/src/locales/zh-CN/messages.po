@@ -476,6 +476,7 @@ msgstr "动态"
 msgid "Add"
 msgstr "添加"
 
+#. placeholder {0}: bot.name
 #. placeholder {0}: person.name
 #: src/pages/GroupPanel.tsx
 msgid "Add {0} to the chat"
@@ -4735,6 +4736,7 @@ msgstr "移除"
 msgid "Remove {0}"
 msgstr "移除 {0}"
 
+#. placeholder {0}: bot.name
 #. placeholder {0}: person.name
 #: src/pages/GroupPanel.tsx
 msgid "Remove {0} from the chat"
@@ -6509,6 +6511,10 @@ msgstr "你已接管"
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
 msgstr "你的 Anthropic"
+
+#: src/pages/GroupPanel.tsx
+msgid "Your bots"
+msgstr ""
 
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Your defaults"

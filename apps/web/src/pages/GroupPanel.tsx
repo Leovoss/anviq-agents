@@ -219,12 +219,17 @@ export function CreateGroupForm({
 function PeoplePicker({
   group,
   people,
+  bots = [],
   onShare,
+  onSetMyBots,
   onLeave,
 }: {
   group: Group;
   people: Array<{ userId: string; name: string }>;
+  /** The reader's own bots, for a guest to bring into the chat. */
+  bots?: Bot[];
   onShare?: (userIds: string[]) => Promise<void>;
+  onSetMyBots?: (botIds: string[]) => Promise<void>;
   onLeave?: () => Promise<void>;
 }) {
   const { t } = useLingui();
@@ -287,6 +292,48 @@ function PeoplePicker({
           </div>
         ))}
       </div>
+      {!manage && onSetMyBots && bots.length > 0 ? (
+        <div className="mt-5">
+          <span className="text-sm text-muted-foreground">
+            <Trans>Your bots</Trans>
+          </span>
+          <div className="mt-2 space-y-1">
+            {bots
+              .filter((bot) => !bot.archivedAt)
+              .map((bot) => {
+                const inChat = group.members.some((member) => member.botId === bot.id);
+                return (
+                  <div
+                    key={bot.id}
+                    className="flex w-full items-center rounded-xl px-2.5 py-2.5 hover:bg-accent"
+                  >
+                    <span className="flex-1 text-[15px] text-foreground" dir="auto">
+                      {bot.name}
+                    </span>
+                    <Checkbox
+                      checked={inChat}
+                      disabled={busy}
+                      aria-label={
+                        inChat
+                          ? t`Remove ${bot.name} from the chat`
+                          : t`Add ${bot.name} to the chat`
+                      }
+                      onCheckedChange={() => {
+                        const mine = new Set(
+                          group.members
+                            .filter((member) => bots.some((own) => own.id === member.botId))
+                            .map((member) => member.botId),
+                        );
+                        if (!mine.delete(bot.id)) mine.add(bot.id);
+                        void run(() => onSetMyBots([...mine]));
+                      }}
+                    />
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      ) : null}
       {!manage && onLeave ? (
         <Button
           variant="destructive"
@@ -306,6 +353,7 @@ export function GroupSettings({
   bots,
   people = [],
   onShare,
+  onSetMyBots,
   onLeave,
   onSave,
   onRemove,
@@ -318,6 +366,7 @@ export function GroupSettings({
   /** Everyone else in the space, for the host to choose from. */
   people?: Array<{ userId: string; name: string }>;
   onShare?: (userIds: string[]) => Promise<void>;
+  onSetMyBots?: (botIds: string[]) => Promise<void>;
   onLeave?: () => Promise<void>;
   onSave: (input: { name?: string; botIds?: string[] }) => Promise<void>;
   onRemove: () => Promise<void>;
@@ -415,7 +464,13 @@ export function GroupSettings({
         </p>
       ) : null}
       {group.canManage === false ? (
-        <PeoplePicker group={group} people={people} onLeave={onLeave} />
+        <PeoplePicker
+          group={group}
+          people={people}
+          bots={bots}
+          onSetMyBots={onSetMyBots}
+          onLeave={onLeave}
+        />
       ) : (
         <>
           <label htmlFor={nameId} className="block text-sm text-muted-foreground">

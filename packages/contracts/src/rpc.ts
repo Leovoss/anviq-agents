@@ -79,6 +79,7 @@ import {
   DeploymentSettingsSchema,
   ExportManifestSchema,
   ExternalConversationPolicySchema,
+  GROUP_MEMBER_MAX,
   GroupDetailSchema,
   GroupSchema,
   IntegrationCatalogResultSchema,
@@ -510,6 +511,10 @@ export const appContract = {
       .output(GroupSchema),
     /** A guest leaves a chat shared with them. */
     leave: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
+    /** A person chooses which of their own bots join a chat shared with them. */
+    setMyBots: oc
+      .input(z.object({ groupId: Id, botIds: z.array(Id).max(GROUP_MEMBER_MAX) }))
+      .output(GroupSchema),
     update: oc.input(UpdateGroupInput).output(GroupSchema),
     archive: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
     restore: oc.input(groupId).output(z.object({ ok: z.literal(true) })),

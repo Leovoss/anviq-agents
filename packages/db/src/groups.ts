@@ -36,6 +36,7 @@ type GroupRecord = {
       id: string;
       name: string;
       color: string;
+      userId?: string;
       runs: Array<{ status: string }>;
     };
   }>;
@@ -90,6 +91,7 @@ function mapGroupMembers(members: GroupRecord["members"]): GroupMember[] {
     name: member.bot.name,
     color: member.bot.color,
     status: primaryActiveRun(member.bot.runs)?.status ?? "idle",
+    ...(member.bot.userId ? { ownerUserId: member.bot.userId } : {}),
   }));
 }
 
@@ -137,9 +139,12 @@ async function assertOwnedBots(
   prisma: PrismaClient,
   actor: Actor,
   botIds: string[],
+  /** Bots other people already have in a shared chat count toward its size. */
+  othersCount = 0,
 ): Promise<GroupMember[]> {
   const unique = [...new Set(botIds)];
-  if (unique.length < GROUP_MEMBER_MIN || unique.length > GROUP_MEMBER_MAX) {
+  const size = unique.length + othersCount;
+  if (size < GROUP_MEMBER_MIN || size > GROUP_MEMBER_MAX) {
     throw new IsolationError(
       `Groups require ${GROUP_MEMBER_MIN} to ${GROUP_MEMBER_MAX} distinct bots`,
     );
@@ -201,6 +206,7 @@ const groupInclude = {
           id: true,
           name: true,
           color: true,
+          userId: true,
           runs: activeRunSelection,
         },
       },
@@ -232,6 +238,7 @@ const groupTargetInclude = {
           id: true,
           name: true,
           color: true,
+          userId: true,
           runs: activeRunSelection,
         },
       },
@@ -503,7 +510,29 @@ export function createGroupRepos(prisma: PrismaClient) {
         sectionId?: string | null;
       },
     ): Promise<{ group: Group; cancelledRunIds: string[] }> {
-      const members = input.botIds ? await assertOwnedBots(prisma, actor, input.botIds) : undefined;
+      // Bots that guests of a shared chat brought in stay as they are; the host edits their own.
+      const guestBotIds = input.botIds
+        ? new Set(
+            (
+              await prisma.chatGroupMember.findMany({
+                where: {
+                  groupId: input.groupId,
+                  group: { spaceId: actor.spaceId, userId: actor.userId },
+                  bot: { userId: { not: actor.userId }, archivedAt: null },
+                },
+                select: { botId: true },
+              })
+            ).map((member) => member.botId),
+          )
+        : new Set<string>();
+      const members = input.botIds
+        ? await assertOwnedBots(
+            prisma,
+            actor,
+            input.botIds.filter((botId) => !guestBotIds.has(botId)),
+            guestBotIds.size,
+          )
+        : undefined;
       const updated = await prisma.$transaction(async (tx) => {
         await lockOwnedGroup(tx, actor, input.groupId);
         const current = await tx.chatGroup.findFirst({
@@ -538,7 +567,9 @@ export function createGroupRepos(prisma: PrismaClient) {
           throw new IsolationError();
         }
         const nextBotIds = new Set(
-          members?.map((member) => member.botId) ?? current.members.map((member) => member.botId),
+          members
+            ? [...members.map((member) => member.botId), ...guestBotIds]
+            : current.members.map((member) => member.botId),
         );
         const removedBotIds = current.members
           .map((member) => member.botId)
@@ -568,10 +599,10 @@ export function createGroupRepos(prisma: PrismaClient) {
         if (members) {
           await tx.chatGroupMember.deleteMany({ where: { groupId: input.groupId } });
           await tx.chatGroupMember.createMany({
-            data: memberRowsInOrder(
-              input.groupId,
-              members.map((member) => member.botId),
-            ),
+            data: memberRowsInOrder(input.groupId, [
+              ...members.map((member) => member.botId),
+              ...guestBotIds,
+            ]),
           });
         }
         await tx.chatGroup.update({
@@ -706,6 +737,22 @@ export function createGroupRepos(prisma: PrismaClient) {
 
     mapGroup,
   };
+}
+
+/** Locks a group for whoever holds one of its bots, whoever owns the group. */
+export async function lockGroupOfSpace(
+  prisma: Pick<Prisma.TransactionClient, "$queryRaw">,
+  spaceId: string,
+  groupId: string,
+) {
+  const locked = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT id
+    FROM chat_groups
+    WHERE id = ${groupId}
+      AND "spaceId" = ${spaceId}
+    FOR UPDATE
+  `;
+  if (locked.length !== 1) throw new IsolationError();
 }
 
 export async function lockOwnedGroup(
