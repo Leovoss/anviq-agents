@@ -2329,6 +2329,7 @@ describe("sendThreadMessage", () => {
               botId: "bot-a",
               status: "running",
               trigger: "webhook",
+              userId: "user-1",
             },
           ])
           .mockResolvedValue([]),
@@ -2515,6 +2516,7 @@ describe("sendThreadMessage", () => {
             botId: "bot-a",
             status: "waiting_input",
             trigger: "webhook",
+            userId: "user-1",
           },
         ]),
         findFirst: vi
@@ -2712,6 +2714,7 @@ describe("sendThreadMessage", () => {
               botId: "bot-a",
               status: "waiting_input",
               trigger: "webhook",
+              userId: "user-1",
             },
             {
               id: "run-user",
@@ -2719,6 +2722,7 @@ describe("sendThreadMessage", () => {
               botId: "bot-a",
               status: "running",
               trigger: "user",
+              userId: "user-1",
             },
           ])
           .mockResolvedValue([]),
