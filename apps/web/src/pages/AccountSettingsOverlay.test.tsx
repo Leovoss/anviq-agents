@@ -120,7 +120,7 @@ import {
 } from "../lib/composer-enter-to-send-pref";
 import { getRemoteImagesEnabled } from "../lib/remote-images-preference";
 import { TOOL_ACTIVITY_STORAGE_KEY } from "../lib/tool-activity-preference";
-import { GeneralSettingsPanels, UsageSettingsPanel } from "./AccountSettingsOverlay";
+import { GeneralSettingsPanels, LicenseNotice, UsageSettingsPanel } from "./AccountSettingsOverlay";
 
 afterEach(() => {
   localStorage.clear();
@@ -354,6 +354,33 @@ it("does not expose server integration configuration", async () => {
     });
 
     expect(container.querySelector('a[href="/integrations/setup"]')).toBeNull();
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
+
+it("shows the copyright notice and a licensee only when the deployment sets one", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(async () => {
+      root.render(<LicenseNotice />);
+    });
+    const notice = container.querySelector('[data-testid="license-notice"]');
+    expect(notice?.textContent).toContain("© 2026 Anviq LLC. All rights reserved.");
+    expect(notice?.textContent).toContain("30 N Gould St #69062, Sheridan, WY 82801, USA");
+    expect(notice?.textContent).not.toContain("Licensed to");
+
+    await act(async () => {
+      root.render(<LicenseNotice licensee="Example Customer" />);
+    });
+    expect(container.querySelector('[data-testid="license-notice"]')?.textContent).toContain(
+      "Licensed to Example Customer",
+    );
   } finally {
     await act(async () => root.unmount());
     container.remove();
