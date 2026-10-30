@@ -62,6 +62,7 @@ model User {
   emailSends                  EmailSend[]
   signupSurvey                SignupSurvey?
   computerRuns                ComputerRun[]
+  chatGroupParticipations     ChatGroupParticipant[]
   devices                     UserDevice[]
 
   @@unique([email])
@@ -655,6 +656,8 @@ model ChatGroup {
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
   members    ChatGroupMember[]
+  /// People besides the host who read and write in this chat. Empty for a private group.
+  participants ChatGroupParticipant[]
   thread     Thread?
   artifacts  Artifact[]
 
@@ -674,6 +677,21 @@ model ChatGroupMember {
   @@unique([groupId, botId])
   @@index([botId])
   @@map("chat_group_members")
+}
+
+model ChatGroupParticipant {
+  id          String    @id @default(cuid())
+  groupId     String
+  group       ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Highest message seq this person has read; -1 = none. The host's own state stays on the thread.
+  lastReadSeq Int       @default(-1)
+  createdAt   DateTime  @default(now())
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("chat_group_participants")
 }
 
 model Thread {
@@ -719,6 +737,8 @@ model Message {
   replyTo          Message?  @relation("MessageReplies", fields: [replyToMessageId], references: [id], onDelete: SetNull)
   replies          Message[] @relation("MessageReplies")
   runId            String?
+  /// The person who wrote a user message in a chat shared by several people; null otherwise.
+  senderUserId     String?
   clientNonce      String?
   /// Blind-index search tokens for the encrypted blocks; NULL until the row is encrypted.
   searchTokens     Int[]
@@ -786,6 +806,8 @@ model Run {
   taskId               String
   task                 Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId               String
+  /// A teammate who started this run in a chat shared with the bot's owner; the run still acts as `userId`.
+  triggeredByUserId    String?
   status               String
   trigger              String
   modelProvider        String?

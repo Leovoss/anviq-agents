@@ -57,9 +57,10 @@ export async function loadMessagePage(
       // around target). Full peer history belongs in the bot-messages overlay
       // (includePeerRuns).
       const messages = includePeerRuns ? rows : await withoutPeerRunMessages(prisma, rows);
+      const names = await senderNames(prisma, messages);
       return {
         threadId,
-        messages: messages.map(toThreadMessage),
+        messages: messages.map((row) => toThreadMessage(row, names)),
         olderCursor: hasOlder ? (first?.seq ?? null) : null,
         coveredThroughSeq,
       };
@@ -86,9 +87,10 @@ export async function loadMessagePage(
       (row) => !isPeerReceiptBlocks(row.blocks as MessageBlock[]),
     );
     if (hasSubstantive || includePeerReceipts || !hasOlder || includePeerRuns) {
+      const names = await senderNames(prisma, visibleRows);
       return {
         threadId,
-        messages: visibleRows.map(toThreadMessage),
+        messages: visibleRows.map((row) => toThreadMessage(row, names)),
         olderCursor: hasOlder ? (pageRows[0]?.seq ?? null) : null,
       };
     }
@@ -250,25 +252,43 @@ export function shouldForwardBackgroundThreadEvent(event: {
   return Array.isArray(blocks) && blocks.some(isBackgroundInputBlock);
 }
 
-function toThreadMessage(row: {
-  id: string;
-  threadId: string;
-  seq: number;
-  role: string;
-  blocks: Prisma.JsonValue;
-  botId: string | null;
-  replyToMessageId: string | null;
-  replyQuote: string | null;
-  replyTo?: {
+/** Names for the people who wrote messages in a chat shared with others. */
+async function senderNames(
+  prisma: MessageDb,
+  rows: Array<{ senderUserId?: string | null }>,
+): Promise<Map<string, string>> {
+  const ids = [...new Set(rows.flatMap((row) => (row.senderUserId ? [row.senderUserId] : [])))];
+  if (ids.length === 0) return new Map();
+  const users = await prisma.user.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, name: true },
+  });
+  return new Map(users.map((user) => [user.id, user.name]));
+}
+
+function toThreadMessage(
+  row: {
+    id: string;
     threadId: string;
+    seq: number;
     role: string;
-    botId: string | null;
     blocks: Prisma.JsonValue;
-  } | null;
-  runId: string | null;
-  clientNonce?: string | null;
-  createdAt: Date;
-}): ThreadMessage {
+    botId: string | null;
+    replyToMessageId: string | null;
+    replyQuote: string | null;
+    replyTo?: {
+      threadId: string;
+      role: string;
+      botId: string | null;
+      blocks: Prisma.JsonValue;
+    } | null;
+    runId: string | null;
+    senderUserId?: string | null;
+    clientNonce?: string | null;
+    createdAt: Date;
+  },
+  names: Map<string, string> = new Map(),
+): ThreadMessage {
   const parent = row.replyTo?.threadId === row.threadId ? row.replyTo : null;
   const parsed = parent ? MessageBlockSchema.array().safeParse(parent.blocks) : undefined;
   const replyPreview =
@@ -292,6 +312,10 @@ function toThreadMessage(row: {
     replyQuote: row.replyQuote ?? undefined,
     replyPreview,
     runId: row.runId ?? undefined,
+    sender:
+      row.senderUserId && names.has(row.senderUserId)
+        ? { userId: row.senderUserId, name: names.get(row.senderUserId) as string }
+        : undefined,
     callId: callIdFromClientNonce(row.clientNonce),
     createdAt: row.createdAt.toISOString(),
   };

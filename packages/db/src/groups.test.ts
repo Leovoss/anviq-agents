@@ -9,6 +9,7 @@ describe("listSpaceGroupsForSpaces", () => {
       {
         id: "group-1",
         spaceId: "workspace-2",
+        userId: "user-1",
         name: "Support crew",
         pinned: true,
         sectionId: null,
@@ -16,6 +17,7 @@ describe("listSpaceGroupsForSpaces", () => {
         thread: {
           id: "thread-1",
           unread: true,
+          nextMessageSeq: 2,
         },
         members: [
           { bot: { id: "bot-1", name: "Triage", color: "#111", runs: [] } },
@@ -72,7 +74,6 @@ describe("listSpaceGroupsForSpaces", () => {
       },
     ]);
     const query = findMany.mock.calls[0]![0];
-    expect(query.select).not.toHaveProperty("userId");
     expect(query.select).not.toHaveProperty("archivedAt");
     expect(query.select).not.toHaveProperty("createdAt");
   });
@@ -585,8 +586,54 @@ describe("listGroups archived", () => {
     expect(listed.map((item) => item.id)).toEqual(["openable"]);
     expect(findMany.mock.calls[0]![0].where).toEqual({
       spaceId: "space-1",
-      userId: "user-1",
       archivedAt: null,
+      OR: [{ userId: "user-1" }, { participants: { some: { userId: "user-1" } } }],
     });
+  });
+});
+
+describe("mapGroup for a shared chat", () => {
+  const record = (overrides: Record<string, unknown> = {}) =>
+    ({
+      id: "group-1",
+      spaceId: "space-1",
+      userId: "host",
+      name: "Launch",
+      pinned: false,
+      sectionId: null,
+      archivedAt: null,
+      createdAt: new Date("2026-08-20T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-20T00:00:00.000Z"),
+      thread: { id: "thread-1", unread: false, nextMessageSeq: 5, messages: [] },
+      members: [],
+      participants: [
+        { userId: "host", lastReadSeq: 4, user: { name: "Ana" } },
+        { userId: "guest", lastReadSeq: 2, user: { name: "Ben" } },
+      ],
+      ...overrides,
+    }) as unknown as Parameters<ReturnType<typeof createGroupRepos>["mapGroup"]>[0];
+  const repos = createGroupRepos({} as unknown as PrismaClient);
+
+  it("lists the people and marks the host", () => {
+    const group = repos.mapGroup(record(), "host");
+    expect(group.participants).toEqual([
+      { userId: "host", name: "Ana", host: true },
+      { userId: "guest", name: "Ben", host: false },
+    ]);
+    expect(group.canManage).toBe(true);
+  });
+
+  it("reads unread state from each person's own position", () => {
+    expect(repos.mapGroup(record(), "host").unread).toBe(false);
+    const guest = repos.mapGroup(record(), "guest");
+    expect(guest.unread).toBe(true);
+    expect(guest.canManage).toBe(false);
+  });
+
+  it("leaves a private group as it was", () => {
+    const group = repos.mapGroup(record({ participants: [] }), "host");
+    expect(group.participants).toBeUndefined();
+    expect(group.canManage).toBeUndefined();
+    expect(group.unread).toBe(false);
   });
 });
