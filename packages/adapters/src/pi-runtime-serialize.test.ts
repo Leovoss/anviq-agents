@@ -7,14 +7,14 @@ describe("serializeToolResult", () => {
     description: "Large skill",
     source: "user",
     readOnly: false,
-    content: `---\nname: large-skill\n---\n${"1. Step kept for skill_update.\n".repeat(600)}`,
+    content: `---\nname: large-skill\n---\n${"1. Step kept for skill_update.\n".repeat(2500)}`,
   };
 
   it.each(["current", "retrieval"] as const)(
     "returns a large skill read verbatim with the %s strategy",
     (strategy) => {
       const text = serializeToolResult(skill, strategy, "skill_read", { name: skill.name });
-      expect(text.length).toBeGreaterThan(12_000);
+      expect(text.length).toBeGreaterThan(60_000);
       expect(JSON.parse(text)).toEqual(skill);
     },
   );
@@ -23,7 +23,7 @@ describe("serializeToolResult", () => {
     "keeps a full child read and its version with %s context",
     (strategy) => {
       const listing = {
-        bot: { id: "child", instructionsVersion: "v2", instructions: "x".repeat(20_000) },
+        bot: { id: "child", instructionsVersion: "v2", instructions: "x".repeat(80_000) },
         bots: [],
         groups: [],
         sections: [],
@@ -36,7 +36,7 @@ describe("serializeToolResult", () => {
   );
 
   it("still bounds other large tool results", () => {
-    const text = serializeToolResult({ output: "x".repeat(20_000) }, "current", "shell", {});
-    expect(text.length).toBeLessThan(20_000);
+    const text = serializeToolResult({ output: "x".repeat(80_000) }, "current", "shell", {});
+    expect(text.length).toBeLessThan(80_000);
   });
 });

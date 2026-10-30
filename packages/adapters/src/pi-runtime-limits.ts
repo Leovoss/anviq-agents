@@ -19,7 +19,7 @@ export function modelStreamMaxRetries(): number {
   return Number.isInteger(raw) && raw >= 0 && raw <= 5 ? raw : DEFAULT_MODEL_STREAM_MAX_RETRIES;
 }
 
-export const TOOL_RESULT_TEXT_LIMIT = 12_000;
+export const TOOL_RESULT_TEXT_LIMIT = 60_000;
 
 export function clipToolResultText(text: string, limit: number = TOOL_RESULT_TEXT_LIMIT): string {
   return text.length > limit ? `${text.slice(0, limit)}…` : text;

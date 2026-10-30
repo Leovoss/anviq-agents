@@ -20,7 +20,11 @@ import {
 import { shortenToolResultText } from "./context-selection.js";
 import type { PiAgentRuntimeOptions } from "./pi-runtime.js";
 import { sanitizeSensitiveText } from "./pi-runtime-errors.js";
-import { clipToolResultContent, clipToolResultText } from "./pi-runtime-limits.js";
+import {
+  clipToolResultContent,
+  clipToolResultText,
+  TOOL_RESULT_TEXT_LIMIT,
+} from "./pi-runtime-limits.js";
 import type { RuntimeModelTarget } from "./pi-runtime-models.js";
 import { executeSubagent } from "./pi-runtime-subagent.js";
 import { parametersFor, prepareFleetArguments } from "./pi-runtime-tool-parameters.js";
@@ -564,10 +568,10 @@ export function serializeToolResult(
     const text = JSON.stringify(result);
     if (!text) return "ok";
     // skill-tools.ts already bounds skill content; the context budget selector may still shorten it.
-    if (text.length <= 12_000 || VERBATIM_TOOL_RESULTS.has(name)) return text;
+    if (text.length <= TOOL_RESULT_TEXT_LIMIT || VERBATIM_TOOL_RESULTS.has(name)) return text;
     return (strategy ?? DEFAULT_CONTEXT_STRATEGY) === "current"
       ? clipToolResultText(text)
-      : shortenToolResultText(text, 12_000, { name, arguments: args });
+      : shortenToolResultText(text, TOOL_RESULT_TEXT_LIMIT, { name, arguments: args });
   } catch {
     return "ok";
   }

@@ -341,7 +341,7 @@ export async function executeSubagent(
       budgetMessage && streamed.trim()
         ? `${streamed.trim()}\n\n${budgetMessage}`
         : budgetMessage || streamed || assistantText(nested.state.messages.at(-1)) || "done.";
-    const clipped = clipToolResultText(result, 12_000);
+    const clipped = clipToolResultText(result);
     host.queue.push({
       type: "subagent",
       agentId,
