@@ -220,13 +220,9 @@ export async function getSpaceArtifact(
   actor: Actor,
   input: { artifactId: string; groupId: string; contextBotId: string },
 ) {
+  // The caller has checked that the actor is in the group; a file there may be anyone's in it.
   const row = await deps.prisma.artifact.findFirst({
-    where: {
-      id: input.artifactId,
-      groupId: input.groupId,
-      spaceId: actor.spaceId,
-      userId: actor.userId,
-    },
+    where: { id: input.artifactId, groupId: input.groupId, spaceId: actor.spaceId },
   });
   if (!row) throw new IsolationError();
   return readArtifact(deps.artifacts, actor, row, input.contextBotId);
