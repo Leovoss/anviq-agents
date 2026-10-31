@@ -1667,6 +1667,15 @@ running `docker compose … pull updater && docker compose … up -d --wait --pu
 Sidecar `/apply` and `/rollback` recover a failed recreate by redeploying the previously cached
 image when possible; if that also fails, they report a possible mixed-version runtime.
 
+An instance run from `docker-compose.images.yml` (the layout `install-images.sh` sets up) can use
+`infra/compose/update-instance.sh sha-<commit>` from its directory instead. It takes a database
+dump into `/var/backups/anviq`, tags the running app image for rollback, pins `ANVIQ_IMAGE_TAG` and
+`ANVIQ_COMPUTER_IMAGE_TAG`, pulls, starts with `--wait`, and puts the previous tags back if the
+new ones do not start. A host that keeps only `secrets.enc.yaml` gets its `.env` decrypted with
+`sops` first. Migrations are not reversed by the rollback; they only add tables and columns, so
+the previous images keep working against the migrated database. To update several instances, run
+the script over SSH on each one in turn and stop at the first failure.
+
 Source checkouts (not Compose) still upgrade the old way: pull, rebuild with
 `GIT_SHA=$(git rev-parse HEAD)`, run `pnpm db:migrate`, then restart API and worker.
 Product contracts stay compatible across cloud and self-hosted.
