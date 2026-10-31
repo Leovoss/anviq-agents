@@ -68,6 +68,15 @@ vi.mock("react-native", () => {
   };
 });
 vi.mock("./native", () => ({ native: {}, useMobileTokens: () => ({}) }));
+vi.mock("../components/native-switch", () => ({ NativeSwitch: () => null }));
+vi.mock("../components/settings-group", () => ({
+  SettingsGroup: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  SettingsRow: ({ title, onPress }: { title: string; onPress?: () => void }) => (
+    <button type="button" onClick={onPress}>
+      {title}
+    </button>
+  ),
+}));
 vi.mock("./i18n", () => ({
   useI18n: () => ({
     t: (text: string, values: Record<string, string | number> = {}) =>
@@ -131,7 +140,13 @@ beforeEach(() => {
   container = document.createElement("div");
   root = createRoot(container);
   rpc.mockImplementation(async (procedure: string) =>
-    procedure === "groups/list" ? [group] : procedure === "bots/list" ? bots : undefined,
+    procedure === "groups/list"
+      ? [group]
+      : procedure === "bots/list"
+        ? bots
+        : procedure === "spaces/people"
+          ? []
+          : undefined,
   );
 });
 afterEach(async () => {
@@ -236,7 +251,13 @@ it("keeps members closed while a save is running", async () => {
           finish = resolve;
         })
       : Promise.resolve(
-          procedure === "groups/list" ? [group] : procedure === "bots/list" ? bots : undefined,
+          procedure === "groups/list"
+            ? [group]
+            : procedure === "bots/list"
+              ? bots
+              : procedure === "spaces/people"
+                ? []
+                : undefined,
         ),
   );
   await act(async () => root.render(<GroupSettings />));
