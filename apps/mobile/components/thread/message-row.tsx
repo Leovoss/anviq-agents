@@ -3,10 +3,11 @@ import type { LoginFieldInput, MessageReaction } from "@anviq/contracts";
 import { canReactToThreadMessage, MESSAGE_REACTIONS } from "@anviq/contracts";
 import type { ChildBotBlock } from "@anviq/core";
 import { canMarkMessageUnread, isPeerReceiptBlocks, liveMessageComposing } from "@anviq/core";
+import { typeScale } from "@anviq/ui-tokens";
 import * as Clipboard from "expo-clipboard";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GestureResponderEvent, LayoutChangeEvent } from "react-native";
-import { Platform, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 import Animated, { useReducedMotion, ZoomIn } from "react-native-reanimated";
 import type { MobileBot, MobileMessage, MobileSnapshot } from "../../lib/api";
 import { blockText, copyableMobileMessageText, selectableMobileMessageText } from "../../lib/api";
@@ -69,6 +70,8 @@ type MessageRowProps = {
   groupId?: string;
   botName?: string;
   showBotSenderName: boolean;
+  /** Who wrote this, when it is someone other than the reader in a shared chat. */
+  senderName?: string;
   bots: MobileBot[];
   members?: MobileSnapshot["members"];
   readOnly: boolean;
@@ -105,6 +108,7 @@ export const MessageRow = memo(function MessageRow({
   groupId,
   botName,
   showBotSenderName,
+  senderName,
   bots,
   members,
   readOnly,
@@ -405,6 +409,18 @@ export const MessageRow = memo(function MessageRow({
             flexShrink: 1,
           }}
         >
+          {senderName ? (
+            <Text
+              style={{
+                alignSelf: "flex-end",
+                color: tokens.mutedForeground,
+                marginBottom: 4,
+                ...typeScale.footnote,
+              }}
+            >
+              {senderName}
+            </Text>
+          ) : null}
           {isPeerReceiptBlocks(message.blocks) ? null : (
             <ReplyLine
               threadTarget={artifactTarget}
