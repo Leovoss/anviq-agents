@@ -127,7 +127,7 @@ export function IntegrationSetup({ onDone, botId }: { onDone?: () => void; botId
         </p>
       ) : null}
       {onDone ? (
-        <Button disabled={busy} onClick={onDone}>
+        <Button size="xl" disabled={busy} onClick={onDone}>
           <Trans>Continue</Trans>
         </Button>
       ) : null}

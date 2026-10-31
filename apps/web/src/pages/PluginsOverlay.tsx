@@ -668,6 +668,7 @@ export function PluginsOverlay({
           type="button"
           variant="secondary"
           size="sm"
+          className="min-w-20"
           disabled={connecting}
           onClick={(event) => {
             event.stopPropagation();
@@ -683,6 +684,7 @@ export function PluginsOverlay({
         type="button"
         variant="secondary"
         size="sm"
+        className="min-w-20"
         disabled={connecting}
         onClick={(event) => {
           event.stopPropagation();
