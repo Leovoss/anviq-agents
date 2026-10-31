@@ -165,6 +165,18 @@ jobs:
           persist-credentials: false
       - run: bash infra/compose/upgrade-postgres.docker-test.sh
 
+  check-migrations-additive:
+    name: Migrations additive
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: bash infra/compose/check-migrations-additive.sh "origin/${{ github.base_ref }}"
+
   test-e2e:
     name: Web E2E
     uses: ./.github/workflows/playwright.yml
