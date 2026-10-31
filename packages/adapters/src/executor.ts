@@ -526,7 +526,14 @@ export function createRunExecutor(deps: ExecutorDeps) {
         const memoryScope = configuredMemory
           ? effectiveMemoryScope(bot.memoryScope, configuredMemory.defaultScope)
           : null;
-        const semanticMemory: SemanticMemoryProvider | null = configuredMemory?.provider ?? null;
+        // A bot's own notes stay out of a chat other people read.
+        const sharedChat = thread.groupId
+          ? (await deps.prisma.chatGroupParticipant.count({ where: { groupId: thread.groupId } })) >
+            0
+          : false;
+        const semanticMemory: SemanticMemoryProvider | null = sharedChat
+          ? null
+          : (configuredMemory?.provider ?? null);
 
         await deps.events.append({
           spaceId: run.spaceId,
@@ -653,9 +660,16 @@ export function createRunExecutor(deps: ExecutorDeps) {
             : companyMemoryForSpace(deps.prisma, run.spaceId)
                 .catch(() => undefined)
                 .then((companyMemory) =>
-                  loadAgentMemoryContext(deps.memory, bot.id, context, undefined, companyMemory),
+                  loadAgentMemoryContext(
+                    deps.memory,
+                    bot.id,
+                    context,
+                    undefined,
+                    companyMemory,
+                    !sharedChat,
+                  ),
                 ),
-          messagingChannelRun
+          messagingChannelRun || sharedChat
             ? Promise.resolve("")
             : loadAgentScratchpadContext(deps, {
                 spaceId: run.spaceId,
@@ -974,6 +988,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
             groupId: thread.groupId,
             trigger: run.trigger,
             semanticMemoryEnabled,
+            sharedChat,
             semanticMemoryForgets: Boolean(semanticMemory?.forget),
             mediaImagesEnabled: Boolean(deps.artifacts && mediaGeneration?.capabilities.images),
             mediaVideoEnabled: Boolean(deps.artifacts && mediaGeneration?.capabilities.video),
